@@ -1,20 +1,15 @@
-import TestCard from "./features/board/components/card/components/TestCard";
-import { Navbar } from "./features/navbar";
+import Board from "./features/Board/components/Board";
+import CardModal from "./features/Board/components/card/components/CardModal";
+import { Navbar } from "./features/Navbar";
 
 function App() {
   return (
     <div className="min-h-screen w-full">
       <Navbar />
-      <div className="bg-[#161a1d] min-h-screen w-full">
-        <div className="p-8">
-          <h1 className="text-2xl font-bold mb-6 text-white">
-            Trello Card Modal Test
-          </h1>
-          <div className="max-w-sm">
-            <TestCard />
-          </div>
-        </div>
-      </div>
+      <Board />
+
+      {/* Global CardModal - only one instance needed */}
+      <CardModal />
     </div>
   );
 }
