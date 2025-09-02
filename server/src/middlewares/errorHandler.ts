@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../utils/appError";
-import { ApiResponse } from "../utils/globalTypes";
+import { AppError } from "../utils/appError.js";
+import type { ApiResponse } from "../utils/globalTypes.js";
 
 export const globalErrorHandler = (
   err: unknown,

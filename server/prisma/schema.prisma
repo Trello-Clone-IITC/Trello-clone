@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model activity_log {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  board_id   String          @db.Uuid
+  card_id    String?         @db.Uuid
+  user_id    String?         @db.Uuid
+  action     activity_action
+  payload    Json?
+  created_at DateTime        @default(now()) @db.Timestamptz(6)
+  boards     boards          @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  cards      cards?          @relation(fields: [card_id], references: [id], onUpdate: NoAction)
+  users      users?          @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([board_id, created_at(sort: Desc)], map: "activity_board_time_idx")
+  @@index([card_id, created_at(sort: Desc)], map: "activity_card_time_idx")
+}
+
+model attachments {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  card_id    String   @db.Uuid
+  user_id    String?  @db.Uuid
+  url        String
+  filename   String?
+  bytes      BigInt?
+  meta       Json?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?   @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([card_id, created_at(sort: Desc)], map: "attachments_card_time_idx")
+}
+
+model board_members {
+  board_id  String     @db.Uuid
+  user_id   String     @db.Uuid
+  role      board_role @default(member)
+  joined_at DateTime   @default(now()) @db.Timestamptz(6)
+  boards    boards     @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users     users      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([board_id, user_id])
+  @@index([user_id], map: "board_members_user_idx")
+}
+
+model boards {
+  id               String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspace_id     String?                    @db.Uuid
+  name             String
+  description      String?
+  background       String                     @default("default_background_url")
+  created_by       String?                    @db.Uuid
+  allow_covers     Boolean                    @default(true)
+  show_complete    Boolean                    @default(true)
+  created_at       DateTime                   @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime                   @default(now()) @db.Timestamptz(6)
+  last_activity_at DateTime?                  @db.Timestamptz(6)
+  visibility       board_visibility           @default(workspace_members)
+  member_manage    member_manage_restrictions @default(members)
+  commenting       commenting_restrictions    @default(board_members)
+  activity_log     activity_log[]
+  board_members    board_members[]
+  users            users?                     @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  workspaces       workspaces?                @relation(fields: [workspace_id], references: [id], onUpdate: NoAction)
+  labels           labels[]
+  lists            lists[]
+
+  @@index([workspace_id], map: "boards_workspace_idx")
+}
+
+model card_assignees {
+  card_id String @db.Uuid
+  user_id String @db.Uuid
+  cards   cards  @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users   users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([card_id, user_id])
+  @@index([user_id], map: "card_assignees_user_idx")
+}
+
+model card_labels {
+  card_id  String @db.Uuid
+  label_id String @db.Uuid
+  cards    cards  @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  labels   labels @relation(fields: [label_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([card_id, label_id])
+}
+
+model card_watchers {
+  card_id    String   @db.Uuid
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([card_id, user_id])
+  @@index([user_id], map: "card_watchers_user_idx")
+}
+
+model cards {
+  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  list_id         String                   @db.Uuid
+  title           String
+  description     String?
+  due_date        DateTime?                @db.Timestamptz(6)
+  start_date      DateTime?                @db.Timestamptz(6)
+  position        Decimal                  @db.Decimal(16, 6)
+  is_archived     Boolean                  @default(false)
+  created_by      String?                  @db.Uuid
+  cover_image_url String?
+  subscribed      Boolean                  @default(false)
+  created_at      DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime                 @default(now()) @db.Timestamptz(6)
+  search_doc      Unsupported("tsvector")? @default(dbgenerated("to_tsvector('simple'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)))"))
+  activity_log    activity_log[]
+  attachments     attachments[]
+  card_assignees  card_assignees[]
+  card_labels     card_labels[]
+  card_watchers   card_watchers[]
+  users           users?                   @relation(fields: [created_by], references: [id], onUpdate: NoAction)
+  lists           lists                    @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  checklists      checklists[]
+  comments        comments[]
+
+  @@unique([list_id, position], map: "cards_order_idx")
+  @@index([search_doc], map: "cards_search_gin_idx", type: Gin)
+}
+
+model checklist_item_assignees {
+  item_id         String          @db.Uuid
+  user_id         String          @db.Uuid
+  checklist_items checklist_items @relation(fields: [item_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([item_id, user_id])
+}
+
+model checklist_items {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  checklist_id             String                     @db.Uuid
+  text                     String
+  is_completed             Boolean                    @default(false)
+  due_date                 DateTime?                  @db.Timestamptz(6)
+  position                 Decimal                    @default(1000) @db.Decimal(16, 6)
+  checklist_item_assignees checklist_item_assignees[]
+  checklists               checklists                 @relation(fields: [checklist_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([checklist_id, position], map: "checklist_items_parent_pos_idx")
+}
+
+model checklists {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  card_id         String            @db.Uuid
+  title           String
+  position        Decimal           @default(1000) @db.Decimal(16, 6)
+  checklist_items checklist_items[]
+  cards           cards             @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([card_id, position], map: "checklists_card_pos_idx")
+}
+
+model comments {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  card_id    String   @db.Uuid
+  user_id    String   @db.Uuid
+  text       String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([card_id, created_at(sort: Desc)], map: "comments_card_time_idx")
+}
+
+model labels {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  board_id    String        @db.Uuid
+  name        String
+  color       String
+  card_labels card_labels[]
+  boards      boards        @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([board_id, name])
+  @@index([board_id], map: "labels_board_idx")
+}
+
+model list_watchers {
+  list_id    String   @db.Uuid
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  lists      lists    @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([list_id, user_id])
+}
+
+model lists {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  board_id      String          @db.Uuid
+  name          String
+  position      Decimal         @db.Decimal(16, 6)
+  is_archived   Boolean         @default(false)
+  subscribed    Boolean         @default(false)
+  cards         cards[]
+  list_watchers list_watchers[]
+  boards        boards          @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([board_id, position], map: "lists_order_idx")
+}
+
+model users {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerk_id                 String                     @unique
+  email                    String                     @unique(map: "users_email_idx") @db.Citext
+  username                 String?                    @unique(map: "users_username_idx") @db.Citext
+  full_name                String
+  avatar_url               String                     @default("default_avatar_url")
+  theme                    theme                      @default(system)
+  email_notification       Boolean                    @default(true)
+  push_notification        Boolean                    @default(false)
+  created_at               DateTime                   @default(now()) @db.Timestamptz(6)
+  bio                      String?
+  activity_log             activity_log[]
+  attachments              attachments[]
+  board_members            board_members[]
+  boards                   boards[]
+  card_assignees           card_assignees[]
+  card_watchers            card_watchers[]
+  cards                    cards[]
+  checklist_item_assignees checklist_item_assignees[]
+  comments                 comments[]
+  list_watchers            list_watchers[]
+  workspace_members        workspace_members[]
+  workspaces               workspaces[]
+}
+
+model workspace_members {
+  workspace_id String         @db.Uuid
+  user_id      String         @db.Uuid
+  role         workspace_role @default(member)
+  joined_at    DateTime       @default(now()) @db.Timestamptz(6)
+  users        users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  workspaces   workspaces     @relation(fields: [workspace_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([workspace_id, user_id])
+}
+
+model workspaces {
+  id                                String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                              String
+  description                       String?
+  visibility                        workspace_visibility        @default(private)
+  premium                           Boolean                     @default(false)
+  created_at                        DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                        DateTime                    @default(now()) @db.Timestamptz(6)
+  type                              workspace_type              @default(other)
+  created_by                        String                      @db.Uuid
+  workspace_membership_restrictions membership_restrictions     @default(anybody)
+  public_board_creation             board_creation_restrictions @default(workspace_member)
+  workspace_board_creation          board_creation_restrictions @default(workspace_member)
+  private_board_creation            board_creation_restrictions @default(workspace_member)
+  public_board_deletion             board_creation_restrictions @default(workspace_member)
+  workspace_board_deletion          board_creation_restrictions @default(workspace_member)
+  private_board_deletion            board_creation_restrictions @default(workspace_member)
+  allow_guest_sharing               board_sharing               @default(anybody)
+  allow_slack_integration           slack_sharing               @default(workspace_member)
+  boards                            boards[]
+  workspace_members                 workspace_members[]
+  users                             users                       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([visibility])
+}
+
+enum activity_action {
+  created
+  moved
+  updated
+  commented
+  closed
+  reopened
+  assigned
+  unassigned
+  labeled
+  unlabeled
+  attached
+  detached
+}
+
+enum board_creation_restrictions {
+  workspace_member
+  workspace_admin
+  nobody
+}
+
+enum board_role {
+  admin
+  member
+  observer
+}
+
+enum board_sharing {
+  anybody
+  only_workspace_member
+}
+
+enum board_visibility {
+  private
+  workspace_members
+  public
+}
+
+enum commenting_restrictions {
+  disabled
+  board_members
+  workspace_members
+}
+
+enum member_manage_restrictions {
+  admins
+  members
+}
+
+enum membership_restrictions {
+  anybody
+  specific_domain
+}
+
+enum slack_sharing {
+  workspace_member
+  admins
+}
+
+enum theme {
+  light
+  dark
+  system
+}
+
+enum workspace_role {
+  admin
+  member
+  guest
+}
+
+enum workspace_type {
+  marketing
+  sales_crm
+  humen_resources
+  small_business
+  engineering_it
+  education
+  operations
+  other
+}
+
+enum workspace_visibility {
+  private
+  public
+}

@@ -5,14 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx --watch server.ts",
+    "dev": "tsx --watch src/server.ts",
     "clean": "rm -r dist",
-    "build": "tsc server.ts --outDir dist",
-    "start": "node dist/server.js",
-    "populate": "node scripts/populate_events.js",
-    "db:init": "tsx src/config/init-db.ts",
-    "db:reset": "tsx src/config/init-db.ts",
-    "dev:init": "tsx server.ts --init-db"
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -22,8 +18,8 @@
     "@clerk/express": "^1.7.24",
     "@faker-js/faker": "^10.0.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
+    "@prisma/client": "^6.15.0",
     "axios": "^1.11.0",
-    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
     "dotenv": "^17.2.1",
@@ -33,13 +29,13 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/geojson": "^7946.0.16",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.3.0",
     "@types/pg": "^8.10.9",
+    "prisma": "^6.15.0",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2"
   }
