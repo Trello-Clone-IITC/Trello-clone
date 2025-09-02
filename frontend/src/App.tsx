@@ -1,5 +1,5 @@
-import TestCard from "./features/Board/components/card/components/TestCard";
-import { Navbar } from "./features/Navbar";
+import TestCard from "./features/board/components/card/components/TestCard";
+import { Navbar } from "./features/navbar";
 
 function App() {
   return (
