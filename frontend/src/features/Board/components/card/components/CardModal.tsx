@@ -260,15 +260,29 @@ export default function CardModal({
                   <div className="text-sm font-medium text-gray-400">
                     Labels
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <div className="h-8 rounded-[3px] bg-[#4bce97] hover:bg-[#7ee2b8] px-3 text-sm font-medium text-[#1d2125] cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis">
                       Easy
                     </div>
                     <div className="h-8 rounded-[3px] bg-[#e774bb] hover:bg-[#f797d2] px-3 text-sm font-medium text-[#1d2125] cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis">
                       Must Have
                     </div>
-                    <button className="h-6 w-6 rounded-sm border border-dashed border-gray-500 flex items-center justify-center text-gray-400 hover:border-gray-300 hover:text-gray-300">
-                      <span className="text-sm">+</span>
+                    <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
+                      <span className="font-medium">
+                        <svg
+                          width="16"
+                          height="16"
+                          role="presentation"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 3C11.4477 3 11 3.44772 11 4V11L4 11C3.44772 11 3 11.4477 3 12C3 12.5523 3.44772 13 4 13H11V20C11 20.5523 11.4477 21 12 21C12.5523 21 13 20.5523 13 20V13H20C20.5523 13 21 12.5523 21 12C21 11.4477 20.5523 11 20 11L13 11V4C13 3.44772 12.5523 3 12 3Z"
+                            fill="currentColor"
+                          ></path>
+                        </svg>
+                      </span>
                     </button>
                   </div>
                 </section>
