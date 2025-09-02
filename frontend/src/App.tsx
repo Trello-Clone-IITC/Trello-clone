@@ -1,6 +1,6 @@
-import Board from "./features/Board/components/Board";
-import CardModal from "./features/Board/components/card/components/CardModal";
-import { Navbar } from "./features/Navbar";
+import Board from "./features/board/components/Board";
+import CardModal from "./features/board/components/card/components/CardModal";
+import { Navbar } from "./features/navbar";
 
 function App() {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { useCardModal } from "../hooks/useCardModal";
 import CardModal from "./CardModal";
-import type { Card as CardType } from "../../List/redux/listSlice";
+import type { Card as CardType } from "../../list/redux/listSlice";
 
 interface CardProps {
   id: string;
@@ -86,11 +86,7 @@ const Card: React.FC<CardProps> = ({
         </div>
       </div>
 
-      <CardModal
-        open={isOpen && cardId === id}
-        onOpenChange={closeModal}
-        title={cardTitle}
-      />
+      <CardModal />
     </>
   );
 };

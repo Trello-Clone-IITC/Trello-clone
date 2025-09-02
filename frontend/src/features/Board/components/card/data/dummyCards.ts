@@ -1,4 +1,4 @@
-import type { Card } from "../../List/redux/listSlice";
+import type { Card } from "../../list/redux/listSlice";
 
 // Dummy card data that matches real Trello usage patterns
 export const dummyCards: Card[] = [

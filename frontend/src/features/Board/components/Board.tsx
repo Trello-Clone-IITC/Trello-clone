@@ -1,9 +1,9 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
-import { setLists } from "./List/redux/listSlice";
-import List from "./List/components/List";
-import type { List as ListType } from "./List/redux/listSlice";
+import { setLists } from "./list/redux/listSlice";
+import List from "./list/components/List";
+import type { List as ListType } from "./list/redux/listSlice";
 import { getCardsByListId } from "./card/data";
 
 // Sample lists with realistic data
