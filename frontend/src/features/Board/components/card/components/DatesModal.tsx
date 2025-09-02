@@ -10,15 +10,9 @@ import { Check, X } from "lucide-react";
 
 type DatesDropdownProps = {
   children: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
 };
 
-export default function DatesDropdown({
-  children,
-  open,
-  onOpenChange,
-}: DatesDropdownProps) {
+export default function DatesDropdown({ children }: DatesDropdownProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date(2025, 8, 3)
   ); // September 3, 2025
@@ -33,7 +27,7 @@ export default function DatesDropdown({
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={onOpenChange}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -45,14 +39,6 @@ export default function DatesDropdown({
         <div className="p-3">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold">Dates</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => onOpenChange?.(false)}
-            >
-              <X className="size-4" />
-            </Button>
           </div>
 
           {/* Calendar Section */}

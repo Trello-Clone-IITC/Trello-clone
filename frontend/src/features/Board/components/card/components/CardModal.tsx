@@ -26,23 +26,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import DatesDropdown from "./DatesModal";
-import * as React from "react";
+import React from "react";
+import { useCardModal } from "../hooks/useCardModal";
 
-type CardModalProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title?: string;
-};
-
-export default function CardModal({
-  open,
-  onOpenChange,
-  title = "Card title",
-}: CardModalProps) {
-  const [isAddDropdownOpen, setIsAddDropdownOpen] = React.useState(false);
-  const [isDatesDropdownOpen, setIsDatesDropdownOpen] = React.useState(false);
+export default function CardModal() {
+  const { isOpen, cardTitle, closeModal } = useCardModal();
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent
         className="sm:max-w-5xl p-0 bg-[#22272b] border-[#22272b] text-white flex flex-col overflow-hidden gap-0 top-[30px] left-[50%] translate-x-[-50%] translate-y-0"
         showCloseButton={false}
@@ -99,7 +89,7 @@ export default function CardModal({
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-white hover:bg-white/20"
-              onClick={() => onOpenChange?.(false)}
+              onClick={closeModal}
             >
               <X className="size-4" />
             </Button>
@@ -124,7 +114,7 @@ export default function CardModal({
                 <div className="size-4 rounded-full border-2 border-gray-400" />
                 <div className="min-w-0 flex-1">
                   <DialogTitle className="text-xl font-semibold text-white leading-tight">
-                    {title}
+                    {cardTitle || "Card title"}
                   </DialogTitle>
                 </div>
               </div>
@@ -135,18 +125,11 @@ export default function CardModal({
               <main className="space-y-6">
                 {/* Actions row */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <DropdownMenu
-                    open={isAddDropdownOpen}
-                    onOpenChange={setIsAddDropdownOpen}
-                  >
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className={`inline-flex items-center gap-2 rounded-sm border px-2.5 py-1.5 text-sm font-medium ${
-                          isAddDropdownOpen
-                            ? "border-white bg-white text-black"
-                            : "border-gray-600 hover:bg-gray-700 text-white"
-                        }`}
+                        className="inline-flex items-center gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2.5 py-1.5 text-sm font-medium"
                       >
                         <Plus className="size-4" />
                         <span>Add</span>
@@ -158,14 +141,6 @@ export default function CardModal({
                     >
                       <div className="flex items-center justify-between p-3 border-b border-gray-600">
                         <h3 className="font-semibold">Add to card</h3>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => setIsAddDropdownOpen(false)}
-                        >
-                          <X className="size-3" />
-                        </Button>
                       </div>
                       <div className="p-1">
                         <DropdownMenuItem className="flex items-start gap-3 p-3">
@@ -225,17 +200,10 @@ export default function CardModal({
                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <DatesDropdown
-                    open={isDatesDropdownOpen}
-                    onOpenChange={setIsDatesDropdownOpen}
-                  >
+                  <DatesDropdown>
                     <button
                       type="button"
-                      className={`inline-flex items-center gap-2 rounded-sm border px-2.5 py-1.5 text-sm font-medium ${
-                        isDatesDropdownOpen
-                          ? "border-white bg-white text-black"
-                          : "border-gray-600 hover:bg-gray-700 text-white"
-                      }`}
+                      className="inline-flex items-center gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2.5 py-1.5 text-sm font-medium"
                     >
                       <Calendar className="size-4" />
                       <span>Dates</span>
