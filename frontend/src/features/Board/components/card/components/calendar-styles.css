@@ -1,0 +1,138 @@
+/* Custom calendar styles for dark theme */
+.calendar-container .rdp,
+.calendar-container .rdp * {
+  background-color: #22272b !important;
+  color: white !important;
+}
+
+.calendar-container .rdp-root {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-months {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-month {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-table {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-tbody {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-cell {
+  background-color: #22272b !important;
+}
+
+.calendar-container .rdp-day_button {
+  color: #b6c2cf !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+}
+
+.calendar-container .rdp-day_button:hover {
+  background-color: #374151 !important;
+}
+
+/* Today's date styling - Multiple selectors to force color change */
+.calendar-container .rdp-day_button[data-today="true"],
+.calendar-container .rdp-day_button[aria-current="date"],
+.calendar-container .rdp-day_button[data-today="true"] span,
+.calendar-container .rdp-day_button[aria-current="date"] span,
+.calendar-container .rdp-day_button[data-today="true"] *,
+.calendar-container .rdp-day_button[aria-current="date"] * {
+  color: #579dff !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  position: relative !important;
+}
+
+.calendar-container .rdp-day_button[data-today="true"]::after,
+.calendar-container .rdp-day_button[aria-current="date"]::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 2px !important;
+  left: 4px !important;
+  right: 4px !important;
+  height: 2px !important;
+  background-color: #579dff !important;
+  z-index: 1 !important;
+}
+
+/* Override any default today styling - Multiple selectors */
+.calendar-container .rdp-today,
+.calendar-container .rdp-today span,
+.calendar-container .rdp-today *,
+.calendar-container .rdp-day_button.today,
+.calendar-container .rdp-day_button.today span,
+.calendar-container .rdp-day_button.today * {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #579dff !important;
+  text-decoration: none !important;
+  position: relative !important;
+}
+
+.calendar-container .rdp-today::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 2px !important;
+  left: 4px !important;
+  right: 4px !important;
+  height: 2px !important;
+  background-color: #579dff !important;
+  z-index: 1 !important;
+}
+
+/* Nuclear option - target everything that could be today's date */
+.calendar-container [data-today="true"],
+.calendar-container [aria-current="date"],
+.calendar-container [data-today="true"] *,
+.calendar-container [aria-current="date"] *,
+.calendar-container .today,
+.calendar-container .today *,
+.calendar-container button[data-today="true"],
+.calendar-container button[aria-current="date"],
+.calendar-container button[data-today="true"] *,
+.calendar-container button[aria-current="date"] * {
+  color: #579dff !important;
+}
+
+/* Selected date styling */
+.calendar-container .rdp-day_button[data-selected="true"] {
+  background-color: #1c2b41 !important;
+  color: #407dd3 !important;
+}
+
+.calendar-container .rdp-day_button[data-selected="true"]:hover {
+  background-color: #09326c !important;
+  color: #579dff !important;
+}
+
+/* Weekday headers */
+.calendar-container .rdp-weekday {
+  color: #9ca3af !important;
+}
+
+/* Caption (month/year) */
+.calendar-container .rdp-caption_label {
+  color: white !important;
+}
+
+/* Navigation buttons */
+.calendar-container .rdp-button_previous,
+.calendar-container .rdp-button_next {
+  color: #9ca3af !important;
+}
+
+.calendar-container .rdp-button_previous:hover,
+.calendar-container .rdp-button_next:hover {
+  color: white !important;
+}
