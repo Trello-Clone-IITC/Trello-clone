@@ -1,14 +1,15 @@
+import dotenv from "dotenv";
+
+// Read from .env FIRST, before any other imports
+dotenv.config();
+
 import express from "express";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import { AppError } from "./src/utils/appError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
 import router from "./src/api/index";
 import cookieParser from "cookie-parser";
 import { pool, testConnection } from "./src/config/database";
-
-// Read from .env
-dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL;

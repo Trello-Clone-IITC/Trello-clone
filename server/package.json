@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx --watch src/server.ts",
+    "dev": "tsx --watch server.ts",
     "clean": "rm -r dist",
-    "build": "tsc",
+    "build": "tsc server.ts --outDir dist",
     "start": "node dist/server.js",
     "populate": "node scripts/populate_events.js",
     "db:init": "tsx src/config/init-db.ts",
