@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { cardsApi } from "../features/Board/components/card/redux/cardsApi";
-import { listsApi } from "../features/Board/components/List/redux/listsApi";
-import cardSlice from "../features/Board/components/card/redux/cardSlice";
-import listSlice from "../features/Board/components/List/redux/listSlice";
+import { cardsApi } from "../features/board/components/card/redux/cardsApi";
+import { listsApi } from "../features/board/components/List/redux/listsApi";
+import cardSlice from "../features/board/components/card/redux/cardSlice";
+import listSlice from "../features/board/components/List/redux/listSlice";
 
 export const store = configureStore({
   reducer: {
