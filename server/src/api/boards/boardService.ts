@@ -4,7 +4,7 @@ import {
   BoardMember,
   BoardWithMembers,
   List,
-} from "../utils/globalTypes.js";
+} from "../../utils/globalTypes.js";
 
 export class BoardService {
   static async createBoard(
