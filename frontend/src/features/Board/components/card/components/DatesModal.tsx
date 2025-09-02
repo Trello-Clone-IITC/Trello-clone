@@ -6,15 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  X,
-} from "lucide-react";
-import "./calendar-styles.css";
+import { Check, X } from "lucide-react";
 
 type DatesDropdownProps = {
   children: React.ReactNode;
@@ -45,7 +37,10 @@ export default function DatesDropdown({
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="w-80 bg-[#22272b] border-gray-600 text-white p-0"
+        side="top"
+        alignOffset={0}
+        sideOffset={-40}
+        className="w-80 bg-[#22272b] border-gray-600 text-white p-0 overflow-y-auto dates-dropdown"
       >
         <div className="p-3">
           <div className="flex items-center justify-between mb-3">
@@ -61,27 +56,7 @@ export default function DatesDropdown({
           </div>
 
           {/* Calendar Section */}
-          <div className="mb-4 flex flex-col items-center justify-center">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-400">
-                September 2025
-              </h3>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <ChevronsLeft className="size-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <ChevronLeft className="size-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <ChevronRight className="size-3" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <ChevronsRight className="size-3" />
-                </Button>
-              </div>
-            </div>
-
+          <div className="mb-3 flex flex-col items-center justify-center">
             <div className="calendar-container">
               <Calendar
                 mode="single"
@@ -92,7 +67,7 @@ export default function DatesDropdown({
           </div>
 
           {/* Functions Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Start Date */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400">
