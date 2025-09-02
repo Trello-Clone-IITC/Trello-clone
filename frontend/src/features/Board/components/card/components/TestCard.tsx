@@ -5,7 +5,7 @@ export default function TestCard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <>
+    <div className="">
       <div
         className="bg-[#22272b] border border-gray-600 rounded-lg p-4 shadow-sm hover:shadow-md cursor-pointer transition-shadow"
         onClick={() => setIsModalOpen(true)}
@@ -29,6 +29,6 @@ export default function TestCard() {
         onOpenChange={setIsModalOpen}
         title="Full Authentication (Login + Register)"
       />
-    </>
+    </div>
   );
 }
