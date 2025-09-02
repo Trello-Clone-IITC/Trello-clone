@@ -67,7 +67,7 @@ export default function DatesDropdown({
           </div>
 
           {/* Functions Section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* Start Date */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400">
@@ -88,7 +88,7 @@ export default function DatesDropdown({
                   type="text"
                   placeholder="M/D/YYYY"
                   disabled={!startDateEnabled}
-                  className={`px-2 py-1 rounded border text-sm flex-1 ${
+                  className={`px-2 py-1 rounded border text-sm w-[90px] ${
                     startDateEnabled
                       ? "bg-white text-black border-gray-300"
                       : "bg-gray-700 text-gray-500 border-gray-600"
@@ -117,7 +117,7 @@ export default function DatesDropdown({
                   type="text"
                   value={formatDate(selectedDate)}
                   disabled={!dueDateEnabled}
-                  className={`px-2 py-1 rounded border text-sm flex-1 ${
+                  className={`px-2 py-1 rounded border text-sm w-[90px] ${
                     dueDateEnabled
                       ? "bg-white text-black border-gray-300"
                       : "bg-gray-700 text-gray-500 border-gray-600"
