@@ -3,20 +3,12 @@ import { useList } from "../hooks/useList";
 import ListHeader from "./ListHeader";
 import ListCards from "./ListCards";
 import ListFooter from "./ListFooter";
+import type { Card as CardType } from "../redux/listSlice";
 
 interface ListProps {
   id: string;
   title: string;
-  cards?: Array<{
-    id: string;
-    title: string;
-    description?: string;
-    labels?: Array<{
-      id: string;
-      title: string;
-      color: string;
-    }>;
-  }>;
+  cards?: CardType[];
 }
 
 const List: React.FC<ListProps> = ({ id, title, cards = [] }) => {

@@ -1,30 +1,16 @@
 import React from "react";
 import { useCardModal } from "../hooks/useCardModal";
-import CardModal from "./CardModal";
-import type { Card as CardType } from "../../List/redux/listSlice";
+import type { Label } from "../../List/redux/listSlice";
 
 interface CardProps {
   id: string;
   title: string;
   description?: string;
-  listId: string;
-  position: number;
-  labels?: Array<{
-    id: string;
-    title: string;
-    color: string;
-  }>;
+  labels?: Label[];
 }
 
-const Card: React.FC<CardProps> = ({
-  id,
-  title,
-  description,
-  listId,
-  position,
-  labels = [],
-}) => {
-  const { isOpen, cardId, cardTitle, openModal, closeModal } = useCardModal();
+const Card: React.FC<CardProps> = ({ id, title, description, labels = [] }) => {
+  const { openModal } = useCardModal();
 
   const handleCardClick = () => {
     openModal(id, title);
@@ -85,12 +71,6 @@ const Card: React.FC<CardProps> = ({
           )}
         </div>
       </div>
-
-      <CardModal
-        open={isOpen && cardId === id}
-        onOpenChange={closeModal}
-        title={cardTitle}
-      />
     </>
   );
 };

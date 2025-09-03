@@ -26,11 +26,54 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import DatesDropdown from "./DatesModal";
-import React from "react";
+import React, { useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useCardModal } from "../hooks/useCardModal";
+import type { Card } from "../../List/redux/listSlice";
+import type { RootState } from "@/store/store";
 
 export default function CardModal() {
-  const { isOpen, cardTitle, closeModal } = useCardModal();
+  const { isOpen, cardId, cardTitle, closeModal } = useCardModal();
+  const cardDataRef = useRef<Card | null>(null);
+
+  // Get the card data from Redux store based on cardId
+  const card: Card | null = useSelector((state: RootState) => {
+    if (!cardId) return null;
+
+    // Find the card in any of the lists
+    for (const list of state.list.lists) {
+      const foundCard = list.cards.find((c) => c.id === cardId);
+      if (foundCard) return foundCard;
+    }
+    return null;
+  });
+
+  // Store card data in ref when modal opens, keep it during closing animation
+  useEffect(() => {
+    if (card && isOpen) {
+      cardDataRef.current = card;
+    }
+  }, [card, isOpen]);
+
+  // Use ref data if available, otherwise fall back to current card data
+  const displayCard = card || cardDataRef.current;
+  const labels = displayCard?.labels || [];
+  const displayTitle = displayCard?.title || cardTitle || "Card title";
+  const displayDescription = displayCard?.description;
+
+  const getLabelColorClass = (color: string) => {
+    const colorMap: Record<string, string> = {
+      green: "bg-[#4bce97] hover:bg-[#7ee2b8] text-[#1d2125]",
+      pink: "bg-[#e774bb] hover:bg-[#f797d2] text-[#1d2125]",
+      blue: "bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125]",
+      yellow: "bg-[#f5cd47] hover:bg-[#f7d96b] text-[#1d2125]",
+      red: "bg-[#f87462] hover:bg-[#fa9a8b] text-[#1d2125]",
+      orange: "bg-[#ff9f1a] hover:bg-[#ffb84d] text-[#1d2125]",
+      purple: "bg-[#9f8fef] hover:bg-[#b5a9f3] text-[#1d2125]",
+      gray: "bg-[#8fbc8f] hover:bg-[#a8d1a8] text-[#1d2125]",
+    };
+    return colorMap[color] || "bg-gray-400 hover:bg-gray-500 text-white";
+  };
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
       <DialogContent
@@ -114,7 +157,7 @@ export default function CardModal() {
                 <div className="size-4 rounded-full border-2 border-gray-400" />
                 <div className="min-w-0 flex-1">
                   <DialogTitle className="text-xl font-semibold text-white leading-tight">
-                    {cardTitle || "Card title"}
+                    {displayTitle}
                   </DialogTitle>
                 </div>
               </div>
@@ -228,13 +271,18 @@ export default function CardModal() {
                   <div className="text-sm font-medium text-gray-400">
                     Labels
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 rounded-[3px] bg-[#4bce97] hover:bg-[#7ee2b8] px-3 text-sm font-medium text-[#1d2125] cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis">
-                      Easy
-                    </div>
-                    <div className="h-8 rounded-[3px] bg-[#e774bb] hover:bg-[#f797d2] px-3 text-sm font-medium text-[#1d2125] cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis">
-                      Must Have
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {labels.map((label) => (
+                      <span
+                        key={label.id}
+                        className={`h-8 rounded-[3px] px-3 text-sm font-medium cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis ${getLabelColorClass(
+                          label.color
+                        )}`}
+                        title={label.title}
+                      >
+                        {label.title}
+                      </span>
+                    ))}
                     <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
                       <span className="font-medium">
                         <svg
@@ -262,7 +310,7 @@ export default function CardModal() {
                     Description
                   </div>
                   <div className="rounded-md border border-gray-600 bg-[#22272b] p-3 text-sm text-gray-400">
-                    Add a more detailed description...
+                    {displayDescription || "Add a more detailed description..."}
                   </div>
                 </section>
               </main>

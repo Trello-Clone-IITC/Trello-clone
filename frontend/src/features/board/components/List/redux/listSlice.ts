@@ -1,17 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+export interface Label {
+  id: string;
+  title: string;
+  color: string;
+}
+
 export interface Card {
   id: string;
   title: string;
   description?: string;
   listId: string;
   position: number;
-  labels?: Array<{
-    id: string;
-    title: string;
-    color: string;
-  }>;
+  labels?: Label[];
   createdAt: string;
   updatedAt: string;
 }
