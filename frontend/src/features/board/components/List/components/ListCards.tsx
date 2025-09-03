@@ -1,18 +1,10 @@
 import React from "react";
 import Card from "../../card/components/Card";
+import type { Card as CardType } from "../redux/listSlice";
 
 interface ListCardsProps {
   listId: string;
-  cards: Array<{
-    id: string;
-    title: string;
-    description?: string;
-    labels?: Array<{
-      id: string;
-      title: string;
-      color: string;
-    }>;
-  }>;
+  cards: CardType[];
 }
 
 const ListCards: React.FC<ListCardsProps> = ({ listId, cards }) => {
