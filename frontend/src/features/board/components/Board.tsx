@@ -5,6 +5,7 @@ import { setLists } from "./List/redux/listSlice";
 import List from "./List/components/List";
 import type { List as ListType } from "./List/redux/listSlice";
 import { getCardsByListId } from "./card/data";
+import CardModal from "./card/components/CardModal";
 
 // Sample lists with realistic data
 const sampleLists: ListType[] = [
@@ -67,6 +68,7 @@ const Board: React.FC = () => {
           cards={list.cards}
         />
       ))}
+      <CardModal />
     </div>
   );
 };

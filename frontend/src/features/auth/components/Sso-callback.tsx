@@ -16,7 +16,7 @@ export function SsoCallback() {
           signInFallbackRedirectUrl="/on-boarding"
           signUpFallbackRedirectUrl="/on-boarding"
         />
-        <p>Welcome! We’re loading your user information.</p>
+        <p>Welcome! We're loading your user information.</p>
       </Card>
     </div>
   );
