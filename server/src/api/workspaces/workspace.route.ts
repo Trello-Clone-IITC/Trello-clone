@@ -5,8 +5,8 @@ import {
   updateWorkspace,
   deleteWorkspace,
   getWorkspaceBoards,
-} from "./workspace.controller";
-import { validateId } from "../../middlewares/validation";
+} from "./workspace.controller.js";
+import { validateId } from "../../middlewares/validation.js";
 
 const router = Router();
 
