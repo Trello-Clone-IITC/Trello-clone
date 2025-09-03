@@ -1,0 +1,28 @@
+import { AppError } from "../../utils/appError.js";
+import { Request, Response, NextFunction } from "express";
+import { authService } from "./auth.service.js";
+import { getAuth } from "@clerk/express";
+import { ApiResponse, User } from "../../utils/globalTypes.js";
+
+const getMe = async (
+  req: Request,
+  res: Response<ApiResponse<User | null>>,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = getAuth(req);
+    console.log("userId", userId);
+    userId? userId : req.body.userId;
+    console.log("userId2", userId);
+    
+    if (!userId) {
+      throw new AppError("No token provided.", 400);
+    }
+    const user = await authService.getMe(userId);
+    res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const authController = { getMe };

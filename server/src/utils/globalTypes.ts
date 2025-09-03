@@ -63,14 +63,14 @@ export interface User {
   id: string;
   clerk_id: string;
   email: string;
-  username?: string;
+  username: string | null;
   full_name: string;
   avatar_url: string;
   theme: Theme;
   email_notification: boolean;
   push_notification: boolean;
   created_at: Date;
-  bio?: string;
+  bio: string | null;
 }
 
 // Updated Workspace interface matching new schema
