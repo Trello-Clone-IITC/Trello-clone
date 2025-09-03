@@ -1,5 +1,26 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/appError.js";
+import { z } from "zod";
+import type { ZodSchema } from "zod";
+
+export const validateRequest = (schema: ZodSchema) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessage = error.issues.map((err) => err.message).join(", ");
+        return next(new AppError(`Validation error: ${errorMessage}`, 400));
+      }
+      next(error);
+    }
+  };
+};
 
 export const validateId = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
