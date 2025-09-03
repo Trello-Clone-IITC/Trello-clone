@@ -108,7 +108,7 @@ export default function LoginForm() {
   return (
     <div className="bg-[#fafbfc] min-h-screen w-full flex justify-center items-center overflow-y-clip">
       <img
-        className="absolute bottom-[-5px] right-0 w-90 h-90 "
+        className="absolute bottom-0 right-0 w-90 h-90 "
         src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/trello-right.e6e102c7.svg"
         alt="Trello"
       />
