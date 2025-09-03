@@ -30,13 +30,14 @@ export const cardService = {
   // Create a new card
   async createCard(data: CreateCardData) {
     // Verify list exists and user has access
-    const list = await prisma.list.findFirst({
+    const list = await prisma.lists.findFirst({
       where: { id: data.listId },
       include: {
-        board: {
+        boards: {
           include: {
-            members: {
-              where: { userId: data.createdBy },
+
+            board_members: {
+              where: { user_id: data.createdBy },
             },
           },
         },
@@ -47,7 +48,7 @@ export const cardService = {
       throw new AppError("List not found", 404);
     }
 
-    if (list.board.members.length === 0) {
+    if (list.boards.board_members.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
@@ -75,7 +76,7 @@ export const cardService = {
       include: {
         lists: {
           include: {
-            board: true,
+            boards: true,
           },
         },
         users: true,
@@ -107,7 +108,7 @@ export const cardService = {
     // Log activity
     await prisma.activity_log.create({
       data: {
-        board_id: list.board.id,
+        board_id: list.boards.id,
         card_id: card.id,
         user_id: data.createdBy,
         action: "created",
@@ -125,10 +126,10 @@ export const cardService = {
       include: {
         lists: {
           include: {
-            board: {
+            boards: {
               include: {
-                members: {
-                  where: { userId: userId },
+                board_members: {
+                  where: { user_id: userId },
                 },
               },
             },
@@ -177,7 +178,13 @@ export const cardService = {
     }
 
     // Check if user has access to the board
-    if (card.lists.board.members.length === 0) {
+    console.log("card.lists.boards.board_members", card.lists.boards.board_members);
+    
+    // Check if the user is a member of the board and can watch the card
+    const userMember = card.lists.boards.board_members.find(
+      (member: any) => member.user_id === userId
+    );
+    if (!userMember) {
       throw new AppError("Access denied", 403);
     }
 
@@ -187,13 +194,13 @@ export const cardService = {
   // Get all cards for a list
   async getCardsByList(listId: string, userId: string) {
     // Verify user has access to the list
-    const list = await prisma.list.findFirst({
+    const list = await prisma.lists.findFirst({
       where: { id: listId },
       include: {
-        board: {
+        boards: {
           include: {
-            members: {
-              where: { userId: userId },
+            board_members: {
+              where: { user_id: userId },
             },
           },
         },
@@ -204,7 +211,7 @@ export const cardService = {
       throw new AppError("List not found", 404);
     }
 
-    if (list.board.members.length === 0) {
+    if (list.boards.board_members.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
@@ -248,10 +255,10 @@ export const cardService = {
       include: {
         lists: {
           include: {
-            board: {
+            boards: {
               include: {
-                members: {
-                  where: { userId: userId },
+                board_members: {
+                  where: { user_id: userId },
                 },
               },
             },
@@ -264,7 +271,7 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.board.members.length === 0) {
+    if (existingCard.lists.boards.board_members.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
@@ -281,7 +288,7 @@ export const cardService = {
       include: {
         lists: {
           include: {
-            board: true,
+            boards: true,
           },
         },
         users: true,
@@ -313,7 +320,7 @@ export const cardService = {
     // Log activity
     await prisma.activity_log.create({
       data: {
-        board_id: existingCard.lists.board.id,
+        board_id: existingCard.lists.boards.id,
         card_id: card.id,
         user_id: userId,
         action: "updated",
@@ -332,10 +339,10 @@ export const cardService = {
       include: {
         lists: {
           include: {
-            board: {
+            boards: {
               include: {
-                members: {
-                  where: { userId: userId },
+                board_members: {
+                  where: { user_id: userId },
                 },
               },
             },
@@ -348,14 +355,14 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.board.members.length === 0) {
+    if (existingCard.lists.boards.board_members.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     // Log activity before deletion
     await prisma.activity_log.create({
       data: {
-        board_id: existingCard.lists.board.id,
+        board_id: existingCard.lists.boards.id,
         card_id: cardId,
         user_id: userId,
         action: "closed",
@@ -383,10 +390,10 @@ export const cardService = {
         include: {
           lists: {
             include: {
-              board: {
+              boards: {
                 include: {
-                  members: {
-                    where: { userId: userId },
+                  board_members: {
+                    where: { user_id: userId },
                   },
                 },
               },
@@ -394,13 +401,13 @@ export const cardService = {
           },
         },
       }),
-      prisma.list.findFirst({
+      prisma.lists.findFirst({
         where: { id: listId },
         include: {
-          board: {
+          boards: {
             include: {
-              members: {
-                where: { userId: userId },
+              board_members: {
+                where: { user_id: userId },
               },
             },
           },
@@ -413,8 +420,8 @@ export const cardService = {
     }
 
     if (
-      card.lists.board.members.length === 0 ||
-      targetList.board.members.length === 0
+      card.lists.boards.board_members.length === 0 ||
+      targetList.boards.board_members.length === 0
     ) {
       throw new AppError("Access denied", 403);
     }

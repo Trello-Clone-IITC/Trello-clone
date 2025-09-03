@@ -39,6 +39,7 @@ export const cardController = {
         data: { card },
       });
     } catch (error) {
+      console.error("Failed to create card", error);
       next(new AppError("Failed to create card", 500));
     }
   },
@@ -47,7 +48,8 @@ export const cardController = {
   getCard: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      // const userId = req.user?.id; 
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -60,6 +62,8 @@ export const cardController = {
         data: { card },
       });
     } catch (error) {
+      console.log("Failed to get card", error);
+      
       next(new AppError("Failed to get card", 500));
     }
   },
@@ -68,7 +72,8 @@ export const cardController = {
   getCardsByList: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { listId } = req.params;
-      const userId = req.user?.id;
+      // const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -81,6 +86,8 @@ export const cardController = {
         data: { cards },
       });
     } catch (error) {
+      console.log("Failed to get cards by list", error);
+      
       next(new AppError("Failed to get cards by list", 500));
     }
   },
@@ -90,7 +97,8 @@ export const cardController = {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      const userId = req.user?.id;
+      // const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -103,6 +111,8 @@ export const cardController = {
         data: { card },
       });
     } catch (error) {
+      console.log("Failed to update card", error);
+      
       next(new AppError("Failed to update card", 500));
     }
   },
@@ -111,7 +121,8 @@ export const cardController = {
   deleteCard: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      // const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -124,6 +135,8 @@ export const cardController = {
         data: null,
       });
     } catch (error) {
+      console.log("Failed to delete card", error);
+      
       next(new AppError("Failed to delete card", 500));
     }
   },
