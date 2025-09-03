@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
-import { ApiResponse, Board } from "../../utils/globalTypes.js";
+import type { ApiResponse, Board } from "../../utils/globalTypes.js";
 
 export const createBoard = async (
   req: Request,
@@ -8,21 +8,27 @@ export const createBoard = async (
   next: NextFunction
 ) => {
   try {
-    const { title, description, workspace_id, owner_id } = req.body;
+    const { name, description, workspace_id, created_by } = req.body;
 
-    if (!title || !workspace_id || !owner_id) {
+    if (!name || !workspace_id || !created_by) {
       return next(
-        new AppError("Title, workspace_id, and owner_id are required", 400)
+        new AppError("Name, workspace_id, and created_by are required", 400)
       );
     }
 
     // TODO: Implement database insert logic
     const newBoard: Board = {
       id: Date.now().toString(), // Temporary ID generation
-      title,
+      name,
       description,
       workspace_id,
-      owner_id,
+      created_by,
+      background: "default_background_url",
+      allow_covers: true,
+      show_complete: true,
+      visibility: "workspace_members",
+      member_manage: "members",
+      commenting: "board_members",
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -47,10 +53,16 @@ export const getBoard = async (
     // TODO: Implement database query to get board by ID
     const board: Board = {
       id,
-      title: "Sample Board",
+      name: "Sample Board",
       description: "A sample board for testing",
       workspace_id: "workspace123",
-      owner_id: "user123",
+      created_by: "user123",
+      background: "default_background_url",
+      allow_covers: true,
+      show_complete: true,
+      visibility: "workspace_members",
+      member_manage: "members",
+      commenting: "board_members",
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -76,10 +88,16 @@ export const updateBoard = async (
     // TODO: Implement database update logic
     const updatedBoard: Board = {
       id,
-      title: title || "Sample Board",
+      name: title || "Sample Board",
       description: description || "A sample board for testing",
       workspace_id: "workspace123",
-      owner_id: "user123",
+      created_by: "user123",
+      background: "default_background_url",
+      allow_covers: true,
+      show_complete: true,
+      visibility: "workspace_members",
+      member_manage: "members",
+      commenting: "board_members",
       created_at: new Date(),
       updated_at: new Date(),
     };

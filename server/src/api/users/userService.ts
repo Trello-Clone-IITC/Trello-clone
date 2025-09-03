@@ -1,5 +1,5 @@
-import { query } from "../config/database.js";
-import { User, WorkspaceMember } from "../utils/globalTypes.js";
+import { prisma } from "../../lib/prismaClient.js";
+import type { User, WorkspaceMember } from "../../utils/globalTypes.js";
 
 export class UserService {
   static async createUser(
@@ -17,11 +17,8 @@ export class UserService {
       bio,
     } = userData;
 
-    const result = await query(
-      `INSERT INTO users (clerk_id, email, username, full_name, avatar_url, theme, email_notification, push_notification, bio, created_at) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) 
-       RETURNING *`,
-      [
+    const user = await prisma.users.create({
+      data: {
         clerk_id,
         email,
         username,
@@ -31,34 +28,38 @@ export class UserService {
         email_notification,
         push_notification,
         bio,
-      ]
-    );
+      },
+    });
 
-    return result.rows[0];
+    return user;
   }
 
   static async getUserById(id: string): Promise<User | null> {
-    const result = await query("SELECT * FROM users WHERE id = $1", [id]);
-    return result.rows[0] || null;
+    const user = await prisma.users.findUnique({
+      where: { id },
+    });
+    return user;
   }
 
   static async getUserByClerkId(clerk_id: string): Promise<User | null> {
-    const result = await query("SELECT * FROM users WHERE clerk_id = $1", [
-      clerk_id,
-    ]);
-    return result.rows[0] || null;
+    const user = await prisma.users.findUnique({
+      where: { clerk_id },
+    });
+    return user;
   }
 
   static async getUserByEmail(email: string): Promise<User | null> {
-    const result = await query("SELECT * FROM users WHERE email = $1", [email]);
-    return result.rows[0] || null;
+    const user = await prisma.users.findUnique({
+      where: { email },
+    });
+    return user;
   }
 
   static async getUserByUsername(username: string): Promise<User | null> {
-    const result = await query("SELECT * FROM users WHERE username = $1", [
-      username,
-    ]);
-    return result.rows[0] || null;
+    const user = await prisma.users.findFirst({
+      where: { username },
+    });
+    return user;
   }
 
   static async updateUser(
