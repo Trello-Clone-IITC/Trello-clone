@@ -1,7 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import { AppError } from "../../utils/appError";
-import { ApiResponse, User, UserWithWorkspaces } from "../../utils/globalTypes";
-import { UserService } from "../../services/userService";
+import type { Request, Response, NextFunction } from "express";
+import { AppError } from "../../utils/appError.js";
+import {
+  type ApiResponse,
+  type User,
+  type UserWithWorkspaces,
+} from "../../utils/globalTypes.js";
+import { UserService } from "./userService.js";
 
 export const getUser = async (
   req: Request,

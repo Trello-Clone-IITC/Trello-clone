@@ -3,9 +3,10 @@ import express from "express";
 import morgan from "morgan";
 import { AppError } from "./utils/appError.js";
 import { globalErrorHandler } from "./middlewares/errorHandler.js";
-// import router from "./api/index";
+import router from "./api/index.js";
 import cookieParser from "cookie-parser";
 import { prisma } from "./lib/prismaClient.js";
+import cardsPlayground from "./api/cards/cards.playground.js";
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -31,7 +32,7 @@ app.get("/health", (_req, res) => {
 });
 
 // API endpoints
-// app.use("/api", router);
+app.use("/api", router);
 
 // 404 handler
 app.use((req, _res, next) => {
@@ -75,3 +76,5 @@ process.on("unhandledRejection", (err) => {
   console.error("unhandledRejection:", err);
   shutdown("unhandledRejection", 1);
 });
+
+await cardsPlayground();

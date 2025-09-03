@@ -5,7 +5,7 @@ import {
   updateBoard,
   deleteBoard,
 } from "./board.controller.js";
-import { validateId } from "../../middlewares/validation.ts";
+import { validateId } from "../../middlewares/validation.js";
 
 const router = Router();
 

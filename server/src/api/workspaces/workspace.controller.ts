@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
-import { ApiResponse, Workspace, Board } from "../../utils/globalTypes.js";
-import { WorkspaceService } from "../../services/workspaceService.js";
+import type { ApiResponse, Workspace, Board } from "../../utils/globalTypes.js";
+import { WorkspaceService } from "./workspaceService.js";
 
 export const createWorkspace = async (
   req: Request,
