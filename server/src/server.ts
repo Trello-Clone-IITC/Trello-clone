@@ -7,6 +7,8 @@ import router from "./api/index.js";
 import cookieParser from "cookie-parser";
 import { prisma } from "./lib/prismaClient.js";
 import cardsPlayground from "./api/cards/cards.playground.js";
+import { clerkMiddleware } from "@clerk/express";
+
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -20,6 +22,8 @@ app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser(SESSION_SECRET));
 app.use(morgan("combined"));
+app.use(clerkMiddleware());
+
 
 // Health check endpoint
 app.get("/health", (_req, res) => {

@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prismaClient.js";
 
 export default async function cardsPlayground() {
   console.log("user");
-  const user = await prisma.user.findFirst();
+  const user = await prisma.users.findFirst();
   console.log(user);
   //8f6b91e3-f04b-45ef-961e-26e00f65b663
   //create board
@@ -15,7 +15,7 @@ export default async function cardsPlayground() {
   //   });
   //   console.log(board);
 
-  const boardById = await prisma.board.findFirst({
+  const boardById = await prisma.boards.findFirst({
     where: {
       created_by: "8f6b91e3-f04b-45ef-961e-26e00f65b663",
     },
@@ -33,7 +33,7 @@ export default async function cardsPlayground() {
   //     },
   //   });
   //   console.log(list);
-  const listById = await prisma.list.findFirst({
+  const listById = await prisma.lists.findFirst({
     where: {
       id: "d79a1117-271c-460e-852b-f41b1c9132d1",
     },
