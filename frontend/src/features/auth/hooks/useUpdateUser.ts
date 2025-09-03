@@ -12,7 +12,7 @@ export const useUpdateMe = () => {
       if (!user) {
         throw new Error("User not loaded.");
       }
-      await patchUser(user._id, body);
+      await patchUser(user.id, body);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["me"] });
