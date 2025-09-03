@@ -40,7 +40,7 @@ export default function LoginForm() {
     },
   });
 
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width: 425px)");
 
   const { setTheme } = useTheme();
   setTheme("light");
@@ -108,7 +108,7 @@ export default function LoginForm() {
   return (
     <div className="bg-[#fafbfc] min-h-screen w-full flex justify-center items-center overflow-y-clip">
       <img
-        className="absolute bottom-[-5px] right-0 w-90 h-90 "
+        className="absolute bottom-0 right-0 w-90 h-90 "
         src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/trello-right.e6e102c7.svg"
         alt="Trello"
       />
@@ -118,14 +118,14 @@ export default function LoginForm() {
         alt="Trello"
       />
       <Card
-        className={`overflow-hidden px-4 md:px-8 py-10 rounded-none bg-[white] backdrop-blur-lg min-h-[766px] flex justify-start items-center h-[766px] w-full ${
+        className={`overflow-hidden px-4 md:px-8 py-10 rounded-none bg-[white] backdrop-blur-lg min-h-[768px] flex justify-start items-center h-[770px] w-[400px] ${
           isMobile ? "w-full min-h-screen" : "md:w-[400px] md:min-w-[400px]"
         }`}
       >
         <CardContent className="h-[686px] w-full px-0">
           <Form {...form}>
             <form className="" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-[20px]">
                 <div className="flex flex-col items-center text-center gap-6">
                   <div className="h-8 mb-2">{trelloLogo}</div>
                   <p className="text-[#172b4d] text-balance font-bold ">
@@ -286,71 +286,70 @@ export default function LoginForm() {
                     Create an account
                   </NavLink>
                 </div>
-                <CardFooter className="flex flex-col items-center justify-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className=" flex flex-col items-center gap-1 pt-2">
-                      {atlassianLogo}
-                      <p className="text-[11px] text-center text-[#172b4d] flex items-center gap-1">
-                        One account for Trello, Jira, Confluence, and{" "}
-                        <NavLink
-                          to="/support"
-                          className="text-[#2777e7] underline underline-offset-1 hover:no-underline flex items-center"
-                        >
-                          more{" "}
-                          <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
-                        </NavLink>
-                      </p>
-                    </div>
-                    <ul className="flex items-center gap-1 mt-[2px] text-xs">
-                      <NavLink
-                        to="/privacy"
-                        className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
-                      >
-                        Privacy Policy
-                        <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
-                      </NavLink>
-                      <li className="text-[#172b4d] list-item text-lg mx-1 font-bold">
-                        ∙
-                      </li>
-                      <NavLink
-                        to="/user-notice"
-                        className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
-                      >
-                        User Notice
-                        <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
-                      </NavLink>
-                    </ul>
-                    <div className=" text-[11px] text-[#172b4d] text-center">
-                      This site is protected by reCAPTCHA and the Google{" "}
-                      <a
-                        href="https://policies.google.com/privacy"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                        aria-label="Google Privacy Policy, (opens new window)"
-                      >
-                        Privacy Policy
-                        <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
-                      </a>{" "}
-                      and{" "}
-                      <a
-                        href="https://policies.google.com/terms"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                        aria-label="Google Terms of Service, (opens new window)"
-                      >
-                        Terms of Service
-                        <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
-                      </a>{" "}
-                      apply.
-                    </div>
-                  </div>
-                </CardFooter>
               </div>
             </form>
           </Form>
         </CardContent>
+        <CardFooter className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
+            <div className=" flex flex-col items-center gap-1 pt-2">
+              {atlassianLogo}
+              <p className="text-[11px] text-center text-[#172b4d] flex items-center gap-1">
+                One account for Trello, Jira, Confluence, and{" "}
+                <NavLink
+                  to="/support"
+                  className="text-[#2777e7] underline underline-offset-1 hover:no-underline flex items-center"
+                >
+                  more <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
+                </NavLink>
+              </p>
+            </div>
+            <ul className="flex items-center gap-1 mt-[2px] text-xs">
+              <NavLink
+                to="/privacy"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
+              >
+                Privacy Policy
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
+              </NavLink>
+              <li className="text-[#172b4d] list-item text-lg mx-1 font-bold">
+                ∙
+              </li>
+              <NavLink
+                to="/user-notice"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
+              >
+                User Notice
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
+              </NavLink>
+            </ul>
+            <div className=" text-[11px] text-[#172b4d] text-center">
+              This site is protected by reCAPTCHA and the Google{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                aria-label="Google Privacy Policy, (opens new window)"
+              >
+                Privacy Policy
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                aria-label="Google Terms of Service, (opens new window)"
+              >
+                Terms of Service
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+              </a>{" "}
+              apply.
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
