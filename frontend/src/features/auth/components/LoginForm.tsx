@@ -24,7 +24,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "usehooks-ts";
 // import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
 // import { ClockLoader } from "react-spinners";
-// import { useSignInWithGoogle } from "../hooks/useSignInWithGoogle";
+import { useOuthSignIn } from "../hooks/useSignInWithGoogle";
 
 const formSchema = z.object({
   email: z.email(),
@@ -45,7 +45,7 @@ export default function LoginForm() {
   const { setTheme } = useTheme();
   setTheme("light");
   const navigate = useNavigate();
-  // const { isLoaded, signInWithGoogle } = useSignInWithGoogle();
+  const { isLoaded, oauthsignIn } = useOuthSignIn();
   // const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -193,6 +193,7 @@ export default function LoginForm() {
                 </div>
 
                 {/* {error && <span className="text-[#da565f]">{error}</span>} */}
+                <div id="clerk-captcha" data-cl-size="normal" />
                 <Button
                   type="submit"
                   className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded"
@@ -214,13 +215,13 @@ export default function LoginForm() {
                   <div className="h-px bg-border flex-1"></div>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <div className="">
+                  <div>
                     <Button
-                      // onClick={signInWithGoogle}
+                      onClick={() => oauthsignIn("oauth_google")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
-                      // disabled={!isLoaded}
+                      disabled={!isLoaded}
                     >
                       <img
                         src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/google-logo.5867462c.svg"
@@ -231,13 +232,13 @@ export default function LoginForm() {
                       <span className="sr-only">Login with Google</span>
                     </Button>
                   </div>
-                  <div className="">
+                  <div>
                     <Button
-                      // onClick={signInWithGoogle}
+                      onClick={() => oauthsignIn("oauth_microsoft")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
-                      // disabled={!isLoaded}
+                      disabled={!isLoaded}
                     >
                       <img
                         src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/microsoft-logo.c73d8dca.svg"
@@ -252,11 +253,11 @@ export default function LoginForm() {
                   </div>
                   <div className="">
                     <Button
-                      // onClick={signInWithGoogle}
+                      onClick={() => oauthsignIn("oauth_slack")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
-                      // disabled={!isLoaded}
+                      disabled={!isLoaded}
                     >
                       <img
                         src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/slack-logo.5d730c10.svg"
