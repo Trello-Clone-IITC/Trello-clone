@@ -1,104 +1,74 @@
-import { query } from "../config/database.js";
-import {
-  Workspace,
-  WorkspaceMember,
-  WorkspaceWithMembers,
-} from "../utils/globalTypes.js";
+import { prisma } from "../../lib/prismaClient.js";
+import { Workspace, WorkspaceMember, WorkspaceRole } from "@prisma/client";
 
-export class WorkspaceService {
-  static async createWorkspace(
-    workspaceData: Omit<Workspace, "id" | "created_at" | "updated_at">
+export const workspaceService = {
+  async createWorkspace(
+    workspaceData: Omit<Workspace, "id" | "createdAt" | "updatedAt">
   ): Promise<Workspace> {
-    const {
-      name,
-      description,
-      visibility,
-      premium,
-      type,
-      created_by,
-      workspace_membership_restrictions,
-      public_board_creation,
-      workspace_board_creation,
-      private_board_creation,
-      public_board_deletion,
-      workspace_board_deletion,
-      private_board_deletion,
-      allow_guest_sharing,
-      allow_slack_integration,
-    } = workspaceData;
+    const workspace = await prisma.workspace.create({
+      data: workspaceData,
+    });
+    return workspace;
+  },
 
-    const result = await query(
-      `INSERT INTO workspaces (
-        name, description, visibility, premium, type, created_by,
-        workspace_membership_restrictions, public_board_creation,
-        workspace_board_creation, private_board_creation,
-        public_board_deletion, workspace_board_deletion, private_board_deletion,
-        allow_guest_sharing, allow_slack_integration, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) 
-      RETURNING *`,
-      [
-        name,
-        description,
-        visibility,
-        premium,
-        type,
-        created_by,
-        workspace_membership_restrictions,
-        public_board_creation,
-        workspace_board_creation,
-        private_board_creation,
-        public_board_deletion,
-        workspace_board_deletion,
-        private_board_deletion,
-        allow_guest_sharing,
-        allow_slack_integration,
-      ]
-    );
+  async getWorkspaceById(id: string): Promise<Workspace | null> {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id },
+    });
+    return workspace;
+  },
 
-    return result.rows[0];
-  }
-
-  static async getWorkspaceById(id: string): Promise<Workspace | null> {
-    const result = await query("SELECT * FROM workspaces WHERE id = $1", [id]);
-    return result.rows[0] || null;
-  }
-
-  static async getWorkspaceWithMembers(
+  async getWorkspaceWithMembers(
     id: string
-  ): Promise<WorkspaceWithMembers | null> {
-    const workspace = await this.getWorkspaceById(id);
-    if (!workspace) return null;
+  ): Promise<
+    (Workspace & { members: WorkspaceMember[]; boards: any[] }) | null
+  > {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id },
+      include: {
+        workspaceMembers: true,
+        boards: true,
+      },
+    });
 
-    const members = await this.getWorkspaceMembers(id);
-    const boards = await this.getWorkspaceBoards(id);
+    if (!workspace) return null;
 
     return {
       ...workspace,
-      members,
-      boards,
+      members: workspace.workspaceMembers,
+      boards: workspace.boards,
     };
-  }
+  },
 
-  static async getWorkspacesByUser(userId: string): Promise<Workspace[]> {
-    const result = await query(
-      `SELECT w.* FROM workspaces w
-       JOIN workspace_members wm ON w.id = wm.workspace_id
-       WHERE wm.user_id = $1
-       ORDER BY w.created_at DESC`,
-      [userId]
-    );
-    return result.rows;
-  }
+  async getWorkspacesByUser(userId: string): Promise<Workspace[]> {
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        workspaceMembers: {
+          some: {
+            userId,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return workspaces;
+  },
 
-  static async getWorkspacesByCreator(createdBy: string): Promise<Workspace[]> {
-    const result = await query(
-      "SELECT * FROM workspaces WHERE created_by = $1 ORDER BY created_at DESC",
-      [createdBy]
-    );
-    return result.rows;
-  }
+  async getWorkspacesByCreator(createdBy: string): Promise<Workspace[]> {
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        createdBy,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return workspaces;
+  },
 
-  static async updateWorkspace(
+  async updateWorkspace(
     id: string,
     updates: Partial<
       Pick<
@@ -108,230 +78,181 @@ export class WorkspaceService {
         | "visibility"
         | "premium"
         | "type"
-        | "workspace_membership_restrictions"
-        | "public_board_creation"
-        | "workspace_board_creation"
-        | "private_board_creation"
-        | "public_board_deletion"
-        | "workspace_board_deletion"
-        | "private_board_deletion"
-        | "allow_guest_sharing"
-        | "allow_slack_integration"
+        | "workspaceMembershipRestrictions"
+        | "publicBoardCreation"
+        | "workspaceBoardCreation"
+        | "privateBoardCreation"
+        | "publicBoardDeletion"
+        | "workspaceBoardDeletion"
+        | "privateBoardDeletion"
+        | "allowGuestSharing"
+        | "allowSlackIntegration"
       >
     >
   ): Promise<Workspace | null> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
+    const workspace = await prisma.workspace.update({
+      where: { id },
+      data: updates,
+    });
+    return workspace;
+  },
 
-    if (updates.name !== undefined) {
-      fields.push(`name = $${paramCount}`);
-      values.push(updates.name);
-      paramCount++;
+  async deleteWorkspace(id: string): Promise<boolean> {
+    try {
+      await prisma.workspace.delete({
+        where: { id },
+      });
+      return true;
+    } catch (error) {
+      return false;
     }
+  },
 
-    if (updates.description !== undefined) {
-      fields.push(`description = $${paramCount}`);
-      values.push(updates.description);
-      paramCount++;
-    }
-
-    if (updates.visibility !== undefined) {
-      fields.push(`visibility = $${paramCount}`);
-      values.push(updates.visibility);
-      paramCount++;
-    }
-
-    if (updates.premium !== undefined) {
-      fields.push(`premium = $${paramCount}`);
-      values.push(updates.premium);
-      paramCount++;
-    }
-
-    if (updates.type !== undefined) {
-      fields.push(`type = $${paramCount}`);
-      values.push(updates.type);
-      paramCount++;
-    }
-
-    if (updates.workspace_membership_restrictions !== undefined) {
-      fields.push(`workspace_membership_restrictions = $${paramCount}`);
-      values.push(updates.workspace_membership_restrictions);
-      paramCount++;
-    }
-
-    if (updates.public_board_creation !== undefined) {
-      fields.push(`public_board_creation = $${paramCount}`);
-      values.push(updates.public_board_creation);
-      paramCount++;
-    }
-
-    if (updates.workspace_board_creation !== undefined) {
-      fields.push(`workspace_board_creation = $${paramCount}`);
-      values.push(updates.workspace_board_creation);
-      paramCount++;
-    }
-
-    if (updates.private_board_creation !== undefined) {
-      fields.push(`private_board_creation = $${paramCount}`);
-      values.push(updates.private_board_creation);
-      paramCount++;
-    }
-
-    if (updates.public_board_deletion !== undefined) {
-      fields.push(`public_board_deletion = $${paramCount}`);
-      values.push(updates.public_board_deletion);
-      paramCount++;
-    }
-
-    if (updates.workspace_board_deletion !== undefined) {
-      fields.push(`workspace_board_deletion = $${paramCount}`);
-      values.push(updates.workspace_board_deletion);
-      paramCount++;
-    }
-
-    if (updates.private_board_deletion !== undefined) {
-      fields.push(`private_board_deletion = $${paramCount}`);
-      values.push(updates.private_board_deletion);
-      paramCount++;
-    }
-
-    if (updates.allow_guest_sharing !== undefined) {
-      fields.push(`allow_guest_sharing = $${paramCount}`);
-      values.push(updates.allow_guest_sharing);
-      paramCount++;
-    }
-
-    if (updates.allow_slack_integration !== undefined) {
-      fields.push(`allow_slack_integration = $${paramCount}`);
-      values.push(updates.allow_slack_integration);
-      paramCount++;
-    }
-
-    if (fields.length === 0) {
-      return this.getWorkspaceById(id);
-    }
-
-    values.push(id);
-
-    const result = await query(
-      `UPDATE workspaces SET ${fields.join(
-        ", "
-      )} WHERE id = $${paramCount} RETURNING *`,
-      values
-    );
-
-    return result.rows[0] || null;
-  }
-
-  static async deleteWorkspace(id: string): Promise<boolean> {
-    const result = await query(
-      "DELETE FROM workspaces WHERE id = $1 RETURNING id",
-      [id]
-    );
-    return (result.rowCount ?? 0) > 0;
-  }
-
-  static async getAllWorkspaces(): Promise<Workspace[]> {
-    const result = await query(
-      "SELECT * FROM workspaces ORDER BY created_at DESC"
-    );
-    return result.rows;
-  }
+  async getAllWorkspaces(): Promise<Workspace[]> {
+    const workspaces = await prisma.workspace.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return workspaces;
+  },
 
   // Workspace Member Management
-  static async addWorkspaceMember(
+  async addWorkspaceMember(
     workspaceId: string,
     userId: string,
-    role: string = "member"
+    role: WorkspaceRole = WorkspaceRole.Member
   ): Promise<WorkspaceMember> {
-    const result = await query(
-      `INSERT INTO workspace_members (workspace_id, user_id, role, joined_at) 
-       VALUES ($1, $2, $3, NOW()) 
-       RETURNING *`,
-      [workspaceId, userId, role]
-    );
-    return result.rows[0];
-  }
+    const member = await prisma.workspaceMember.create({
+      data: {
+        workspaceId,
+        userId,
+        role,
+      },
+    });
+    return member;
+  },
 
-  static async removeWorkspaceMember(
+  async removeWorkspaceMember(
     workspaceId: string,
     userId: string
   ): Promise<boolean> {
-    const result = await query(
-      "DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2 RETURNING *",
-      [workspaceId, userId]
-    );
-    return (result.rowCount ?? 0) > 0;
-  }
+    try {
+      await prisma.workspaceMember.delete({
+        where: {
+          workspaceId_userId: {
+            workspaceId,
+            userId,
+          },
+        },
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
 
-  static async updateWorkspaceMemberRole(
+  async updateWorkspaceMemberRole(
     workspaceId: string,
     userId: string,
-    newRole: string
+    newRole: WorkspaceRole
   ): Promise<WorkspaceMember | null> {
-    const result = await query(
-      `UPDATE workspace_members SET role = $1 
-       WHERE workspace_id = $2 AND user_id = $3 
-       RETURNING *`,
-      [newRole, workspaceId, userId]
-    );
-    return result.rows[0] || null;
-  }
+    try {
+      const member = await prisma.workspaceMember.update({
+        where: {
+          workspaceId_userId: {
+            workspaceId,
+            userId,
+          },
+        },
+        data: {
+          role: newRole,
+        },
+      });
+      return member;
+    } catch (error) {
+      return null;
+    }
+  },
 
-  static async getWorkspaceMembers(
-    workspaceId: string
-  ): Promise<WorkspaceMember[]> {
-    const result = await query(
-      `SELECT wm.*, u.full_name, u.username, u.avatar_url
-       FROM workspace_members wm
-       JOIN users u ON wm.user_id = u.id
-       WHERE wm.workspace_id = $1
-       ORDER BY wm.joined_at ASC`,
-      [workspaceId]
-    );
-    return result.rows;
-  }
+  async getWorkspaceMembers(workspaceId: string): Promise<WorkspaceMember[]> {
+    const members = await prisma.workspaceMember.findMany({
+      where: {
+        workspaceId,
+      },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: "asc",
+      },
+    });
+    return members;
+  },
 
-  static async getWorkspaceBoards(workspaceId: string): Promise<any[]> {
-    const result = await query(
-      `SELECT * FROM boards WHERE workspace_id = $1 ORDER BY created_at DESC`,
-      [workspaceId]
-    );
-    return result.rows;
-  }
+  async getWorkspaceBoards(workspaceId: string): Promise<any[]> {
+    const boards = await prisma.board.findMany({
+      where: {
+        workspaceId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return boards;
+  },
 
-  static async searchWorkspaces(
+  async searchWorkspaces(
     searchTerm: string,
     limit: number = 10
   ): Promise<Workspace[]> {
-    const searchQuery = `%${searchTerm}%`;
-    const result = await query(
-      `SELECT * FROM workspaces 
-       WHERE name ILIKE $1 OR description ILIKE $1
-       ORDER BY name
-       LIMIT $2`,
-      [searchQuery, limit]
-    );
-    return result.rows;
-  }
-}
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: limit,
+    });
+    return workspaces;
+  },
+};
 
 /*
  * WHAT HAS BEEN IMPLEMENTED:
  *
- * Updated WorkspaceService class matching the new comprehensive database schema:
- * - createWorkspace: Now supports all new workspace fields and permission controls
- * - getWorkspaceWithMembers: Gets workspace with members and boards
+ * Updated workspaceService object using Prisma ORM:
+ * - createWorkspace: Creates workspace with Prisma
+ * - getWorkspaceWithMembers: Gets workspace with members and boards using include
  * - getWorkspacesByUser: Gets workspaces where user is a member
- * - updateWorkspace: Updated to handle all new workspace fields
- * - addWorkspaceMember: New method for adding members to workspaces
- * - removeWorkspaceMember: New method for removing members
- * - updateWorkspaceMemberRole: New method for changing member roles
- * - getWorkspaceMembers: New method for getting workspace members
- * - getWorkspaceBoards: New method for getting workspace boards
- * - searchWorkspaces: New method for workspace search
+ * - updateWorkspace: Updates workspace using Prisma update
+ * - addWorkspaceMember: Adds members to workspaces with proper role typing
+ * - removeWorkspaceMember: Removes members using composite key
+ * - updateWorkspaceMemberRole: Updates member roles
+ * - getWorkspaceMembers: Gets workspace members with user details
+ * - getWorkspaceBoards: Gets workspace boards
+ * - searchWorkspaces: Searches workspaces with case-insensitive text search
  *
- * All methods use the correct field names from the new schema and include
+ * All methods use Prisma ORM with proper field names from the schema and include
  * comprehensive workspace management capabilities that align with the database structure.
  */

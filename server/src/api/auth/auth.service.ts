@@ -3,7 +3,7 @@ import { AppError } from "../../utils/appError.js";
 
 const getMe = async (clerkUserId: string) => {
   const user = await prisma.user.findUnique({
-    where: { clerk_id: clerkUserId },
+    where: { clerkId: clerkUserId },
   });
   if (!user) {
     throw new AppError("User not found", 404);
