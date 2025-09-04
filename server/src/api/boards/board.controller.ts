@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
-import type { ApiResponse, Board } from "../../utils/globalTypes.js";
+import { ApiResponse } from "../../utils/globalTypes.js";
+import { Board, BoardMember } from "@prisma/client";
+import { boardService } from "./boardService.js";
 
 export const createBoard = async (
   req: Request,
@@ -8,34 +10,11 @@ export const createBoard = async (
   next: NextFunction
 ) => {
   try {
-    const { name, description, workspace_id, created_by } = req.body;
-
-    if (!name || !workspace_id || !created_by) {
-      return next(
-        new AppError("Name, workspace_id, and created_by are required", 400)
-      );
-    }
-
-    // TODO: Implement database insert logic
-    const newBoard: Board = {
-      id: Date.now().toString(), // Temporary ID generation
-      name,
-      description,
-      workspace_id,
-      created_by,
-      background: "default_background_url",
-      allow_covers: true,
-      show_complete: true,
-      visibility: "workspace_members",
-      member_manage: "members",
-      commenting: "board_members",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    const board = await boardService.createBoard(req.body);
 
     res.status(201).json({
       success: true,
-      data: newBoard,
+      data: board,
     });
   } catch (error) {
     next(new AppError("Failed to create board", 500));
@@ -49,23 +28,11 @@ export const getBoard = async (
 ) => {
   try {
     const { id } = req.params;
+    const board = await boardService.getBoardById(id);
 
-    // TODO: Implement database query to get board by ID
-    const board: Board = {
-      id,
-      name: "Sample Board",
-      description: "A sample board for testing",
-      workspace_id: "workspace123",
-      created_by: "user123",
-      background: "default_background_url",
-      allow_covers: true,
-      show_complete: true,
-      visibility: "workspace_members",
-      member_manage: "members",
-      commenting: "board_members",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    if (!board) {
+      return next(new AppError("Board not found", 404));
+    }
 
     res.status(200).json({
       success: true,
@@ -83,28 +50,15 @@ export const updateBoard = async (
 ) => {
   try {
     const { id } = req.params;
-    const { title, description } = req.body;
+    const board = await boardService.updateBoard(id, req.body);
 
-    // TODO: Implement database update logic
-    const updatedBoard: Board = {
-      id,
-      name: title || "Sample Board",
-      description: description || "A sample board for testing",
-      workspace_id: "workspace123",
-      created_by: "user123",
-      background: "default_background_url",
-      allow_covers: true,
-      show_complete: true,
-      visibility: "workspace_members",
-      member_manage: "members",
-      commenting: "board_members",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+    if (!board) {
+      return next(new AppError("Board not found", 404));
+    }
 
     res.status(200).json({
       success: true,
-      data: updatedBoard,
+      data: board,
     });
   } catch (error) {
     next(new AppError("Failed to update board", 500));
@@ -118,8 +72,11 @@ export const deleteBoard = async (
 ) => {
   try {
     const { id } = req.params;
+    const deleted = await boardService.deleteBoard(id);
 
-    // TODO: Implement database delete logic
+    if (!deleted) {
+      return next(new AppError("Board not found", 404));
+    }
 
     res.status(200).json({
       success: true,
@@ -127,6 +84,141 @@ export const deleteBoard = async (
     });
   } catch (error) {
     next(new AppError("Failed to delete board", 500));
+  }
+};
+
+export const getAllBoards = async (
+  _req: Request,
+  res: Response<ApiResponse<Board[]>>,
+  next: NextFunction
+) => {
+  try {
+    const boards = await boardService.getAllBoards();
+
+    res.status(200).json({
+      success: true,
+      data: boards,
+    });
+  } catch (error) {
+    next(new AppError("Failed to get boards", 500));
+  }
+};
+
+export const getBoardsByWorkspace = async (
+  req: Request,
+  res: Response<ApiResponse<Board[]>>,
+  next: NextFunction
+) => {
+  try {
+    const { workspaceId } = req.params;
+    const boards = await boardService.getBoardsByWorkspace(workspaceId);
+
+    res.status(200).json({
+      success: true,
+      data: boards,
+    });
+  } catch (error) {
+    next(new AppError("Failed to get boards by workspace", 500));
+  }
+};
+
+export const getBoardsByUser = async (
+  req: Request,
+  res: Response<ApiResponse<Board[]>>,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.params;
+    const boards = await boardService.getBoardsByUser(userId);
+
+    res.status(200).json({
+      success: true,
+      data: boards,
+    });
+  } catch (error) {
+    next(new AppError("Failed to get boards by user", 500));
+  }
+};
+
+export const getBoardMembers = async (
+  req: Request,
+  res: Response<ApiResponse<BoardMember[]>>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const members = await boardService.getBoardMembers(id);
+
+    res.status(200).json({
+      success: true,
+      data: members,
+    });
+  } catch (error) {
+    next(new AppError("Failed to get board members", 500));
+  }
+};
+
+export const addBoardMember = async (
+  req: Request,
+  res: Response<ApiResponse<BoardMember>>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { userId, role } = req.body;
+    const member = await boardService.addBoardMember(id, userId, role);
+
+    res.status(201).json({
+      success: true,
+      data: member,
+    });
+  } catch (error) {
+    next(new AppError("Failed to add board member", 500));
+  }
+};
+
+export const removeBoardMember = async (
+  req: Request,
+  res: Response<ApiResponse<{ message: string }>>,
+  next: NextFunction
+) => {
+  try {
+    const { id, userId } = req.params;
+    const removed = await boardService.removeBoardMember(id, userId);
+
+    if (!removed) {
+      return next(new AppError("Board member not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { message: "Board member removed successfully" },
+    });
+  } catch (error) {
+    next(new AppError("Failed to remove board member", 500));
+  }
+};
+
+export const updateBoardMemberRole = async (
+  req: Request,
+  res: Response<ApiResponse<BoardMember>>,
+  next: NextFunction
+) => {
+  try {
+    const { id, userId } = req.params;
+    const { role } = req.body;
+    const member = await boardService.updateBoardMemberRole(id, userId, role);
+
+    if (!member) {
+      return next(new AppError("Board member not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: member,
+    });
+  } catch (error) {
+    next(new AppError("Failed to update board member role", 500));
   }
 };
 

@@ -2,8 +2,8 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 
 const getMe = async (clerkUserId: string) => {
-  const user = await prisma.users.findUnique({
-    where: { clerk_id: clerkUserId },
+  const user = await prisma.user.findUnique({
+    where: { clerkId: clerkUserId },
   });
   if (!user) {
     throw new AppError("User not found", 404);
