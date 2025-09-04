@@ -11,6 +11,11 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -210,6 +215,35 @@ export default function LoginForm() {
                       </span>
                       <span className="sr-only">Login with Microsoft</span>
                     </Button>
+                  </div>
+                  <div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          type="button"
+                          className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
+                          disabled={!isLoaded}
+                        >
+                          <img
+                            src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/apple-logo.54e0d711.svg"
+                            alt="Apple"
+                            className="w-6 h-6 mr-[2px]"
+                          />
+                          <span className="text-[#172b4d] font-bold">
+                            Apple
+                          </span>
+                          <span className="sr-only">Login with Apple</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[300px] md:w-[471px] h-[52px] bg-white text-[#172b4d] p-4 border border-gray-200 shadow-lg"
+                        side="right"
+                        align="center"
+                      >
+                        <p>This is still a work in progress..</p>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="">
                     <Button
