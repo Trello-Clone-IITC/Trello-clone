@@ -11,9 +11,9 @@ const getMe = async (
   next: NextFunction
 ) => {
   try {
-    const { userId } = getAuth(req);
+    let { userId } = getAuth(req);
     console.log("userId", userId);
-    userId ? userId : req.body.userId;
+    userId = userId ? userId : req.body.userId;
     console.log("userId2", userId);
 
     if (!userId) {

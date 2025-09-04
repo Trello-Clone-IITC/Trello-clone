@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 
 const getMe = async (clerkUserId: string) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { clerk_id: clerkUserId },
   });
   if (!user) {
