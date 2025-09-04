@@ -9,7 +9,6 @@ import { prisma } from "./lib/prismaClient.js";
 import cardsPlayground from "./api/cards/cards.playground.js";
 import { clerkMiddleware } from "@clerk/express";
 
-
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
 
@@ -23,7 +22,6 @@ app.use(express.json());
 app.use(cookieParser(SESSION_SECRET));
 app.use(morgan("combined"));
 app.use(clerkMiddleware());
-
 
 // Health check endpoint
 app.get("/health", (_req, res) => {
@@ -81,4 +79,4 @@ process.on("unhandledRejection", (err) => {
   shutdown("unhandledRejection", 1);
 });
 
-await cardsPlayground();
+// await cardsPlayground();

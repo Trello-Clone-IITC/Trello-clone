@@ -30,14 +30,13 @@ export const cardService = {
   // Create a new card
   async createCard(data: CreateCardData) {
     // Verify list exists and user has access
-    const list = await prisma.lists.findFirst({
+    const list = await prisma.list.findFirst({
       where: { id: data.listId },
       include: {
-        boards: {
+        board: {
           include: {
-
-            board_members: {
-              where: { user_id: data.createdBy },
+            boardMembers: {
+              where: { userId: data.createdBy },
             },
           },
         },
@@ -48,13 +47,13 @@ export const cardService = {
       throw new AppError("List not found", 404);
     }
 
-    if (list.boards.board_members.length === 0) {
+    if (list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     // Get the highest position in the list and add 1000
-    const lastCard = await prisma.cards.findFirst({
-      where: { list_id: data.listId },
+    const lastCard = await prisma.card.findFirst({
+      where: { listId: data.listId },
       orderBy: { position: "desc" },
     });
 
@@ -62,56 +61,57 @@ export const cardService = {
       ? lastCard.position.toNumber() + 1000
       : data.position;
 
-    const card = await prisma.cards.create({
+    const card = await prisma.card.create({
       data: {
-        list_id: data.listId,
+        listId: data.listId,
         title: data.title,
         description: data.description,
-        due_date: data.dueDate,
-        start_date: data.startDate,
+        dueDate: data.dueDate,
+        startDate: data.startDate,
         position: new Decimal(newPosition),
-        cover_image_url: data.coverImageUrl,
-        created_by: data.createdBy,
+        coverImageUrl: data.coverImageUrl,
+        createdBy: data.createdBy,
       },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: true,
+            board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: list.boards.id,
-        card_id: card.id,
-        user_id: data.createdBy,
-        action: "created",
+        boardId: list.board.id,
+        cardId: card.id,
+        userId: data.createdBy,
+        action: "Created",
         payload: { title: card.title },
       },
     });
@@ -121,38 +121,38 @@ export const cardService = {
 
   // Get a single card by ID with all related data
   async getCardById(cardId: string, userId: string) {
-    const card = await prisma.cards.findFirst({
+    const card = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: {
+            board: {
               include: {
-                board_members: {
-                  where: { user_id: userId },
+                boardMembers: {
+                  where: { userId: userId },
                 },
               },
             },
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: {
+            items: {
               include: {
-                checklist_item_assignees: {
+                assignees: {
                   include: {
-                    users: true,
+                    user: true,
                   },
                 },
               },
@@ -162,13 +162,13 @@ export const cardService = {
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
-        card_watchers: {
-          where: { user_id: userId },
+        watchers: {
+          where: { userId: userId },
         },
       },
     });
@@ -178,11 +178,12 @@ export const cardService = {
     }
 
     // Check if user has access to the board
-    console.log("card.lists.boards.board_members", card.lists.boards.board_members);
-    
+    console.log("card.list.board.boardMembers", card.list.board.boardMembers);
+
     // Check if the user is a member of the board and can watch the card
-    const userMember = card.lists.boards.board_members.find(
-      (member: any) => member.user_id === userId
+
+    const userMember = card.list.board.boardMembers.find(
+      (member: any) => member.userId === userId
     );
     if (!userMember) {
       throw new AppError("Access denied", 403);
@@ -194,13 +195,13 @@ export const cardService = {
   // Get all cards for a list
   async getCardsByList(listId: string, userId: string) {
     // Verify user has access to the list
-    const list = await prisma.lists.findFirst({
+    const list = await prisma.list.findFirst({
       where: { id: listId },
       include: {
-        boards: {
+        board: {
           include: {
-            board_members: {
-              where: { user_id: userId },
+            boardMembers: {
+              where: { userId: userId },
             },
           },
         },
@@ -211,30 +212,30 @@ export const cardService = {
       throw new AppError("List not found", 404);
     }
 
-    if (list.boards.board_members.length === 0) {
+    if (list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const cards = await prisma.cards.findMany({
+    const cards = await prisma.card.findMany({
       where: {
-        list_id: listId,
-        is_archived: false,
+        listId: listId,
+        isArchived: false,
       },
       include: {
-        card_assignees: {
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: {
-              where: { is_completed: true },
+            items: {
+              where: { isCompleted: true },
             },
           },
         },
@@ -250,15 +251,15 @@ export const cardService = {
   // Update a card
   async updateCard(cardId: string, updateData: UpdateCardData, userId: string) {
     // Verify user has access to the card
-    const existingCard = await prisma.cards.findFirst({
+    const existingCard = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: {
+            board: {
               include: {
-                board_members: {
-                  where: { user_id: userId },
+                boardMembers: {
+                  where: { userId: userId },
                 },
               },
             },
@@ -271,59 +272,59 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.boards.board_members.length === 0) {
+    if (existingCard.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const card = await prisma.cards.update({
+    const card = await prisma.card.update({
       where: { id: cardId },
       data: {
         title: updateData.title,
         description: updateData.description,
-        due_date: updateData.dueDate,
-        start_date: updateData.startDate,
-        cover_image_url: updateData.coverImageUrl,
-        updated_at: new Date(),
+        dueDate: updateData.dueDate,
+        startDate: updateData.startDate,
+        coverImageUrl: updateData.coverImageUrl,
+        updatedAt: new Date(),
       },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: true,
+            board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingCard.lists.boards.id,
-        card_id: card.id,
-        user_id: userId,
-        action: "updated",
+        boardId: existingCard.list.board.id,
+        cardId: card.id,
+        userId: userId,
+        action: "Updated",
         payload: { ...updateData },
       },
     });
@@ -334,15 +335,15 @@ export const cardService = {
   // Delete a card
   async deleteCard(cardId: string, userId: string) {
     // Verify user has access to the card
-    const existingCard = await prisma.cards.findFirst({
+    const existingCard = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: {
+            board: {
               include: {
-                board_members: {
-                  where: { user_id: userId },
+                boardMembers: {
+                  where: { userId: userId },
                 },
               },
             },
@@ -355,23 +356,23 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.boards.board_members.length === 0) {
+    if (existingCard.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     // Log activity before deletion
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingCard.lists.boards.id,
-        card_id: cardId,
-        user_id: userId,
-        action: "closed",
+        boardId: existingCard.list.board.id,
+        cardId: cardId,
+        userId: userId,
+        action: "Closed",
         payload: { title: existingCard.title },
       },
     });
 
     // Delete the card (cascade will handle related data)
-    await prisma.cards.delete({
+    await prisma.card.delete({
       where: { id: cardId },
     });
   },
@@ -385,15 +386,15 @@ export const cardService = {
   ) {
     // Verify user has access to both lists
     const [card, targetList] = await Promise.all([
-      prisma.cards.findFirst({
+      prisma.card.findFirst({
         where: { id: cardId },
         include: {
-          lists: {
+          list: {
             include: {
-              boards: {
+              board: {
                 include: {
-                  board_members: {
-                    where: { user_id: userId },
+                  boardMembers: {
+                    where: { userId: userId },
                   },
                 },
               },
@@ -401,13 +402,13 @@ export const cardService = {
           },
         },
       }),
-      prisma.lists.findFirst({
+      prisma.list.findFirst({
         where: { id: listId },
         include: {
-          boards: {
+          board: {
             include: {
-              board_members: {
-                where: { user_id: userId },
+              boardMembers: {
+                where: { userId: userId },
               },
             },
           },
@@ -420,66 +421,66 @@ export const cardService = {
     }
 
     if (
-      card.lists.boards.board_members.length === 0 ||
-      targetList.boards.board_members.length === 0
+      card.list.board.boardMembers.length === 0 ||
+      targetList.board.boardMembers.length === 0
     ) {
       throw new AppError("Access denied", 403);
     }
 
     // If moving to same list, just update position
-    if (card.list_id === listId) {
+    if (card.listId === listId) {
       return await this.updateCardPosition(cardId, position, userId);
     }
 
     // If moving to different list, update list and position
-    const updatedCard = await prisma.cards.update({
+    const updatedCard = await prisma.card.update({
       where: { id: cardId },
       data: {
-        list_id: listId,
+        listId: listId,
         position: new Decimal(position),
-        updated_at: new Date(),
+        updatedAt: new Date(),
       },
       include: {
-        lists: {
+        list: {
           include: {
             board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: targetList.board.id,
-        card_id: updatedCard.id,
-        user_id: userId,
-        action: "moved",
+        boardId: targetList.board.id,
+        cardId: updatedCard.id,
+        userId: userId,
+        action: "Moved",
         payload: {
-          fromList: updatedCard.lists.board.name,
+          fromList: updatedCard.list.board.name,
           toList: targetList.name,
           position,
         },
@@ -491,51 +492,51 @@ export const cardService = {
 
   // Update card position within the same list
   async updateCardPosition(cardId: string, position: number, userId: string) {
-    const card = await prisma.cards.update({
+    const card = await prisma.card.update({
       where: { id: cardId },
       data: {
         position: new Decimal(position),
-        updated_at: new Date(),
+        updatedAt: new Date(),
       },
       include: {
-        lists: {
+        list: {
           include: {
             board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: card.lists.board.id,
-        card_id: card.id,
-        user_id: userId,
-        action: "moved",
+        boardId: card.list.board.id,
+        cardId: card.id,
+        userId: userId,
+        action: "Moved",
         payload: { position },
       },
     });
@@ -545,14 +546,14 @@ export const cardService = {
 
   // Archive/Unarchive a card
   async toggleArchive(cardId: string, userId: string) {
-    const existingCard = await prisma.cards.findFirst({
+    const existingCard = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
             board: {
               include: {
-                members: {
+                boardMembers: {
                   where: { userId: userId },
                 },
               },
@@ -566,57 +567,57 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.board.members.length === 0) {
+    if (existingCard.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const newArchiveStatus = !existingCard.is_archived;
+    const newArchiveStatus = !existingCard.isArchived;
 
-    const card = await prisma.cards.update({
+    const card = await prisma.card.update({
       where: { id: cardId },
       data: {
-        is_archived: newArchiveStatus,
-        updated_at: new Date(),
+        isArchived: newArchiveStatus,
+        updatedAt: new Date(),
       },
       include: {
-        lists: {
+        list: {
           include: {
             board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingCard.lists.board.id,
-        card_id: card.id,
-        user_id: userId,
-        action: newArchiveStatus ? "closed" : "reopened",
+        boardId: existingCard.list.board.id,
+        cardId: card.id,
+        userId: userId,
+        action: newArchiveStatus ? "Closed" : "Reopened",
         payload: { title: card.title },
       },
     });
@@ -627,49 +628,49 @@ export const cardService = {
   // Search cards using full-text search
   async searchCards(query: string, filters: SearchFilters, userId: string) {
     const whereClause: any = {
-      search_doc: {
+      searchDoc: {
         search: query,
       },
     };
 
     if (filters.boardId) {
-      whereClause.lists = {
-        board_id: filters.boardId,
+      whereClause.list = {
+        boardId: filters.boardId,
       };
     }
 
     if (filters.listId) {
-      whereClause.list_id = filters.listId;
+      whereClause.listId = filters.listId;
     }
 
-    const cards = await prisma.cards.findMany({
+    const cards = await prisma.card.findMany({
       where: whereClause,
       include: {
-        lists: {
+        list: {
           include: {
             board: {
               include: {
-                members: {
+                boardMembers: {
                   where: { userId: userId },
                 },
               },
             },
           },
         },
-        card_assignees: {
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: {
-              where: { is_completed: true },
+            items: {
+              where: { isCompleted: true },
             },
           },
         },
@@ -677,25 +678,25 @@ export const cardService = {
         attachments: true,
       },
       orderBy: {
-        created_at: "desc",
+        createdAt: "desc",
       },
     });
 
     // Filter out cards user doesn't have access to
-    return cards.filter((card) => card.lists?.board?.members?.length > 0);
+    return cards.filter((card) => card.list?.board?.boardMembers?.length > 0);
   },
 
   // Get card activity
   async getCardActivity(cardId: string, userId: string) {
     // Verify user has access to the card
-    const card = await prisma.cards.findFirst({
+    const card = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
             board: {
               include: {
-                members: {
+                boardMembers: {
                   where: { userId: userId },
                 },
               },
@@ -709,16 +710,16 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (card.lists.board.members.length === 0) {
+    if (card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const activities = await prisma.activity_log.findMany({
-      where: { card_id: cardId },
+    const activities = await prisma.activityLog.findMany({
+      where: { cardId: cardId },
       include: {
-        users: true,
+        user: true,
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     return activities;
@@ -727,14 +728,14 @@ export const cardService = {
   // Subscribe/Unsubscribe to card
   async toggleSubscription(cardId: string, userId: string) {
     // Verify user has access to the card
-    const existingCard = await prisma.cards.findFirst({
+    const existingCard = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
             board: {
               include: {
-                members: {
+                boardMembers: {
                   where: { userId: userId },
                 },
               },
@@ -748,57 +749,57 @@ export const cardService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (existingCard.lists.board.members.length === 0) {
+    if (existingCard.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     const newSubscriptionStatus = !existingCard.subscribed;
 
-    const card = await prisma.cards.update({
+    const card = await prisma.card.update({
       where: { id: cardId },
       data: {
         subscribed: newSubscriptionStatus,
-        updated_at: new Date(),
+        updatedAt: new Date(),
       },
       include: {
-        lists: {
+        list: {
           include: {
             board: true,
           },
         },
-        users: true,
-        card_assignees: {
+        creator: true,
+        assignees: {
           include: {
-            users: true,
+            user: true,
           },
         },
-        card_labels: {
+        cardLabels: {
           include: {
-            labels: true,
+            label: true,
           },
         },
         checklists: {
           include: {
-            checklist_items: true,
+            items: true,
           },
         },
         comments: {
           include: {
-            users: true,
+            user: true,
           },
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         },
         attachments: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingCard.lists.board.id,
-        card_id: card.id,
-        user_id: userId,
-        action: "updated",
+        boardId: existingCard.list.board.id,
+        cardId: card.id,
+        userId: userId,
+        action: "Updated",
         payload: {
           subscribed: newSubscriptionStatus,
           action: newSubscriptionStatus ? "subscribed" : "unsubscribed",
