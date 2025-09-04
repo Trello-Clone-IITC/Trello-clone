@@ -1,63 +1,59 @@
-/* =========================
-   Enum DTOs (wire format, snake_case)
-   ========================= */
+// cd packages/types
+// npm run build
+// npm version patch
+// npm publish --access=restricted
 
 export type ActivityAction =
-  | "created"
-  | "moved"
-  | "updated"
-  | "commented"
-  | "closed"
-  | "reopened"
-  | "assigned"
-  | "unassigned"
-  | "labeled"
-  | "unlabeled"
-  | "attached"
-  | "detached";
+  | "Created"
+  | "Moved"
+  | "Updated"
+  | "Commented"
+  | "Closed"
+  | "Reopened"
+  | "Assigned"
+  | "Unassigned"
+  | "Labeled"
+  | "Unlabeled"
+  | "Attached"
+  | "Detached";
 
 export type BoardCreationRestrictions =
-  | "workspace_member"
-  | "workspace_admin"
-  | "nobody";
+  | "WorkspaceMember"
+  | "WorkspaceAdmin"
+  | "Nobody";
 
-export type BoardRole = "admin" | "member" | "observer";
+export type BoardRole = "Admin" | "Member" | "Observer";
 
-export type BoardSharing = "anybody" | "only_workspace_member";
+export type BoardSharing = "Anybody" | "OnlyWorkspaceMember";
 
-export type BoardVisibility = "private" | "workspace_members" | "public";
+export type BoardVisibility = "Private" | "WorkspaceMembers" | "Public";
 
 export type CommentingRestrictions =
-  | "disabled"
-  | "board_members"
-  | "workspace_members";
+  | "Disabled"
+  | "BoardMembers"
+  | "WorkspaceMembers";
 
-export type MemberManageRestrictions = "admins" | "members";
+export type MemberManageRestrictions = "Admins" | "Members";
 
-export type MembershipRestrictions = "anybody" | "specific_domain";
+export type MembershipRestrictions = "Anybody" | "SpecificDomain";
 
-export type SlackSharing = "workspace_member" | "admins";
+export type SlackSharing = "WorkspaceMember" | "Admins";
 
-export type Theme = "light" | "dark" | "system";
+export type Theme = "Light" | "Dark" | "System";
 
-export type WorkspaceRole = "admin" | "member" | "guest";
+export type WorkspaceRole = "Admin" | "Member" | "Guest";
 
 export type WorkspaceType =
-  | "marketing"
-  | "sales_crm"
-  | "humen_resources" // keeping DB value as-is
-  | "small_business"
-  | "engineering_it"
-  | "education"
-  | "operations"
-  | "other";
+  | "Marketing"
+  | "SalesCrm"
+  | "HumenResources"
+  | "SmallBusiness"
+  | "EngineeringIt"
+  | "Education"
+  | "Operations"
+  | "Other";
 
-export type WorkspaceVisibility = "private" | "public";
-
-/* =========================
-   Core DTOs (flat shapes, no nested relations)
-   - Use these as the default API payloads
-   ========================= */
+export type WorkspaceVisibility = "Private" | "Public";
 
 export interface ActivityLogDto {
   id: string;
@@ -65,8 +61,8 @@ export interface ActivityLogDto {
   cardId?: string | null;
   userId?: string | null;
   action: ActivityAction;
-  payload?: unknown; // JSON
-  createdAt: string; // ISO date
+  payload?: unknown;
+  createdAt: string;
 }
 
 export interface AttachmentDto {
@@ -75,16 +71,16 @@ export interface AttachmentDto {
   userId?: string | null;
   url: string;
   filename?: string | null;
-  bytes?: number | null; // BigInt in DB
-  meta?: unknown; // JSON
-  createdAt: string; // ISO date
+  bytes?: number | null;
+  meta?: unknown;
+  createdAt: string;
 }
 
 export interface BoardMemberDto {
   boardId: string;
   userId: string;
   role: BoardRole;
-  joinedAt: string; // ISO date
+  joinedAt: string;
 }
 
 export interface BoardDto {
@@ -96,9 +92,9 @@ export interface BoardDto {
   createdBy?: string | null;
   allowCovers: boolean;
   showComplete: boolean;
-  createdAt: string; // ISO date
-  updatedAt: string; // ISO date
-  lastActivityAt?: string | null; // ISO date
+  createdAt: string;
+  updatedAt: string;
+  lastActivityAt?: string | null;
   visibility: BoardVisibility;
   memberManage: MemberManageRestrictions;
   commenting: CommentingRestrictions;
@@ -117,7 +113,7 @@ export interface CardLabelDto {
 export interface CardWatcherDto {
   cardId: string;
   userId: string;
-  createdAt: string; // ISO date
+  createdAt: string;
 }
 
 export interface CardDto {
@@ -125,16 +121,15 @@ export interface CardDto {
   listId: string;
   title: string;
   description?: string | null;
-  dueDate?: string | null; // ISO date
-  startDate?: string | null; // ISO date
-  position: number; // DECIMAL(16,6)
+  dueDate?: string | null;
+  startDate?: string | null;
+  position: number;
   isArchived: boolean;
   createdBy?: string | null;
   coverImageUrl?: string | null;
   subscribed: boolean;
-  createdAt: string; // ISO date
-  updatedAt: string; // ISO date
-  // searchDoc is a tsvector; typically not sent over the wire
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ChecklistItemAssigneeDto {
@@ -147,15 +142,15 @@ export interface ChecklistItemDto {
   checklistId: string;
   text: string;
   isCompleted: boolean;
-  dueDate?: string | null; // ISO date
-  position: number; // DECIMAL(16,6)
+  dueDate?: string | null;
+  position: number;
 }
 
 export interface ChecklistDto {
   id: string;
   cardId: string;
   title: string;
-  position: number; // DECIMAL(16,6)
+  position: number;
 }
 
 export interface CommentDto {
@@ -163,7 +158,7 @@ export interface CommentDto {
   cardId: string;
   userId: string;
   text: string;
-  createdAt: string; // ISO date
+  createdAt: string;
 }
 
 export interface LabelDto {
@@ -176,14 +171,14 @@ export interface LabelDto {
 export interface ListWatcherDto {
   listId: string;
   userId: string;
-  createdAt: string; // ISO date
+  createdAt: string;
 }
 
 export interface ListDto {
   id: string;
   boardId: string;
   name: string;
-  position: number; // DECIMAL(16,6)
+  position: number;
   isArchived: boolean;
   subscribed: boolean;
 }
@@ -198,7 +193,7 @@ export interface UserDto {
   theme: Theme;
   emailNotification: boolean;
   pushNotification: boolean;
-  createdAt: string; // ISO date
+  createdAt: string;
   bio?: string | null;
 }
 
@@ -206,7 +201,7 @@ export interface WorkspaceMemberDto {
   workspaceId: string;
   userId: string;
   role: WorkspaceRole;
-  joinedAt: string; // ISO date
+  joinedAt: string;
 }
 
 export interface WorkspaceDto {
@@ -215,8 +210,8 @@ export interface WorkspaceDto {
   description?: string | null;
   visibility: WorkspaceVisibility;
   premium: boolean;
-  createdAt: string; // ISO date
-  updatedAt: string; // ISO date
+  createdAt: string;
+  updatedAt: string;
   type: WorkspaceType;
   createdBy: string;
   workspaceMembershipRestrictions: MembershipRestrictions;
@@ -266,11 +261,3 @@ export interface PagedDto<T> {
   data: T[];
   meta: PageMetaDto;
 }
-
-/* =========================
-   Notes / Conventions
-   - All dates are strings (ISO) to be safe over JSON.
-   - Numbers used for DECIMAL/BigInt; switch to `string` if you need exact precision.
-   - JSON columns are `unknown`; narrow them where you know the shape.
-   - Keep DTOs flat by default; compose With<...> types when you need relations.
-   ========================= */
