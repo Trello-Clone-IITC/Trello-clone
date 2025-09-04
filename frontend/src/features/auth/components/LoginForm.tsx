@@ -125,25 +125,29 @@ export default function LoginForm() {
         <CardContent className="h-[686px] w-full px-0">
           <Form {...form}>
             <form className="" onSubmit={form.handleSubmit(onSubmit)}>
-              <div className="flex flex-col gap-[20px]">
+              <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col items-center text-center gap-6">
                   <div className="h-8 mb-2">{trelloLogo}</div>
                   <p className="text-[#172b4d] text-balance font-bold ">
                     Log in to continue
                   </p>
                 </div>
-                <div className="grid gap-3">
+                <div className="flex flex-col gap-2 justify-center">
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#44546f] flex gap-[2px]">
+                        <FormLabel className="text-[#44546f] flex gap-[2px] text-xs font-bold -mb-1">
                           Email
                           <span className="text-[#da565f] m-0 p-0">*</span>
                         </FormLabel>
-                        <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
+                        <FormControl className="hover:bg-[#f7f8f9] transition ease-in-out">
+                          <Input
+                            className="rounded border-1 border-[#8590a2] px-2 py-1.5"
+                            placeholder="Enter your email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -154,15 +158,15 @@ export default function LoginForm() {
                     name="remember"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center">
-                        <FormControl className="flex items-center justify-center">
+                        <FormControl className="flex items-center justify-center ml-2">
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="data-[state=checked]:bg-[#0055cc] data-[state=checked]:border-[#0055cc]"
+                            className="data-[state=checked]:bg-[#0055cc] data-[state=checked]:border-[#0055cc] hover:bg-[#f7f8f9] transition ease-in-out w-3.5 h-3.5 border-1 border-[#8590a2] rounded"
                           />
                         </FormControl>
                         <div className="flex items-center gap-1">
-                          <FormLabel className="text-sm font-normal">
+                          <FormLabel className="text-sm font-normal flex items-center justify-center text-[#172b4d]">
                             Remember me
                           </FormLabel>
                           <Popover>
@@ -251,6 +255,35 @@ export default function LoginForm() {
                       <span className="sr-only">Login with Microsoft</span>
                     </Button>
                   </div>
+                  <div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          type="button"
+                          className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
+                          disabled={!isLoaded}
+                        >
+                          <img
+                            src="https://id-frontend.prod-east.frontend.public.atl-paas.net/assets/apple-logo.54e0d711.svg"
+                            alt="Apple"
+                            className="w-6 h-6 mr-[2px]"
+                          />
+                          <span className="text-[#172b4d] font-bold">
+                            Apple
+                          </span>
+                          <span className="sr-only">Login with Apple</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[300px] md:w-[471px] h-[52px] bg-white text-[#172b4d] p-4 border border-gray-200 shadow-lg"
+                        side="right"
+                        align="center"
+                      >
+                        <p>This is still a work in progress..</p>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   <div className="">
                     <Button
                       onClick={() => oauthsignIn("oauth_slack")}
@@ -305,23 +338,29 @@ export default function LoginForm() {
               </p>
             </div>
             <ul className="flex items-center gap-1 mt-[2px] text-xs">
-              <NavLink
-                to="/privacy"
-                className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
+              <a
+                href="https://www.atlassian.com/legal/privacy-policy#what-this-policy-covers"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                aria-label="Google Privacy Policy, (opens new window)"
               >
                 Privacy Policy
-                <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
-              </NavLink>
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+              </a>
               <li className="text-[#172b4d] list-item text-lg mx-1 font-bold">
                 ∙
               </li>
-              <NavLink
-                to="/user-notice"
-                className="text-[#2777e7] underline underline-offset-1 hover:no-underline  flex items-center"
+              <a
+                href="https://www.atlassian.com/legal/user-notice#atlassian-user-notice"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                aria-label="Google Privacy Policy, (opens new window)"
               >
                 User Notice
-                <SquareArrowOutUpRight className="w-3 h-3 ml-1" />
-              </NavLink>
+                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+              </a>
             </ul>
             <div className=" text-[11px] text-[#172b4d] text-center">
               This site is protected by reCAPTCHA and the Google{" "}
