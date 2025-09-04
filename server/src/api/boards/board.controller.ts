@@ -3,18 +3,37 @@ import { AppError } from "../../utils/appError.js";
 import { ApiResponse } from "../../utils/globalTypes.js";
 import { Board, BoardMember } from "@prisma/client";
 import { boardService } from "./boardService.js";
+import type {
+  UserDto,
+  BoardDto,
+  BoardVisibility,
+  MemberManageRestrictions,
+  CommentingRestrictions,
+} from "@ronmordo/types";
 
 export const createBoard = async (
   req: Request,
-  res: Response<ApiResponse<Board>>,
+  res: Response<ApiResponse<BoardDto>>,
   next: NextFunction
 ) => {
   try {
     const board = await boardService.createBoard(req.body);
 
+    // Transform Date objects to strings for DTO
+    const boardDto: BoardDto = {
+      ...board,
+      createdAt: board.createdAt.toISOString(),
+      updatedAt: board.updatedAt.toISOString(),
+      lastActivityAt: board.lastActivityAt?.toISOString() || null,
+      visibility: board.visibility.toLowerCase() as BoardVisibility,
+      memberManage:
+        board.memberManage.toLowerCase() as MemberManageRestrictions,
+      commenting: board.commenting.toLowerCase() as CommentingRestrictions,
+    };
+
     res.status(201).json({
       success: true,
-      data: board,
+      data: boardDto,
     });
   } catch (error) {
     next(new AppError("Failed to create board", 500));

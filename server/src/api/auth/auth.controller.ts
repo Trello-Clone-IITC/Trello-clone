@@ -7,7 +7,8 @@ import { User } from "@prisma/client";
 
 const getMe = async (
   req: Request,
-  res: Response<ApiResponse<User | null>>,
+  // res: Response<ApiResponse<User | null>>,
+  res: Response,
   next: NextFunction
 ) => {
   try {
