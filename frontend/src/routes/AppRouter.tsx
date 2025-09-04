@@ -5,6 +5,7 @@ import { TestPage } from "@/features/auth/pages/TestPage";
 import { SsoCallback } from "@/features/auth/components/Sso-callback";
 import VerifyEmail from "@/features/auth/components/VerifyEmail";
 import SignUpPage from "@/features/auth/pages/SignUp";
+import Recovery from "@/features/auth/components/Recovery";
 
 export const AppRouter = () => {
   return (
@@ -15,6 +16,7 @@ export const AppRouter = () => {
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/recovery" element={<Recovery />} />
       </Route>
     </Routes>
   );
