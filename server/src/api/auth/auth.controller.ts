@@ -6,15 +6,16 @@ import { ApiResponse, User } from "../../utils/globalTypes.js";
 
 const getMe = async (
   req: Request,
-  res: Response<ApiResponse<User | null>>,
+  // res: Response<ApiResponse<User | null>>,
+  res: Response,
   next: NextFunction
 ) => {
   try {
     const { userId } = getAuth(req);
     console.log("userId", userId);
-    userId? userId : req.body.userId;
+    userId ? userId : req.body.userId;
     console.log("userId2", userId);
-    
+
     if (!userId) {
       throw new AppError("No token provided.", 400);
     }
