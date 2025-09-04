@@ -7,360 +7,443 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model activity_log {
-  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  board_id   String          @db.Uuid
-  card_id    String?         @db.Uuid
-  user_id    String?         @db.Uuid
-  action     activity_action
-  payload    Json?
-  created_at DateTime        @default(now()) @db.Timestamptz(6)
-  boards     boards          @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  cards      cards?          @relation(fields: [card_id], references: [id], onUpdate: NoAction)
-  users      users?          @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+// Enums
 
-  @@index([board_id, created_at(sort: Desc)], map: "activity_board_time_idx")
-  @@index([card_id, created_at(sort: Desc)], map: "activity_card_time_idx")
+enum ActivityAction {
+  Created    @map("created")
+  Moved      @map("moved")
+  Updated    @map("updated")
+  Commented  @map("commented")
+  Closed     @map("closed")
+  Reopened   @map("reopened")
+  Assigned   @map("assigned")
+  Unassigned @map("unassigned")
+  Labeled    @map("labeled")
+  Unlabeled  @map("unlabeled")
+  Attached   @map("attached")
+  Detached   @map("detached")
+
+  @@map("activity_action")
 }
 
-model attachments {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  card_id    String   @db.Uuid
-  user_id    String?  @db.Uuid
-  url        String
-  filename   String?
-  bytes      BigInt?
-  meta       Json?
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users      users?   @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+enum BoardCreationRestrictions {
+  WorkspaceMember @map("workspace_member")
+  WorkspaceAdmin  @map("workspace_admin")
+  Nobody          @map("nobody")
 
-  @@index([card_id, created_at(sort: Desc)], map: "attachments_card_time_idx")
+  @@map("board_creation_restrictions")
 }
 
-model board_members {
-  board_id  String     @db.Uuid
-  user_id   String     @db.Uuid
-  role      board_role @default(member)
-  joined_at DateTime   @default(now()) @db.Timestamptz(6)
-  boards    boards     @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users     users      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum BoardRole {
+  Admin    @map("admin")
+  Member   @map("member")
+  Observer @map("observer")
 
-  @@id([board_id, user_id])
-  @@index([user_id], map: "board_members_user_idx")
+  @@map("board_role")
 }
 
-model boards {
-  id               String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspace_id     String?                    @db.Uuid
-  name             String
-  description      String?
-  background       String                     @default("default_background_url")
-  created_by       String?                    @db.Uuid
-  allow_covers     Boolean                    @default(true)
-  show_complete    Boolean                    @default(true)
-  created_at       DateTime                   @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime                   @default(now()) @db.Timestamptz(6)
-  last_activity_at DateTime?                  @db.Timestamptz(6)
-  visibility       board_visibility           @default(workspace_members)
-  member_manage    member_manage_restrictions @default(members)
-  commenting       commenting_restrictions    @default(board_members)
-  activity_log     activity_log[]
-  board_members    board_members[]
-  users            users?                     @relation(fields: [created_by], references: [id], onUpdate: NoAction)
-  workspaces       workspaces?                @relation(fields: [workspace_id], references: [id], onUpdate: NoAction)
-  labels           labels[]
-  lists            lists[]
+enum BoardSharing {
+  Anybody             @map("anybody")
+  OnlyWorkspaceMember @map("only_workspace_member")
 
-  @@index([workspace_id], map: "boards_workspace_idx")
+  @@map("board_sharing")
 }
 
-model card_assignees {
-  card_id String @db.Uuid
-  user_id String @db.Uuid
-  cards   cards  @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users   users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum BoardVisibility {
+  Private           @map("private")
+  WorkspaceMembers  @map("workspace_members")
+  Public            @map("public")
 
-  @@id([card_id, user_id])
-  @@index([user_id], map: "card_assignees_user_idx")
+  @@map("board_visibility")
 }
 
-model card_labels {
-  card_id  String @db.Uuid
-  label_id String @db.Uuid
-  cards    cards  @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  labels   labels @relation(fields: [label_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum CommentingRestrictions {
+  Disabled         @map("disabled")
+  BoardMembers     @map("board_members")
+  WorkspaceMembers @map("workspace_members")
 
-  @@id([card_id, label_id])
+  @@map("commenting_restrictions")
 }
 
-model card_watchers {
-  card_id    String   @db.Uuid
-  user_id    String   @db.Uuid
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum MemberManageRestrictions {
+  Admins  @map("admins")
+  Members @map("members")
 
-  @@id([card_id, user_id])
-  @@index([user_id], map: "card_watchers_user_idx")
+  @@map("member_manage_restrictions")
 }
 
-model cards {
-  id              String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  list_id         String                   @db.Uuid
-  title           String
-  description     String?
-  due_date        DateTime?                @db.Timestamptz(6)
-  start_date      DateTime?                @db.Timestamptz(6)
-  position        Decimal                  @db.Decimal(16, 6)
-  is_archived     Boolean                  @default(false)
-  created_by      String?                  @db.Uuid
-  cover_image_url String?
-  subscribed      Boolean                  @default(false)
-  created_at      DateTime                 @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime                 @default(now()) @db.Timestamptz(6)
-  search_doc      Unsupported("tsvector")? @default(dbgenerated("to_tsvector('simple'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)))"))
-  activity_log    activity_log[]
-  attachments     attachments[]
-  card_assignees  card_assignees[]
-  card_labels     card_labels[]
-  card_watchers   card_watchers[]
-  users           users?                   @relation(fields: [created_by], references: [id], onUpdate: NoAction)
-  lists           lists                    @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  checklists      checklists[]
-  comments        comments[]
+enum MembershipRestrictions {
+  Anybody        @map("anybody")
+  SpecificDomain @map("specific_domain")
 
-  @@unique([list_id, position], map: "cards_order_idx")
-  @@index([search_doc], map: "cards_search_gin_idx", type: Gin)
+  @@map("membership_restrictions")
 }
 
-model checklist_item_assignees {
-  item_id         String          @db.Uuid
-  user_id         String          @db.Uuid
-  checklist_items checklist_items @relation(fields: [item_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users           users           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum SlackSharing {
+  WorkspaceMember @map("workspace_member")
+  Admins          @map("admins")
 
-  @@id([item_id, user_id])
+  @@map("slack_sharing")
 }
 
-model checklist_items {
-  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  checklist_id             String                     @db.Uuid
-  text                     String
-  is_completed             Boolean                    @default(false)
-  due_date                 DateTime?                  @db.Timestamptz(6)
-  position                 Decimal                    @default(1000) @db.Decimal(16, 6)
-  checklist_item_assignees checklist_item_assignees[]
-  checklists               checklists                 @relation(fields: [checklist_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum Theme {
+  Light  @map("light")
+  Dark   @map("dark")
+  System @map("system")
 
-  @@index([checklist_id, position], map: "checklist_items_parent_pos_idx")
+  @@map("theme")
 }
 
-model checklists {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  card_id         String            @db.Uuid
-  title           String
-  position        Decimal           @default(1000) @db.Decimal(16, 6)
-  checklist_items checklist_items[]
-  cards           cards             @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum WorkspaceRole {
+  Admin  @map("admin")
+  Member @map("member")
+  Guest  @map("guest")
 
-  @@index([card_id, position], map: "checklists_card_pos_idx")
+  @@map("workspace_role")
 }
 
-model comments {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  card_id    String   @db.Uuid
-  user_id    String   @db.Uuid
-  text       String
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  cards      cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum WorkspaceType {
+  Marketing       @map("marketing")
+  SalesCrm        @map("sales_crm")
+  HumenResources  @map("humen_resources")
+  SmallBusiness   @map("small_business")
+  EngineeringIt   @map("engineering_it")
+  Education       @map("education")
+  Operations      @map("operations")
+  Other           @map("other")
 
-  @@index([card_id, created_at(sort: Desc)], map: "comments_card_time_idx")
+  @@map("workspace_type")
 }
 
-model labels {
-  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  board_id    String        @db.Uuid
-  name        String
-  color       String
-  card_labels card_labels[]
-  boards      boards        @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+enum WorkspaceVisibility {
+  Private @map("private")
+  Public  @map("public")
 
-  @@unique([board_id, name])
-  @@index([board_id], map: "labels_board_idx")
+  @@map("workspace_visibility")
 }
 
-model list_watchers {
-  list_id    String   @db.Uuid
-  user_id    String   @db.Uuid
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  lists      lists    @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+// Models
+model ActivityLog {
+  @@map("activity_log")
 
-  @@id([list_id, user_id])
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId   String         @map("board_id") @db.Uuid
+  cardId    String?        @map("card_id") @db.Uuid
+  userId    String?        @map("user_id") @db.Uuid
+  action    ActivityAction
+  payload   Json?
+  createdAt DateTime       @map("created_at") @default(now()) @db.Timestamptz(6)
+
+  board     Board          @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  card      Card?          @relation(fields: [cardId], references: [id], onUpdate: NoAction)
+  user      User?          @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([boardId, createdAt(sort: Desc)], map: "activity_board_time_idx")
+  @@index([cardId, createdAt(sort: Desc)], map: "activity_card_time_idx")
 }
 
-model lists {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  board_id      String          @db.Uuid
-  name          String
-  position      Decimal         @db.Decimal(16, 6)
-  is_archived   Boolean         @default(false)
-  subscribed    Boolean         @default(false)
-  cards         cards[]
-  list_watchers list_watchers[]
-  boards        boards          @relation(fields: [board_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model Attachment {
+  @@map("attachments")
 
-  @@unique([board_id, position], map: "lists_order_idx")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cardId    String   @map("card_id") @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  url       String
+  filename  String?
+  bytes     BigInt?
+  meta      Json?
+  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)
+
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User?    @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([cardId, createdAt(sort: Desc)], map: "attachments_card_time_idx")
 }
 
-model users {
-  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clerk_id                 String                     @unique
-  email                    String                     @unique(map: "users_email_idx") @db.Citext
-  username                 String?                    @unique(map: "users_username_idx") @db.Citext
-  full_name                String
-  avatar_url               String                     @default("default_avatar_url")
-  theme                    theme                      @default(system)
-  email_notification       Boolean                    @default(true)
-  push_notification        Boolean                    @default(false)
-  created_at               DateTime                   @default(now()) @db.Timestamptz(6)
+model BoardMember {
+  @@map("board_members")
+
+  boardId  String    @map("board_id") @db.Uuid
+  userId   String    @map("user_id") @db.Uuid
+  role     BoardRole @default(Member)
+  joinedAt DateTime  @map("joined_at") @default(now()) @db.Timestamptz(6)
+
+  board    Board     @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([boardId, userId])
+  @@index([userId], map: "board_members_user_idx")
+}
+
+model Board {
+  @@map("boards")
+
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId    String?                  @map("workspace_id") @db.Uuid
+  name           String
+  description    String?
+  background     String                   @default("default_background_url")
+  createdBy      String?                  @map("created_by") @db.Uuid
+  allowCovers    Boolean                  @map("allow_covers") @default(true)
+  showComplete   Boolean                  @map("show_complete") @default(true)
+  createdAt      DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                 @map("updated_at") @default(now()) @db.Timestamptz(6)
+  lastActivityAt DateTime?                @map("last_activity_at") @db.Timestamptz(6)
+  visibility     BoardVisibility          @default(WorkspaceMembers)
+  memberManage   MemberManageRestrictions @map("member_manage") @default(Members)
+  commenting     CommentingRestrictions   @default(BoardMembers)
+
+  activityLogs   ActivityLog[]
+  boardMembers   BoardMember[]
+  creator        User?                    @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
+  workspace      Workspace?               @relation(fields: [workspaceId], references: [id], onUpdate: NoAction)
+  labels         Label[]
+  lists          List[]
+
+  @@index([workspaceId], map: "boards_workspace_idx")
+}
+
+model CardAssignee {
+  @@map("card_assignees")
+
+  cardId String @map("card_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([cardId, userId])
+  @@index([userId], map: "card_assignees_user_idx")
+}
+
+model CardLabel {
+  @@map("card_labels")
+
+  cardId  String @map("card_id") @db.Uuid
+  labelId String @map("label_id") @db.Uuid
+
+  card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([cardId, labelId])
+}
+
+model CardWatcher {
+  @@map("card_watchers")
+
+  cardId    String   @map("card_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)
+
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([cardId, userId])
+  @@index([userId], map: "card_watchers_user_idx")
+}
+
+model Card {
+  @@map("cards")
+
+  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listId        String                   @map("list_id") @db.Uuid
+  title         String
+  description   String?
+  dueDate       DateTime?                @map("due_date") @db.Timestamptz(6)
+  startDate     DateTime?                @map("start_date") @db.Timestamptz(6)
+  position      Decimal                  @db.Decimal(16, 6)
+  isArchived    Boolean                  @map("is_archived") @default(false)
+  createdBy     String?                  @map("created_by") @db.Uuid
+  coverImageUrl String?                  @map("cover_image_url")
+  subscribed    Boolean                  @default(false)
+  createdAt     DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime                 @map("updated_at") @default(now()) @db.Timestamptz(6)
+  searchDoc     Unsupported("tsvector")? @map("search_doc") @default(dbgenerated("to_tsvector('simple'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)))"))
+
+  activityLogs  ActivityLog[]
+  attachments   Attachment[]
+  assignees     CardAssignee[]
+  cardLabels    CardLabel[]
+  watchers      CardWatcher[]
+  creator       User?                    @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
+  list          List                     @relation(fields: [listId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  checklists    Checklist[]
+  comments      Comment[]
+
+  @@unique([listId, position], map: "cards_order_idx")
+  @@index([searchDoc], map: "cards_search_gin_idx", type: Gin)
+}
+
+model ChecklistItemAssignee {
+  @@map("checklist_item_assignees")
+
+  itemId String @map("item_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  item   ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([itemId, userId])
+}
+
+model ChecklistItem {
+  @@map("checklist_items")
+
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  checklistId String          @map("checklist_id") @db.Uuid
+  text        String
+  isCompleted Boolean         @map("is_completed") @default(false)
+  dueDate     DateTime?       @map("due_date") @db.Timestamptz(6)
+  position    Decimal         @default(1000) @db.Decimal(16, 6)
+
+  assignees   ChecklistItemAssignee[]
+  checklist   Checklist       @relation(fields: [checklistId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([checklistId, position], map: "checklist_items_parent_pos_idx")
+}
+
+model Checklist {
+  @@map("checklists")
+
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cardId    String         @map("card_id") @db.Uuid
+  title     String
+  position  Decimal        @default(1000) @db.Decimal(16, 6)
+
+  items     ChecklistItem[]
+  card      Card           @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([cardId, position], map: "checklists_card_pos_idx")
+}
+
+model Comment {
+  @@map("comments")
+
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cardId    String   @map("card_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  text      String
+  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)
+
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([cardId, createdAt(sort: Desc)], map: "comments_card_time_idx")
+}
+
+model Label {
+  @@map("labels")
+
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId    String     @map("board_id") @db.Uuid
+  name       String
+  color      String
+
+  cardLabels CardLabel[]
+  board      Board      @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([boardId, name])
+  @@index([boardId], map: "labels_board_idx")
+}
+
+model ListWatcher {
+  @@map("list_watchers")
+
+  listId    String   @map("list_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)
+
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([listId, userId])
+}
+
+model List {
+  @@map("lists")
+
+  id         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boardId    String        @map("board_id") @db.Uuid
+  name       String
+  position   Decimal       @db.Decimal(16, 6)
+  isArchived Boolean       @map("is_archived") @default(false)
+  subscribed Boolean       @default(false)
+
+  cards      Card[]
+  watchers   ListWatcher[]
+  board      Board         @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([boardId, position], map: "lists_order_idx")
+}
+
+model User {
+  @@map("users")
+
+  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerkId                  String                    @map("clerk_id") @unique
+  email                    String                    @unique(map: "users_email_idx") @db.Citext
+  username                 String?                   @unique(map: "users_username_idx") @db.Citext
+  fullName                 String                    @map("full_name")
+  avatarUrl                String                    @map("avatar_url") @default("default_avatar_url")
+  theme                    Theme                     @default(System)
+  emailNotification        Boolean                   @map("email_notification") @default(true)
+  pushNotification         Boolean                   @map("push_notification") @default(false)
+  createdAt                DateTime                  @map("created_at") @default(now()) @db.Timestamptz(6)
   bio                      String?
-  activity_log             activity_log[]
-  attachments              attachments[]
-  board_members            board_members[]
-  boards                   boards[]
-  card_assignees           card_assignees[]
-  card_watchers            card_watchers[]
-  cards                    cards[]
-  checklist_item_assignees checklist_item_assignees[]
-  comments                 comments[]
-  list_watchers            list_watchers[]
-  workspace_members        workspace_members[]
-  workspaces               workspaces[]
+
+  activityLogs             ActivityLog[]
+  attachments              Attachment[]
+  boardMembers             BoardMember[]
+  boards                   Board[]
+  cardAssignees            CardAssignee[]
+  cardWatchers             CardWatcher[]
+  cards                    Card[]
+  checklistItemAssignees   ChecklistItemAssignee[]
+  comments                 Comment[]
+  listWatchers             ListWatcher[]
+  workspaceMembers         WorkspaceMember[]
+  workspaces               Workspace[]
 }
 
-model workspace_members {
-  workspace_id String         @db.Uuid
-  user_id      String         @db.Uuid
-  role         workspace_role @default(member)
-  joined_at    DateTime       @default(now()) @db.Timestamptz(6)
-  users        users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  workspaces   workspaces     @relation(fields: [workspace_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model WorkspaceMember {
+  @@map("workspace_members")
 
-  @@id([workspace_id, user_id])
+  workspaceId String        @map("workspace_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  role        WorkspaceRole @default(Member)
+  joinedAt    DateTime      @map("joined_at") @default(now()) @db.Timestamptz(6)
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([workspaceId, userId])
 }
 
-model workspaces {
-  id                                String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                              String
-  description                       String?
-  visibility                        workspace_visibility        @default(private)
-  premium                           Boolean                     @default(false)
-  created_at                        DateTime                    @default(now()) @db.Timestamptz(6)
-  updated_at                        DateTime                    @default(now()) @db.Timestamptz(6)
-  type                              workspace_type              @default(other)
-  created_by                        String                      @db.Uuid
-  workspace_membership_restrictions membership_restrictions     @default(anybody)
-  public_board_creation             board_creation_restrictions @default(workspace_member)
-  workspace_board_creation          board_creation_restrictions @default(workspace_member)
-  private_board_creation            board_creation_restrictions @default(workspace_member)
-  public_board_deletion             board_creation_restrictions @default(workspace_member)
-  workspace_board_deletion          board_creation_restrictions @default(workspace_member)
-  private_board_deletion            board_creation_restrictions @default(workspace_member)
-  allow_guest_sharing               board_sharing               @default(anybody)
-  allow_slack_integration           slack_sharing               @default(workspace_member)
-  boards                            boards[]
-  workspace_members                 workspace_members[]
-  users                             users                       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model Workspace {
+  @@map("workspaces")
+
+  id                              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                            String
+  description                     String?
+  visibility                      WorkspaceVisibility       @default(Private)
+  premium                         Boolean                   @default(false)
+  createdAt                       DateTime                  @map("created_at") @default(now()) @db.Timestamptz(6)
+  updatedAt                       DateTime                  @map("updated_at") @default(now()) @db.Timestamptz(6)
+  type                            WorkspaceType             @default(Other)
+  createdBy                       String                    @map("created_by") @db.Uuid
+  workspaceMembershipRestrictions MembershipRestrictions    @map("workspace_membership_restrictions") @default(Anybody)
+  publicBoardCreation             BoardCreationRestrictions @map("public_board_creation") @default(WorkspaceMember)
+  workspaceBoardCreation          BoardCreationRestrictions @map("workspace_board_creation") @default(WorkspaceMember)
+  privateBoardCreation            BoardCreationRestrictions @map("private_board_creation") @default(WorkspaceMember)
+  publicBoardDeletion             BoardCreationRestrictions @map("public_board_deletion") @default(WorkspaceMember)
+  workspaceBoardDeletion          BoardCreationRestrictions @map("workspace_board_deletion") @default(WorkspaceMember)
+  privateBoardDeletion            BoardCreationRestrictions @map("private_board_deletion") @default(WorkspaceMember)
+  allowGuestSharing               BoardSharing              @map("allow_guest_sharing") @default(Anybody)
+  allowSlackIntegration           SlackSharing              @map("allow_slack_integration") @default(WorkspaceMember)
+
+  boards                          Board[]
+  workspaceMembers                WorkspaceMember[]
+  creator                         User                      @relation(fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([visibility])
-}
-
-enum activity_action {
-  created
-  moved
-  updated
-  commented
-  closed
-  reopened
-  assigned
-  unassigned
-  labeled
-  unlabeled
-  attached
-  detached
-}
-
-enum board_creation_restrictions {
-  workspace_member
-  workspace_admin
-  nobody
-}
-
-enum board_role {
-  admin
-  member
-  observer
-}
-
-enum board_sharing {
-  anybody
-  only_workspace_member
-}
-
-enum board_visibility {
-  private
-  workspace_members
-  public
-}
-
-enum commenting_restrictions {
-  disabled
-  board_members
-  workspace_members
-}
-
-enum member_manage_restrictions {
-  admins
-  members
-}
-
-enum membership_restrictions {
-  anybody
-  specific_domain
-}
-
-enum slack_sharing {
-  workspace_member
-  admins
-}
-
-enum theme {
-  light
-  dark
-  system
-}
-
-enum workspace_role {
-  admin
-  member
-  guest
-}
-
-enum workspace_type {
-  marketing
-  sales_crm
-  humen_resources
-  small_business
-  engineering_it
-  education
-  operations
-  other
-}
-
-enum workspace_visibility {
-  private
-  public
 }
