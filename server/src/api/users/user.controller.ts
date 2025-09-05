@@ -1,188 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../utils/appError.js";
-import {
-  type ApiResponse,
-  type User,
-  type UserWithWorkspaces,
-} from "../../utils/globalTypes.js";
-import { UserService } from "./userService.js";
+import { getAuth } from "@clerk/express";
+import type { ApiResponse } from "../../utils/globalTypes.js";
+import type { UserDto } from "@ronmordo/types";
+import { userService } from "./user.service.js";
 
-export const getUser = async (
+const getMe = async (
   req: Request,
-  res: Response<ApiResponse<User>>,
+  res: Response<ApiResponse<UserDto>>,
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
-
-    const user = await UserService.getUserById(id);
-
-    if (!user) {
-      return next(new AppError("User not found", 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    next(new AppError("Failed to get user", 500));
+    const { userId } = getAuth(req);
+    // Since we are protected by validation middleware we can assume safely that userId does exists on req object.
+    const user = await userService.getMe(userId!);
+    return res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const getUserByClerkId = async (
-  req: Request,
-  res: Response<ApiResponse<User>>,
-  next: NextFunction
-) => {
-  try {
-    const { clerk_id } = req.params;
-
-    const user = await UserService.getUserByClerkId(clerk_id);
-
-    if (!user) {
-      return next(new AppError("User not found", 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    next(new AppError("Failed to get user by Clerk ID", 500));
-  }
-};
-
-export const getUserWithWorkspaces = async (
-  req: Request,
-  res: Response<ApiResponse<UserWithWorkspaces>>,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params;
-
-    const user = await UserService.getUserById(id);
-
-    if (!user) {
-      return next(new AppError("User not found", 404));
-    }
-
-    const workspaces = await UserService.getUserWorkspaces(id);
-    const boards = await UserService.getUserBoards(id);
-
-    const userWithWorkspaces: UserWithWorkspaces = {
-      ...user,
-      workspaces: workspaces,
-    };
-
-    res.status(200).json({
-      success: true,
-      data: userWithWorkspaces,
-    });
-  } catch (error) {
-    next(new AppError("Failed to get user with workspaces", 500));
-  }
-};
-
-export const updateUser = async (
-  req: Request,
-  res: Response<ApiResponse<User>>,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params;
-    const {
-      username,
-      full_name,
-      avatar_url,
-      theme,
-      email_notification,
-      push_notification,
-      bio,
-    } = req.body;
-
-    const updatedUser = await UserService.updateUser(id, {
-      username,
-      full_name,
-      avatar_url,
-      theme,
-      email_notification,
-      push_notification,
-      bio,
-    });
-
-    if (!updatedUser) {
-      return next(new AppError("User not found", 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: updatedUser,
-    });
-  } catch (error) {
-    next(new AppError("Failed to update user", 500));
-  }
-};
-
-export const deleteUser = async (
-  req: Request,
-  res: Response<ApiResponse<{ message: string }>>,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await UserService.deleteUser(id);
-
-    if (!deleted) {
-      return next(new AppError("User not found", 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: { message: "User deleted successfully" },
-    });
-  } catch (error) {
-    next(new AppError("Failed to delete user", 500));
-  }
-};
-
-export const searchUsers = async (
-  req: Request,
-  res: Response<ApiResponse<User[]>>,
-  next: NextFunction
-) => {
-  try {
-    const { q, limit } = req.query;
-
-    if (!q || typeof q !== "string") {
-      return next(new AppError("Search query is required", 400));
-    }
-
-    const limitNum = limit ? parseInt(limit as string) : 10;
-    const users = await UserService.searchUsers(q, limitNum);
-
-    res.status(200).json({
-      success: true,
-      data: users,
-    });
-  } catch (error) {
-    next(new AppError("Failed to search users", 500));
-  }
-};
-
-/*
- * WHAT HAS BEEN IMPLEMENTED:
- *
- * Updated User controller functions with comprehensive CRUD operations:
- * - getUser: Retrieves user by ID using UserService
- * - getUserByClerkId: New method for Clerk authentication integration
- * - getUserWithWorkspaces: Gets user with their workspace memberships
- * - updateUser: Updates user information with all new fields
- * - deleteUser: Removes user from system
- * - searchUsers: New method for user search functionality
- *
- * All functions now use the UserService for database operations and
- * return data that matches the new comprehensive schema. The controller
- * includes proper error handling and validation.
- */
+export const usersController = { getMe };
