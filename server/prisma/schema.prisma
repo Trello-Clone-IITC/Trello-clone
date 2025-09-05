@@ -258,7 +258,7 @@ model Card {
   subscribed    Boolean                  @default(false)
   createdAt     DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime                 @map("updated_at") @default(now()) @db.Timestamptz(6)
-  searchDoc     Unsupported("tsvector")? @map("search_doc") @default(dbgenerated("to_tsvector('simple'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)))"))
+  searchDoc     Unsupported("tsvector")? @map("search_doc")
 
   activityLogs  ActivityLog[]
   attachments   Attachment[]
@@ -386,6 +386,7 @@ model User {
   fullName                 String                    @map("full_name")
   avatarUrl                String                    @map("avatar_url") @default("default_avatar_url")
   theme                    Theme                     @default(System)
+  recentlyViewedBoards     String[]                  @map("recently_viewed_boards") @default([])
   emailNotification        Boolean                   @map("email_notification") @default(true)
   pushNotification         Boolean                   @map("push_notification") @default(false)
   createdAt                DateTime                  @map("created_at") @default(now()) @db.Timestamptz(6)

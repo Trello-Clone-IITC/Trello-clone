@@ -1,10 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/appError.js";
 import { z } from "zod";
-import type { ZodSchema } from "zod";
 
-export const validateRequest = (schema: ZodSchema) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+// Since ZodSchema type is deprecated I changed the schema type to z.ZodType which follows latest zod docs.
+// Since Response isnt used in our functions changed the parameter name to _ following unused paramaters naming conventions.
+export const validateRequest = (schema: z.ZodType) => {
+  return async (req: Request, _: Response, next: NextFunction) => {
     try {
       await schema.parseAsync({
         body: req.body,
@@ -22,7 +23,7 @@ export const validateRequest = (schema: ZodSchema) => {
   };
 };
 
-export const validateId = (req: Request, res: Response, next: NextFunction) => {
+export const validateId = (req: Request, _: Response, next: NextFunction) => {
   const { id } = req.params;
 
   if (!id || id.trim() === "") {
@@ -34,7 +35,7 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
 
 export const validateWorkspaceData = (
   req: Request,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) => {
   const { name, owner_id } = req.body;
@@ -52,7 +53,7 @@ export const validateWorkspaceData = (
 
 export const validateBoardData = (
   req: Request,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) => {
   const { title, workspace_id, owner_id } = req.body;
