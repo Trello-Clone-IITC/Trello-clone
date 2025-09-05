@@ -4,56 +4,56 @@
 // npm publish --access=restricted
 
 export type ActivityAction =
-  | "Created"
-  | "Moved"
-  | "Updated"
-  | "Commented"
-  | "Closed"
-  | "Reopened"
-  | "Assigned"
-  | "Unassigned"
-  | "Labeled"
-  | "Unlabeled"
-  | "Attached"
-  | "Detached";
+  | "created"
+  | "moved"
+  | "updated"
+  | "commented"
+  | "closed"
+  | "reopened"
+  | "assigned"
+  | "unassigned"
+  | "labeled"
+  | "unlabeled"
+  | "attached"
+  | "detached";
 
 export type BoardCreationRestrictions =
-  | "WorkspaceMember"
-  | "WorkspaceAdmin"
-  | "Nobody";
+  | "workspace_member"
+  | "workspace_admin"
+  | "nobody";
 
-export type BoardRole = "Admin" | "Member" | "Observer";
+export type BoardRole = "admin" | "member" | "observer";
 
-export type BoardSharing = "Anybody" | "OnlyWorkspaceMember";
+export type BoardSharing = "anybody" | "only_workspace_member";
 
-export type BoardVisibility = "Private" | "WorkspaceMembers" | "Public";
+export type BoardVisibility = "private" | "workspace_members" | "public";
 
 export type CommentingRestrictions =
-  | "Disabled"
-  | "BoardMembers"
-  | "WorkspaceMembers";
+  | "disabled"
+  | "board_members"
+  | "workspace_members";
 
-export type MemberManageRestrictions = "Admins" | "Members";
+export type MemberManageRestrictions = "admins" | "members";
 
-export type MembershipRestrictions = "Anybody" | "SpecificDomain";
+export type MembershipRestrictions = "anybody" | "specific_domain";
 
-export type SlackSharing = "WorkspaceMember" | "Admins";
+export type SlackSharing = "workspace_member" | "admins";
 
-export type Theme = "Light" | "Dark" | "System";
+export type Theme = "light" | "dark" | "system";
 
-export type WorkspaceRole = "Admin" | "Member" | "Guest";
+export type WorkspaceRole = "admin" | "member" | "guest";
 
 export type WorkspaceType =
-  | "Marketing"
-  | "SalesCrm"
-  | "HumenResources"
-  | "SmallBusiness"
-  | "EngineeringIt"
-  | "Education"
-  | "Operations"
-  | "Other";
+  | "marketing"
+  | "sales_crm"
+  | "human_resources"
+  | "small_business"
+  | "engineering_it"
+  | "education"
+  | "operations"
+  | "other";
 
-export type WorkspaceVisibility = "Private" | "Public";
+export type WorkspaceVisibility = "private" | "public";
 
 export interface ActivityLogDto {
   id: string;
@@ -225,39 +225,5 @@ export interface WorkspaceDto {
   allowSlackIntegration: SlackSharing;
 }
 
-/* =========================
-   Relationship-friendly shapes (optional)
-   - Useful when your API needs to return nested data
-   - Compose base DTOs without hard-coding deep trees
-   ========================= */
-
 // A small helper to embed arrays or objects in responses without committing to a single shape
 export type With<T, K extends string, V> = T & { [P in K]: V };
-
-/* Examples:
-
-// Board with its labels
-export type BoardWithLabelsDto = With<BoardDto, "labels", LabelDto[]>;
-
-// Card with its assignees (just IDs)
-export type CardWithAssigneesDto = With<CardDto, "assignees", { userId: string }[]>;
-
-// List with cards (shallow)
-export type ListWithCardsDto = With<ListDto, "cards", CardDto[]>;
-
-*/
-
-/* =========================
-   Pagination helpers (optional)
-   ========================= */
-
-export interface PageMetaDto {
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export interface PagedDto<T> {
-  data: T[];
-  meta: PageMetaDto;
-}

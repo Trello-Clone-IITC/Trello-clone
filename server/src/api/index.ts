@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authRouter from "./auth/auth.route.js";
-// import userRouter from "./users/user.route.js";
+import userRouter from "./users/user.route.js";
 import workspaceRouter from "./workspaces/workspace.route.js";
 import boardRouter from "./boards/board.route.js";
 import cardRouter from "./cards/card.route.js";
@@ -11,14 +11,15 @@ import cardRouter from "./cards/card.route.js";
 
 const router = Router();
 
+// Changed resources routing to plural convenstion.
 router.use("/auth", authRouter);
-// router.use("/user", userRouter);
-router.use("/workspace", workspaceRouter);
-router.use("/board", boardRouter);
-router.use("/card", cardRouter);
-// router.use("/checklist", checklistRouter);
-// router.use("/comment", commentRouter);
-// router.use("/attachment", attachmentRouter);
-// router.use("/label", labelRouter);
+router.use("/users", userRouter);
+router.use("/workspaces", workspaceRouter);
+router.use("/boards", boardRouter);
+router.use("/cards", cardRouter);
+// router.use("/checklists", checklistRouter);
+// router.use("/comments", commentRouter);
+// router.use("/attachments", attachmentRouter);
+// router.use("/labels", labelRouter);
 
 export default router;

@@ -1,6 +1,10 @@
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
+-- CreateExtensions
+CREATE EXTENSION IF NOT EXISTS citext;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- CreateEnum
 CREATE TYPE "public"."activity_action" AS ENUM ('created', 'moved', 'updated', 'commented', 'closed', 'reopened', 'assigned', 'unassigned', 'labeled', 'unlabeled', 'attached', 'detached');
 
@@ -137,7 +141,7 @@ CREATE TABLE "public"."cards" (
     "subscribed" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "search_doc" tsvector DEFAULT to_tsvector('simple'::regconfig, ((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text))),
+    "search_doc" tsvector,
 
     CONSTRAINT "cards_pkey" PRIMARY KEY ("id")
 );
