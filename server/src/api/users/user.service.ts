@@ -1,16 +1,6 @@
 import { prisma } from "../../lib/prismaClient.js";
-import type { User } from "@prisma/client";
-import type { UserDto, Theme } from "@ronmordo/types";
 import { AppError } from "../../utils/appError.js";
-
-const toUserDto = (user: User) => {
-  const userDto: UserDto = {
-    ...user,
-    theme: user.theme.toLowerCase() as Theme,
-    createdAt: user.createdAt.toISOString(),
-  };
-  return userDto;
-};
+import { mapUserToDto } from "./user.mapper.js";
 
 const getMe = async (clerkUserId: string) => {
   const user = await prisma.user.findUnique({
@@ -22,7 +12,7 @@ const getMe = async (clerkUserId: string) => {
     throw new AppError("User exists on clerk service but not in app data");
   }
 
-  return toUserDto(user);
+  return mapUserToDto(user);
 };
 
-export const userService = { toUserDto, getMe };
+export const userService = { getMe };
