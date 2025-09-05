@@ -9,7 +9,14 @@ const router = Router();
 router.use(validateAuthenticatedUser);
 
 // Routes
+// Me
 router.get("/me", usersController.getMe);
+router.get("/me/workspaces" /*usersController.getAllWorkspaces*/);
+router.get("/me/boards" /*usersController.getAll*/);
+
+router.get("/:id" /*usersController.getUserById*/);
+router.get("/:id" /*usersController.getUserById*/);
+router.get("/:id" /*usersController.getUserById*/);
 router.get("/:id" /*usersController.getUserById*/);
 
 export default router;

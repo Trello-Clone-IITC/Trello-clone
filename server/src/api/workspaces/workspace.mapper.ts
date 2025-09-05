@@ -1,4 +1,6 @@
 import type {
+  Prisma,
+  $Enums,
   Workspace,
   WorkspaceVisibility,
   WorkspaceType,
@@ -80,3 +82,80 @@ type WorkspaceTypeDto =
   | "education"
   | "operations"
   | "other";
+
+// ----------From dto to prisma-------------
+export function mapWorkspaceDtoToCreateInput(
+  dto: WorkspaceDto
+): Prisma.WorkspaceCreateInput {
+  return {
+    id: dto.id,
+    name: dto.name,
+    description: dto.description ?? undefined,
+    visibility: mapWorkspaceVisibilityDto(dto.visibility),
+    premium: dto.premium,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    type: mapWorkspaceTypeDto(dto.type),
+    creator: { connect: { id: dto.createdBy } },
+    workspaceMembershipRestrictions: mapMembershipDto(
+      dto.workspaceMembershipRestrictions
+    ),
+    publicBoardCreation: mapBoardCreationDto(dto.publicBoardCreation),
+    workspaceBoardCreation: mapBoardCreationDto(dto.workspaceBoardCreation),
+    privateBoardCreation: mapBoardCreationDto(dto.privateBoardCreation),
+    publicBoardDeletion: mapBoardCreationDto(dto.publicBoardDeletion),
+    workspaceBoardDeletion: mapBoardCreationDto(dto.workspaceBoardDeletion),
+    privateBoardDeletion: mapBoardCreationDto(dto.privateBoardDeletion),
+    allowGuestSharing: mapBoardSharingDto(dto.allowGuestSharing),
+    allowSlackIntegration: mapSlackDto(dto.allowSlackIntegration),
+  };
+}
+
+// ---- enum helpers ----
+function mapWorkspaceVisibilityDto(
+  v: WorkspaceDto["visibility"]
+): $Enums.WorkspaceVisibility {
+  return v === "private" ? "Private" : "Public";
+}
+
+function mapWorkspaceTypeDto(t: WorkspaceDto["type"]): $Enums.WorkspaceType {
+  return t
+    .split("_")
+    .map((s, i) =>
+      i === 0
+        ? s.charAt(0).toUpperCase() + s.slice(1)
+        : s.charAt(0).toUpperCase() + s.slice(1)
+    )
+    .join("") as $Enums.WorkspaceType;
+}
+
+function mapMembershipDto(
+  m: WorkspaceDto["workspaceMembershipRestrictions"]
+): $Enums.MembershipRestrictions {
+  return m === "anybody" ? "Anybody" : "SpecificDomain";
+}
+
+function mapBoardCreationDto(
+  b: WorkspaceDto["publicBoardCreation"]
+): $Enums.BoardCreationRestrictions {
+  switch (b) {
+    case "workspace_member":
+      return "WorkspaceMember";
+    case "workspace_admin":
+      return "WorkspaceAdmin";
+    case "nobody":
+      return "Nobody";
+  }
+}
+
+function mapBoardSharingDto(
+  s: WorkspaceDto["allowGuestSharing"]
+): $Enums.BoardSharing {
+  return s === "anybody" ? "Anybody" : "OnlyWorkspaceMember";
+}
+
+function mapSlackDto(
+  s: WorkspaceDto["allowSlackIntegration"]
+): $Enums.SlackSharing {
+  return s === "workspace_member" ? "WorkspaceMember" : "Admins";
+}

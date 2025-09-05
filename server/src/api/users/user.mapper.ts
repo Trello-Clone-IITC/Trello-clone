@@ -1,4 +1,4 @@
-import type { User, Theme } from "@prisma/client";
+import type { Prisma, User, Theme, $Enums } from "@prisma/client";
 import { UserDtoSchema, type UserDto } from "@ronmordo/types";
 
 export function mapUserToDto(user: User): UserDto {
@@ -26,5 +26,32 @@ function mapTheme(t: Theme): "light" | "dark" | "system" {
       return "dark";
     case "System":
       return "system";
+  }
+}
+
+export function mapUserDtoToCreateInput(dto: UserDto): Prisma.UserCreateInput {
+  return {
+    id: dto.id,
+    clerkId: dto.clerkId,
+    email: dto.email,
+    username: dto.username ?? undefined,
+    fullName: dto.fullName,
+    avatarUrl: dto.avatarUrl,
+    theme: mapThemeDto(dto.theme),
+    emailNotification: dto.emailNotification,
+    pushNotification: dto.pushNotification,
+    createdAt: new Date(dto.createdAt),
+    bio: dto.bio ?? undefined,
+  };
+}
+
+function mapThemeDto(t: UserDto["theme"]): $Enums.Theme {
+  switch (t) {
+    case "light":
+      return "Light";
+    case "dark":
+      return "Dark";
+    case "system":
+      return "System";
   }
 }
