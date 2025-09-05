@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "isolatedModules": true,
     "outDir": "dist",
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/base-dtos-deprecated.ts", "src/with-dtos-deprecated.ts"]
 }
