@@ -1,0 +1,31 @@
+import { Prisma, type Attachment } from "@prisma/client";
+import { AttachmentDtoSchema, type AttachmentDto } from "@ronmordo/types";
+
+export function mapAttachmentToDto(att: Attachment): AttachmentDto {
+  const dto: AttachmentDto = {
+    id: att.id,
+    cardId: att.cardId,
+    userId: att.userId ?? null,
+    url: att.url,
+    filename: att.filename ?? null,
+    bytes: att.bytes ? Number(att.bytes) : null,
+    meta: att.meta ?? undefined,
+    createdAt: att.createdAt.toISOString(),
+  };
+  return AttachmentDtoSchema.parse(dto);
+}
+
+export function mapAttachmentDtoToCreateInput(
+  dto: AttachmentDto
+): Prisma.AttachmentCreateInput {
+  return {
+    id: dto.id,
+    card: { connect: { id: dto.cardId } },
+    user: dto.userId ? { connect: { id: dto.userId } } : undefined,
+    url: dto.url,
+    filename: dto.filename ?? undefined,
+    bytes: dto.bytes ?? undefined,
+    meta: dto.meta ?? undefined,
+    createdAt: new Date(dto.createdAt),
+  };
+}
