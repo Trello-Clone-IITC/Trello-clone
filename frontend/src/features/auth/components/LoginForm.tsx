@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
+import { useVerifyClerkUser } from "../hooks/useVerifyClerkUser";
 import {
   Form,
   FormControl,
@@ -22,31 +23,65 @@ import {
 } from "@/components/ui/popover";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "usehooks-ts";
-// import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
-// import { ClockLoader } from "react-spinners";
+import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
+import { ClockLoader } from "react-spinners";
 import { useOuthSignIn } from "../hooks/useSignInWithGoogle";
+import { useState } from "react";
 
 const formSchema = z.object({
   email: z.email(),
+  password: z.string().optional(),
   remember: z.boolean().optional(),
 });
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      password: "",
       remember: false,
     },
   });
 
   const isMobile = useMediaQuery("(max-width: 425px)");
-
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   setTheme("light");
   const navigate = useNavigate();
   const { isLoaded, oauthsignIn } = useOuthSignIn();
-  // const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
+  const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
+  const {
+    checkUserExists,
+    checking,
+    error: verifyUserError,
+    userExists,
+  } = useVerifyClerkUser();
+
+  const handleContinue = async (values: z.infer<typeof formSchema>) => {
+    if (!showPassword) {
+      const exists = await checkUserExists(values.email);
+      if (exists) {
+        setShowPassword(true);
+        setEmail(values.email);
+      }
+    } else {
+      const success = await signInWithPassword(email, values.password || "");
+      if (success) {
+        navigate("/test");
+        form.reset();
+        setShowPassword(false);
+      }
+    }
+  };
+
+  const handleBackToEmail = () => {
+    setShowPassword(false);
+    form.reset();
+    form.setValue("password", "");
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // TODO: Implement actual sign in logic
@@ -124,7 +159,7 @@ export default function LoginForm() {
       >
         <CardContent className="h-[686px] w-full px-0">
           <Form {...form}>
-            <form className="" onSubmit={form.handleSubmit(onSubmit)}>
+            <form className="" onSubmit={form.handleSubmit(handleContinue)}>
               <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col items-center text-center gap-6">
                   <div className="h-8 mb-2">{trelloLogo}</div>
@@ -153,6 +188,29 @@ export default function LoginForm() {
                       </FormItem>
                     )}
                   />
+                  {showPassword && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[#44546f] flex gap-[2px] text-xs font-bold -mb-1">
+                            Password
+                            <span className="text-[#da565f] m-0 p-0">*</span>
+                          </FormLabel>
+                          <FormControl className="hover:bg-[#f7f8f9] transition ease-in-out">
+                            <Input
+                              className="rounded border-1 border-[#8590a2] px-2 py-1.5"
+                              placeholder="Enter your password"
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   <FormField
                     control={form.control}
                     name="remember"
@@ -196,20 +254,22 @@ export default function LoginForm() {
                   />
                 </div>
 
-                {/* {error && <span className="text-[#da565f]">{error}</span>} */}
+                {error && <span className="text-[#da565f]">{error}</span>}
                 <div id="clerk-captcha" data-cl-size="normal" />
                 <Button
                   type="submit"
                   className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded"
                 >
-                  {/* {submitting ? (
-                  <ClockLoader
-                    size={25}
-                    color={theme === "dark" ? "#25103e" : "#f8f8f9"}
-                  />
-                ) : ( */}
-                  Continue
-                  {/* )} */}
+                  {submitting ? (
+                    <ClockLoader
+                      size={25}
+                      color={theme === "dark" ? "#25103e" : "#f8f8f9"}
+                    />
+                  ) : showPassword ? (
+                    "Log In"
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
                 <div className="flex items-center">
                   <div className="h-px bg-border flex-1"></div>
