@@ -9,14 +9,10 @@ const router = Router();
 router.use(validateAuthenticatedUser);
 
 // Routes
-// Me
 router.get("/me", usersController.getMe);
-router.get("/me/workspaces" /*usersController.getAllWorkspaces*/);
-router.get("/me/boards" /*usersController.getAll*/);
-
-router.get("/:id" /*usersController.getUserById*/);
-router.get("/:id" /*usersController.getUserById*/);
-router.get("/:id" /*usersController.getUserById*/);
-router.get("/:id" /*usersController.getUserById*/);
+// router.get("/me/workspaces" /*usersController.getAllWorkspaces*/);
+// router.get("/me/boards" /*usersController.getAllBoards*/);
+// router.patch("/me" /*userController.patchUser*/);
+// router.delete("/me" /*userController.deleteUser*/);
 
 export default router;
