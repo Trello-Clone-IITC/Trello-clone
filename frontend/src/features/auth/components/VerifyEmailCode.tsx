@@ -48,7 +48,7 @@ const atlassianLogo = (
 
 const OTPstyle = "border-1 border-[#8590a2] rounded px-2 py-[6px]";
 
-export default function VerifyEmail() {
+export function VerifyEmailCode() {
   const [code, setCode] = useState("");
 
   const isMobile = useMediaQuery("(max-width: 425px)");

@@ -25,7 +25,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "usehooks-ts";
 import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
 import { ClockLoader } from "react-spinners";
-import { useOuthSignIn } from "../hooks/useSignInWithGoogle";
+import { useOauthSignIn } from "../hooks/useOauthSignIn";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -51,7 +51,7 @@ export default function LoginForm() {
   const { theme, setTheme } = useTheme();
   setTheme("light");
   const navigate = useNavigate();
-  const { isLoaded, oauthsignIn } = useOuthSignIn();
+  const { isLoaded, oauthSignIn } = useOauthSignIn();
   const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
   const {
     checkUserExists,
@@ -281,7 +281,7 @@ export default function LoginForm() {
                 <div className="flex flex-col gap-4">
                   <div>
                     <Button
-                      onClick={() => oauthsignIn("oauth_google")}
+                      onClick={() => oauthSignIn("oauth_google")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
@@ -298,7 +298,7 @@ export default function LoginForm() {
                   </div>
                   <div>
                     <Button
-                      onClick={() => oauthsignIn("oauth_microsoft")}
+                      onClick={() => oauthSignIn("oauth_microsoft")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
@@ -346,7 +346,7 @@ export default function LoginForm() {
                   </div>
                   <div className="">
                     <Button
-                      onClick={() => oauthsignIn("oauth_slack")}
+                      onClick={() => oauthSignIn("oauth_slack")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"

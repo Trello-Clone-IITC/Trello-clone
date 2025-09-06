@@ -21,16 +21,15 @@ import { Input } from "@/components/ui/input";
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "usehooks-ts";
-// import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
-// import { ClockLoader } from "react-spinners";
-import { useOuthSignIn } from "../hooks/useSignInWithGoogle";
+import { useOauthSignIn } from "../hooks/useOauthSignIn";
+import { useEmailPasswordSignUp } from "../hooks/useEmailPasswordSignUp";
 
 const formSchema = z.object({
-  email: z.email(),
+  email: z.string().email(),
   remember: z.boolean().optional(),
 });
 
-export default function LoginForm() {
+export default function SignupForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,18 +39,20 @@ export default function LoginForm() {
   });
 
   const isMobile = useMediaQuery("(max-width: 425px)");
-
   const { setTheme } = useTheme();
   setTheme("light");
+
   const navigate = useNavigate();
-  const { isLoaded, oauthsignIn } = useOuthSignIn();
-  // const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
+  const { isLoaded, oauthSignIn } = useOauthSignIn();
+  const { startSignup, sending, error } = useEmailPasswordSignUp();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // TODO: Implement actual sign in logic
-    console.log("Login values:", values);
-    navigate("/");
-    form.reset();
+    if (!isLoaded) return;
+    const ok = await startSignup(values.email);
+    if (ok) {
+      navigate("/check-email");
+      form.reset();
+    }
   };
 
   const trelloLogo = (
@@ -118,6 +119,7 @@ export default function LoginForm() {
                     Sign up to continue
                   </p>
                 </div>
+
                 <div className="grid gap-3">
                   <FormField
                     control={form.control}
@@ -157,21 +159,19 @@ export default function LoginForm() {
                   </p>
                 </div>
 
-                {/* {error && <span className="text-[#da565f]">{error}</span>} */}
+                {error && <span className="text-[#da565f]">{error}</span>}
+
+                {/* Smart CAPTCHA container */}
                 <div id="clerk-captcha" data-cl-size="normal" />
+
                 <Button
                   type="submit"
+                  disabled={sending}
                   className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded"
                 >
-                  {/* {submitting ? (
-                  <ClockLoader
-                    size={25}
-                    color={theme === "dark" ? "#25103e" : "#f8f8f9"}
-                  />
-                ) : ( */}
-                  Sign up
-                  {/* )} */}
+                  {sending ? "Sending link..." : "Sign up"}
                 </Button>
+
                 <div className="flex items-center">
                   <div className="h-px bg-border flex-1"></div>
                   <span className="mx-3 text-muted-foreground text-sm whitespace-nowrap">
@@ -179,10 +179,11 @@ export default function LoginForm() {
                   </span>
                   <div className="h-px bg-border flex-1"></div>
                 </div>
+
                 <div className="flex flex-col gap-4">
                   <div>
                     <Button
-                      onClick={() => oauthsignIn("oauth_google")}
+                      onClick={() => oauthSignIn("oauth_google")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
@@ -197,9 +198,10 @@ export default function LoginForm() {
                       <span className="sr-only">Login with Google</span>
                     </Button>
                   </div>
+
                   <div>
                     <Button
-                      onClick={() => oauthsignIn("oauth_microsoft")}
+                      onClick={() => oauthSignIn("oauth_microsoft")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
@@ -216,6 +218,7 @@ export default function LoginForm() {
                       <span className="sr-only">Login with Microsoft</span>
                     </Button>
                   </div>
+
                   <div>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -245,9 +248,10 @@ export default function LoginForm() {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <div className="">
+
+                  <div>
                     <Button
-                      onClick={() => oauthsignIn("oauth_slack")}
+                      onClick={() => oauthSignIn("oauth_slack")}
                       variant="outline"
                       type="button"
                       className="w-full bg-transparent hover:bg-[#fafbfb] border-1 border-[#c1c7d0] cursor-pointer h-[40px] rounded"
@@ -263,6 +267,7 @@ export default function LoginForm() {
                     </Button>
                   </div>
                 </div>
+
                 <div className="text-center text-sm flex justify-center items-center border-b-1 border-[#c1c7d0] py-4">
                   <NavLink
                     to="/login"
@@ -275,8 +280,10 @@ export default function LoginForm() {
             </form>
           </Form>
         </CardContent>
+
         <CardFooter className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-2">
+            {/* Atlassian footer */}
             <div className=" flex flex-col items-center gap-2 pt-2">
               {atlassianLogo}
               <p className="text-[11px] text-center text-[#172b4d] flex items-center gap-1">
@@ -295,22 +302,18 @@ export default function LoginForm() {
                 href="https://policies.google.com/privacy"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                aria-label="Google Privacy Policy, (opens new window)"
+                className="text-[#2777e7] underline hover:no-underline"
               >
                 Privacy Policy
-                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
               </a>{" "}
               and{" "}
               <a
                 href="https://policies.google.com/terms"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                aria-label="Google Terms of Service, (opens new window)"
+                className="text-[#2777e7] underline hover:no-underline"
               >
                 Terms of Service
-                <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
               </a>{" "}
               apply.
             </div>

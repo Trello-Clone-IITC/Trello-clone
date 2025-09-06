@@ -27,15 +27,6 @@ const getMe = async (clerkUserId: string) => {
       avatarUrl: imageUrl,
     },
   });
-  // const user = await prisma.user.findFirst({
-  //   where: {
-  //     clerkId: clerkUserId,
-  //   },
-  // });
-  // console.log("user", user);
-  // if (!user) {
-  //   throw new Error("User not found");
-  // }
 
   // Return the UserDto.
   return mapUserToDto(user);

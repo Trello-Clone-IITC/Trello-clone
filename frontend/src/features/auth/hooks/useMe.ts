@@ -11,7 +11,7 @@ export const useMe = () => {
       return user;
     },
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 120 * 60 * 1000,
     enabled: isSignedIn && authLoaded && userLoaded,
   });
 };
