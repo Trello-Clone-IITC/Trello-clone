@@ -4,7 +4,8 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import { boardService } from "./boardService.js";
 import type {BoardDto,BoardMemberDto} from "@ronmordo/types";
 import { mapBoardToDto } from "./board.mapper.js";
-import { mapBoardMemberToDto } from "./board-members/board-members.mapper.js";
+import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
+import { getAuth } from "@clerk/express";
 
 export const createBoard = async (
   req: Request,
@@ -12,7 +13,16 @@ export const createBoard = async (
   next: NextFunction
 ) => {
   try {
-    const board = await boardService.createBoard(req.body);
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
+    const board = await boardService.createBoard({...req.body, createdBy: userId});
 
     // Transform Date objects to strings for DTO
     const boardDto: BoardDto = mapBoardToDto(board);
@@ -57,7 +67,17 @@ export const updateBoard = async (
 ) => {
   try {
     const { id } = req.params;
-    const board = await boardService.updateBoard(id, req.body);
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+    const updateData = {...req.body, userId};
+
+    const board = await boardService.updateBoard(id, updateData);
 
     if (!board) {
       return next(new AppError("Board not found", 404));
@@ -79,6 +99,15 @@ export const deleteBoard = async (
 ) => {
   try {
     const { id } = req.params;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
     const deleted = await boardService.deleteBoard(id);
 
     if (!deleted) {
@@ -135,8 +164,10 @@ export const getBoardsByUser = async (
   next: NextFunction
 ) => {
   try {
-    const { userId } = req.params;
-    const boards = await boardService.getBoardsByUser(userId);
+    const { userId: paramUserId } = req.params;
+
+
+    const boards = await boardService.getBoardsByUser(paramUserId);
     const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
     res.status(200).json({
       success: true,
@@ -172,8 +203,17 @@ export const addBoardMember = async (
 ) => {
   try {
     const { id } = req.params;
-    const { userId, role } = req.body;
-    const member = await boardService.addBoardMember(id, userId, role);
+    const { userId: memberUserId, role } = req.body;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
+    const member = await boardService.addBoardMember(id, memberUserId, role);
     const memberDto = mapBoardMemberToDto(member);
     res.status(201).json({
       success: true,
@@ -190,8 +230,18 @@ export const removeBoardMember = async (
   next: NextFunction
 ) => {
   try {
-    const { id, userId } = req.params;
-    const removed = await boardService.removeBoardMember(id, userId);
+    const { id, userId: memberUserId } = req.params;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
+
+    const removed = await boardService.removeBoardMember(id, memberUserId);
 
     if (!removed) {
       return next(new AppError("Board member not found", 404));
@@ -212,9 +262,21 @@ export const updateBoardMemberRole = async (
   next: NextFunction
 ) => {
   try {
-    const { id, userId } = req.params;
+    const { id, userId: memberUserId } = req.params;
     const { role } = req.body;
-    const member = await boardService.updateBoardMemberRole(id, userId, role);
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+    if (memberUserId!==userId) {
+      return next(new AppError("User not authorized to update this board member", 403));
+    }
+
+    const member = await boardService.updateBoardMemberRole(id, memberUserId, role);
     if (!member) {
       return next(new AppError("Board member not found", 404));
     }

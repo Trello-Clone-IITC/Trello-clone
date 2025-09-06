@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prismaClient.js";
-import { List } from "@prisma/client";
+import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export const listService = {

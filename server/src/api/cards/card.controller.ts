@@ -1,20 +1,19 @@
 import type { Request, Response, NextFunction } from "express";
 import { cardService } from "./cardService.js";
 import { AppError } from "../../utils/appError.js";
+import type{ ApiResponse } from "../../utils/globalTypes.js";
+import type{ ActivityLogDto, CardDto } from "@ronmordo/types";
+import { mapCardToDto } from "./card.mapper.js";
+import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
+import { getAuth } from "@clerk/express";
 
 
 export const cardController = {
   // Create a new card
-  createCard: async (req: Request, res: Response, next: NextFunction) => {
+  createCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const {
-        listId,
-        title,
-        description,
-        dueDate,
-        startDate,
-        position,
-        coverImageUrl,
+ 
         userId,
       } = req.body;
       // const userId = req.user?.id;
@@ -23,20 +22,12 @@ export const cardController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.createCard({
-        listId,
-        title,
-        description,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        startDate: startDate ? new Date(startDate) : undefined,
-        position: parseFloat(position),
-        coverImageUrl,
-        createdBy: userId,
-      });
+      const card = await cardService.createCard({...req.body, createdBy: userId});
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(201).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       console.error("Failed to create card", error);
@@ -45,21 +36,24 @@ export const cardController = {
   },
 
   // Get a single card by ID with all related data
-  getCard: async (req: Request, res: Response, next: NextFunction) => {
+  getCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      // const userId = req.user?.id; 
-      const userId = req.body.userId;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = req.body.userId;
+      }
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
       const card = await cardService.getCardById(id, userId);
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       console.log("Failed to get card", error);
@@ -69,7 +63,7 @@ export const cardController = {
   },
 
   // Get all cards for a list
-  getCardsByList: async (req: Request, res: Response, next: NextFunction) => {
+  getCardsByList: async (req: Request, res: Response<ApiResponse<CardDto[]>>, next: NextFunction) => {
     try {
       const { listId } = req.params;
       // const userId = req.user?.id;
@@ -80,10 +74,11 @@ export const cardController = {
       }
 
       const cards = await cardService.getCardsByList(listId, userId);
+      const cardsDtoArr: CardDto[] = cards.map(card => mapCardToDto(card));
 
       res.status(200).json({
-        status: "success",
-        data: { cards },
+        success: true,
+        data: cardsDtoArr,
       });
     } catch (error) {
       console.log("Failed to get cards by list", error);
@@ -93,7 +88,7 @@ export const cardController = {
   },
 
   // Update a card
-  updateCard: async (req: Request, res: Response, next: NextFunction) => {
+  updateCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -105,10 +100,11 @@ export const cardController = {
       }
 
       const card = await cardService.updateCard(id, updateData, userId);
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       console.log("Failed to update card", error);
@@ -131,7 +127,7 @@ export const cardController = {
       await cardService.deleteCard(id, userId);
 
       res.status(204).json({
-        status: "success",
+        success: true,
         data: null,
       });
     } catch (error) {
@@ -142,11 +138,11 @@ export const cardController = {
   },
 
   // Move card to different list/position
-  moveCard: async (req: Request, res: Response, next: NextFunction) => {
+  moveCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
       const { listId, position } = req.body;
-      const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -158,10 +154,11 @@ export const cardController = {
         parseFloat(position),
         userId
       );
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       next(new AppError("Failed to move card", 500));
@@ -169,20 +166,21 @@ export const cardController = {
   },
 
   // Archive/Unarchive a card
-  toggleArchive: async (req: Request, res: Response, next: NextFunction) => {
+  toggleArchive: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
       const card = await cardService.toggleArchive(id, userId);
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       next(new AppError("Failed to toggle card archive status", 500));
@@ -190,10 +188,10 @@ export const cardController = {
   },
 
   // Search cards
-  searchCards: async (req: Request, res: Response, next: NextFunction) => {
+  searchCards: async (req: Request, res: Response<ApiResponse<CardDto[]>>, next: NextFunction) => {
     try {
       const { query, boardId, listId } = req.query;
-      const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -211,10 +209,11 @@ export const cardController = {
         },
         userId
       );
+      const cardDtos: CardDto[] = cards.map(card => mapCardToDto(card));
 
       res.status(200).json({
-        status: "success",
-        data: { cards },
+        success: true,
+        data: cardDtos,
       });
     } catch (error) {
       next(new AppError("Failed to search cards", 500));
@@ -222,20 +221,21 @@ export const cardController = {
   },
 
   // Get card activity
-  getCardActivity: async (req: Request, res: Response, next: NextFunction) => {
+  getCardActivity: async (req: Request, res: Response<ApiResponse<ActivityLogDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
       const activities = await cardService.getCardActivity(id, userId);
+      const activitiesDtoArr: ActivityLogDto[] = activities.map(activity => mapActivityLogToDto(activity));
 
       res.status(200).json({
-        status: "success",
-        data: { activities },
+        success: true,
+        data: activitiesDtoArr,
       });
     } catch (error) {
       next(new AppError("Failed to get card activity", 500));
@@ -243,20 +243,21 @@ export const cardController = {
   },
 
   // Subscribe/Unsubscribe to card
-  toggleSubscription: async (req: Request, res: Response, next: NextFunction) => {
+  toggleSubscription: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      const userId = req.body.userId;
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
       const card = await cardService.toggleSubscription(id, userId);
+      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
-        status: "success",
-        data: { card },
+        success: true,
+        data: cardDto,
       });
     } catch (error) {
       next(new AppError("Failed to toggle card subscription", 500));

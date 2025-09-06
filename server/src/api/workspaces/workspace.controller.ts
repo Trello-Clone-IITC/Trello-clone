@@ -21,6 +21,7 @@ import { workspaceService } from "./workspaceService.js";
 import { mapWorkspaceToDto } from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-member.mapper.js";
+import { getAuth } from "@clerk/express";
 
 export const createWorkspace = async (
   req: Request,
@@ -28,10 +29,18 @@ export const createWorkspace = async (
   next: NextFunction
 ) => {
   try {
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
     const {
       name,
       description,
-      createdBy,
       visibility,
       type,
       workspaceMembershipRestrictions,
@@ -46,14 +55,14 @@ export const createWorkspace = async (
       premium,
     } = req.body;
 
-    if (!name || !createdBy) {
-      return next(new AppError("Name and createdBy are required", 400));
+    if (!name) {
+      return next(new AppError("Name is required", 400));
     }
 
     const workspace = await workspaceService.createWorkspace({
       name,
       description,
-      createdBy,
+      createdBy: userId,
       visibility: visibility || WorkspaceVisibility.Private,
       premium: premium ?? false,
       type: type ?? WorkspaceType.Other,
@@ -264,12 +273,20 @@ export const addWorkspaceMember = async (
 ) => {
   try {
     const { id } = req.params;
-    const { userId, role } = req.body;
+    const {  role } = req.body;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
 
     const member = await workspaceService.addWorkspaceMember(
       id,
       userId,
-      role || WorkspaceRole.Member
+      role || WorkspaceRole.Member,
     );
 
     // Transform Prisma workspace member to DTO format
@@ -290,9 +307,17 @@ export const removeWorkspaceMember = async (
   next: NextFunction
 ) => {
   try {
-    const { id, userId } = req.params;
+    const { id } = req.params;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
 
-    const removed = await workspaceService.removeWorkspaceMember(id, userId);
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
+    const removed = await workspaceService.removeWorkspaceMember(id,  userId);
 
     if (!removed) {
       return next(new AppError("Workspace member not found", 404));
@@ -313,8 +338,16 @@ export const updateWorkspaceMemberRole = async (
   next: NextFunction
 ) => {
   try {
-    const { id, userId } = req.params;
+    const { id } = req.params;
     const { role } = req.body;
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
 
     const member = await workspaceService.updateWorkspaceMemberRole(
       id,
