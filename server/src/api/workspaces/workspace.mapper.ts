@@ -43,7 +43,9 @@ function mapVisibility(v: WorkspaceVisibility): "private" | "public" {
 }
 
 function mapType(t: WorkspaceType): WorkspaceTypeDto {
-  return t.replace(/([A-Z])/g, "_$1").toLowerCase() as WorkspaceTypeDto;
+  return t.replace(/([A-Z])/g, (_, p1, offset) =>
+  offset > 0 ? "_" + p1.toLowerCase() : p1.toLowerCase()
+) as WorkspaceTypeDto; 
 }
 
 function mapMembership(

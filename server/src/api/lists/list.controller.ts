@@ -4,7 +4,8 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import { listService } from "./listService.js";
 import type { ListDto, ListWatcherDto } from "@ronmordo/types";
 import { mapListToDto } from "./list.mapper.js";
-import { mapListWatcherToDto } from "./list-watchers/list-watcher.mapper.js";
+import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
+import { getAuth } from "@clerk/express";
 
 export const createList = async (
   req: Request,
@@ -13,7 +14,16 @@ export const createList = async (
 ) => {
   try {
     const { boardId } = req.params;
-    const list = await listService.createList(boardId, req.body);
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+const listData = {...req.body, createdBy: userId};
+    const list = await listService.createList(boardId, listData);
 
     const listDto: ListDto = mapListToDto(list);
 
@@ -57,7 +67,17 @@ export const updateList = async (
 ) => {
   try {
     const { listId } = req.params;
-    const list = await listService.updateList(listId, req.body);
+    let { userId } = getAuth(req) || {};
+    if (!userId) {
+      userId = req.body.userId;
+    }
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+    const updateData = {...req.body, userId};
+
+    const list = await listService.updateList(listId, updateData);
 
     if (!list) {
       return next(new AppError("List not found", 404));

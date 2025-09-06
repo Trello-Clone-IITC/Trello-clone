@@ -1,74 +1,36 @@
 import { Router } from "express";
 import { cardController } from "./card.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import { z } from "zod";
+import * as cardValidation from "./card.validation.js";
 
 const router = Router();
 
-// Validation schemas
-const createCardSchema = z.object({
-  body: z.object({
-    listId: z.string().uuid(),
-    title: z.string().min(1).max(255),
-    description: z.string().max(1000).optional(),
-    dueDate: z.string().datetime().optional(),
-    startDate: z.string().datetime().optional(),
-    position: z.number().min(0),
-    coverImageUrl: z.string().url().optional(),
-  }),
-});
-
-const updateCardSchema = z.object({
-  body: z.object({
-    title: z.string().min(1).max(255).optional(),
-    description: z.string().max(1000).optional(),
-    dueDate: z.string().datetime().optional(),
-    startDate: z.string().datetime().optional(),
-    coverImageUrl: z.string().url().optional(),
-  }),
-});
-
-const moveCardSchema = z.object({
-  body: z.object({
-    listId: z.string().uuid(),
-    position: z.number().min(0),
-  }),
-});
-
-const searchCardsSchema = z.object({
-  query: z.object({
-    query: z.string().min(1),
-    boardId: z.string().uuid().optional(),
-    listId: z.string().uuid().optional(),
-  }),
-});
-
 // Card CRUD routes
-router.post("/", validateRequest(createCardSchema), cardController.createCard);
-router.get("/:id", cardController.getCard);
-router.get("/list/:listId", cardController.getCardsByList);
+router.post("/", validateRequest(cardValidation.createCardSchema), cardController.createCard);
+router.get("/:id", validateRequest(cardValidation.getCardSchema), cardController.getCard);
+router.get("/list/:listId", validateRequest(cardValidation.getCardsByListSchema), cardController.getCardsByList);
 router.put(
   "/:id",
-  validateRequest(updateCardSchema),
+  validateRequest(cardValidation.updateCardSchema),
   cardController.updateCard
 );
-router.delete("/:id", cardController.deleteCard);
+router.delete("/:id", validateRequest(cardValidation.deleteCardSchema), cardController.deleteCard);
 
 // Card operations
 router.patch(
   "/:id/move",
-  validateRequest(moveCardSchema),
+  validateRequest(cardValidation.moveCardSchema),
   cardController.moveCard
 );
-router.patch("/:id/archive", cardController.toggleArchive);
-router.patch("/:id/subscribe", cardController.toggleSubscription);
+router.patch("/:id/archive", validateRequest(cardValidation.toggleArchiveSchema), cardController.toggleArchive);
+router.patch("/:id/subscribe", validateRequest(cardValidation.toggleSubscriptionSchema), cardController.toggleSubscription);
 
 // Card search and activity
 router.get(
   "/search",
-  validateRequest(searchCardsSchema),
+  validateRequest(cardValidation.searchCardsSchema),
   cardController.searchCards
 );
-router.get("/:id/activity", cardController.getCardActivity);
+router.get("/:id/activity", validateRequest(cardValidation.getCardActivitySchema), cardController.getCardActivity);
 
 export default router;

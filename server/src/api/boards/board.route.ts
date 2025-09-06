@@ -40,7 +40,7 @@ router.post(
   validateRequest(addBoardMemberSchema),
   addBoardMember
 );
-router.put(
+router.patch(
   "/:id/members/:userId",
   validateRequest(updateBoardMemberSchema),
   updateBoardMemberRole
