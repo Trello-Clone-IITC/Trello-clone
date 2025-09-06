@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prismaClient.js";
-import { Board, BoardMember, List, BoardRole } from "@prisma/client";
+import { type Board, type BoardMember, type List,  BoardRole } from "@prisma/client";
 
 export const boardService = {
   async createBoard(
