@@ -13,8 +13,8 @@ export function SsoCallback() {
           color={theme === "dark" ? "#fafafa" : "#0a0a0a"}
         />
         <AuthenticateWithRedirectCallback
-          signInFallbackRedirectUrl="/test"
-          signUpFallbackRedirectUrl="/test"
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
         />
         <p>Welcome! We're loading your user information.</p>
       </Card>
