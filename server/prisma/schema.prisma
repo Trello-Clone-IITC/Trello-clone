@@ -384,7 +384,7 @@ model User {
   email                    String                    @unique(map: "users_email_idx") @db.Citext
   username                 String?                   @unique(map: "users_username_idx") @db.Citext
   fullName                 String                    @map("full_name")
-  avatarUrl                String                    @map("avatar_url") @default("default_avatar_url")
+  avatarUrl                String                    @map("avatar_url")
   theme                    Theme                     @default(System)
   recentlyViewedBoards     String[]                  @map("recently_viewed_boards") @default([])
   emailNotification        Boolean                   @map("email_notification") @default(true)
