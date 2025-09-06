@@ -1,27 +1,9 @@
 import { Router } from "express";
 import { attachmentController } from "./attachment.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import { z } from "zod";
+import { createAttachmentSchema, updateAttachmentSchema } from "./attachment.validation.js";
 
 const router = Router();
-
-// Validation schemas
-const createAttachmentSchema = z.object({
-  body: z.object({
-    cardId: z.string().uuid(),
-    url: z.string().url(),
-    filename: z.string().max(255).optional(),
-    bytes: z.number().positive().optional(),
-    meta: z.any().optional(),
-  }),
-});
-
-const updateAttachmentSchema = z.object({
-  body: z.object({
-    filename: z.string().max(255).optional(),
-    meta: z.any().optional(),
-  }),
-});
 
 // Attachment CRUD routes
 router.post(

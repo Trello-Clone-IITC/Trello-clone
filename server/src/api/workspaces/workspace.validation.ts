@@ -68,7 +68,7 @@ export const updateWorkspaceSchema = z.object({
         "HumenResources",
         "SmallBusiness",
         "EngineeringIt",
-        "Education",
+        "education",
         "Operations",
         "Other",
       ])

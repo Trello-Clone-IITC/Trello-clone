@@ -6,7 +6,7 @@ const router = Router();
 
 // All routes for the users resource are protected since each op in trello is enabled if we are logged in.
 // Authentication middleware.
-router.use(validateAuthenticatedUser);
+// router.use(validateAuthenticatedUser);
 
 // Routes
 router.get("/me", usersController.getMe);
