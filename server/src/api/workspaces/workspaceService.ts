@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prismaClient.js";
-import { Workspace, WorkspaceMember, WorkspaceRole } from "@prisma/client";
+import { type Workspace, type WorkspaceMember,  WorkspaceRole } from "@prisma/client";
 
 export const workspaceService = {
   async createWorkspace(
@@ -8,6 +8,7 @@ export const workspaceService = {
     const workspace = await prisma.workspace.create({
       data: workspaceData,
     });
+    console.log("workspace from service", workspace);
     return workspace;
   },
 

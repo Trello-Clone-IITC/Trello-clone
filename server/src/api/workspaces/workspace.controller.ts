@@ -1,9 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
-import { ApiResponse } from "../../utils/globalTypes.js";
+import type { ApiResponse } from "../../utils/globalTypes.js";
 import {
-  Workspace,
-  Board,
+
   WorkspaceRole,
   WorkspaceType,
   WorkspaceVisibility,
@@ -13,17 +12,15 @@ import {
   SlackSharing,
 } from "@prisma/client";
 import type {
+  BoardDto,
   WorkspaceDto,
   WorkspaceMemberDto,
-  WorkspaceVisibility as DtoWorkspaceVisibility,
-  WorkspaceType as DtoWorkspaceType,
-  MembershipRestrictions as DtoMembershipRestrictions,
-  BoardCreationRestrictions as DtoBoardCreationRestrictions,
-  BoardSharing as DtoBoardSharing,
-  SlackSharing as DtoSlackSharing,
-  WorkspaceRole as DtoWorkspaceRole,
+
 } from "@ronmordo/types";
 import { workspaceService } from "./workspaceService.js";
+import { mapWorkspaceToDto } from "./workspace.mapper.js";
+import { mapBoardToDto } from "../boards/board.mapper.js";
+import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-member.mapper.js";
 
 export const createWorkspace = async (
   req: Request,
@@ -80,44 +77,20 @@ export const createWorkspace = async (
     });
 
     // Transform Prisma workspace to DTO format
-    const workspaceDto: WorkspaceDto = {
-      ...workspace,
-      createdAt: workspace.createdAt.toISOString(),
-      updatedAt: workspace.updatedAt.toISOString(),
-      visibility: workspace.visibility.toLowerCase() as DtoWorkspaceVisibility,
-      type: workspace.type.toLowerCase() as DtoWorkspaceType,
-      workspaceMembershipRestrictions:
-        workspace.workspaceMembershipRestrictions.toLowerCase() as DtoMembershipRestrictions,
-      publicBoardCreation:
-        workspace.publicBoardCreation.toLowerCase() as DtoBoardCreationRestrictions,
-      workspaceBoardCreation:
-        workspace.workspaceBoardCreation.toLowerCase() as DtoBoardCreationRestrictions,
-      privateBoardCreation:
-        workspace.privateBoardCreation.toLowerCase() as DtoBoardCreationRestrictions,
-      publicBoardDeletion:
-        workspace.publicBoardDeletion.toLowerCase() as DtoBoardCreationRestrictions,
-      workspaceBoardDeletion:
-        workspace.workspaceBoardDeletion.toLowerCase() as DtoBoardCreationRestrictions,
-      privateBoardDeletion:
-        workspace.privateBoardDeletion.toLowerCase() as DtoBoardCreationRestrictions,
-      allowGuestSharing:
-        workspace.allowGuestSharing.toLowerCase() as DtoBoardSharing,
-      allowSlackIntegration:
-        workspace.allowSlackIntegration.toLowerCase() as DtoSlackSharing,
-    };
-
+    const workspaceDto = mapWorkspaceToDto(workspace);
     res.status(201).json({
       success: true,
       data: workspaceDto,
     });
   } catch (error) {
+    console.log("creating workspace error", error);
     next(new AppError("Failed to create workspace", 500));
   }
 };
 
 export const getWorkspace = async (
   req: Request,
-  res: Response<ApiResponse<Workspace>>,
+  res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
@@ -128,10 +101,10 @@ export const getWorkspace = async (
     if (!workspace) {
       return next(new AppError("Workspace not found", 404));
     }
-
+    const workspaceDto = mapWorkspaceToDto(workspace);
     res.status(200).json({
       success: true,
-      data: workspace,
+      data: workspaceDto,
     });
   } catch (error) {
     next(new AppError("Failed to get workspace", 500));
@@ -140,7 +113,7 @@ export const getWorkspace = async (
 
 export const updateWorkspace = async (
   req: Request,
-  res: Response<ApiResponse<Workspace>>,
+  res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
@@ -155,10 +128,10 @@ export const updateWorkspace = async (
     if (!updatedWorkspace) {
       return next(new AppError("Workspace not found", 404));
     }
-
+    const updatedWorkspaceDto = mapWorkspaceToDto(updatedWorkspace);
     res.status(200).json({
       success: true,
-      data: updatedWorkspace,
+      data: updatedWorkspaceDto,
     });
   } catch (error) {
     next(new AppError("Failed to update workspace", 500));
@@ -190,17 +163,17 @@ export const deleteWorkspace = async (
 
 export const getWorkspaceBoards = async (
   req: Request,
-  res: Response<ApiResponse<Board[]>>,
+  res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
 
     const boards = await workspaceService.getWorkspaceBoards(id);
-
+    const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
     res.status(200).json({
       success: true,
-      data: boards,
+      data: boardsDto,
     });
   } catch (error) {
     next(new AppError("Failed to get workspace boards", 500));
@@ -209,15 +182,15 @@ export const getWorkspaceBoards = async (
 
 export const getAllWorkspaces = async (
   _req: Request,
-  res: Response<ApiResponse<Workspace[]>>,
+  res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
 ) => {
   try {
     const workspaces = await workspaceService.getAllWorkspaces();
-
+    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
     res.status(200).json({
       success: true,
-      data: workspaces,
+      data: workspacesDto,
     });
   } catch (error) {
     next(new AppError("Failed to get workspaces", 500));
@@ -226,36 +199,37 @@ export const getAllWorkspaces = async (
 
 export const getWorkspacesByUser = async (
   req: Request,
-  res: Response<ApiResponse<Workspace[]>>,
+  res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { userId } = req.params;
-
     const workspaces = await workspaceService.getWorkspacesByUser(userId);
-
+    console.log("workspaces", workspaces);
+    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
     res.status(200).json({
       success: true,
-      data: workspaces,
+      data: workspacesDto,
     });
   } catch (error) {
+    console.log("error", error);
     next(new AppError("Failed to get workspaces by user", 500));
   }
 };
 
 export const getWorkspacesByCreator = async (
   req: Request,
-  res: Response<ApiResponse<Workspace[]>>,
+  res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { userId } = req.params;
 
     const workspaces = await workspaceService.getWorkspacesByCreator(userId);
-
+    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
     res.status(200).json({
       success: true,
-      data: workspaces,
+      data: workspacesDto,
     });
   } catch (error) {
     next(new AppError("Failed to get workspaces by creator", 500));
@@ -273,12 +247,7 @@ export const getWorkspaceMembers = async (
     const members = await workspaceService.getWorkspaceMembers(id);
 
     // Transform Prisma workspace members to DTO format
-    const memberDtos: WorkspaceMemberDto[] = members.map((member) => ({
-      ...member,
-      joinedAt: member.joinedAt.toISOString(),
-      role: member.role.toLowerCase() as DtoWorkspaceRole,
-    }));
-
+    const memberDtos: WorkspaceMemberDto[] = members.map(mapWorkspaceMemberToDto);
     res.status(200).json({
       success: true,
       data: memberDtos,
@@ -304,11 +273,7 @@ export const addWorkspaceMember = async (
     );
 
     // Transform Prisma workspace member to DTO format
-    const memberDto: WorkspaceMemberDto = {
-      ...member,
-      joinedAt: member.joinedAt.toISOString(),
-      role: member.role.toLowerCase() as DtoWorkspaceRole,
-    };
+    const memberDto: WorkspaceMemberDto = mapWorkspaceMemberToDto(member);
 
     res.status(201).json({
       success: true,
@@ -360,13 +325,9 @@ export const updateWorkspaceMemberRole = async (
     if (!member) {
       return next(new AppError("Workspace member not found", 404));
     }
-
+   
     // Transform Prisma workspace member to DTO format
-    const memberDto: WorkspaceMemberDto = {
-      ...member,
-      joinedAt: member.joinedAt.toISOString(),
-      role: member.role.toLowerCase() as DtoWorkspaceRole,
-    };
+    const memberDto: WorkspaceMemberDto = mapWorkspaceMemberToDto(member);
 
     res.status(200).json({
       success: true,
@@ -379,7 +340,7 @@ export const updateWorkspaceMemberRole = async (
 
 export const searchWorkspaces = async (
   req: Request,
-  res: Response<ApiResponse<Workspace[]>>,
+  res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
 ) => {
   try {
@@ -390,9 +351,10 @@ export const searchWorkspaces = async (
       limit ? parseInt(limit as string) : 10
     );
 
+    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
     res.status(200).json({
       success: true,
-      data: workspaces,
+      data: workspacesDto,
     });
   } catch (error) {
     next(new AppError("Failed to search workspaces", 500));
