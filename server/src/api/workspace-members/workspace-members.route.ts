@@ -21,7 +21,7 @@ router.delete(
   workspaceController.removeWorkspaceMember
 );
 
-router.put(
+router.patch(
   "/:id/members/:userId",
   validateRequest(updateWorkspaceMemberSchema),
   workspaceController.updateWorkspaceMemberRole

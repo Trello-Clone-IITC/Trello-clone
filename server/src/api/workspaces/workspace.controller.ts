@@ -272,6 +272,7 @@ const addWorkspaceMember = async (
   next: NextFunction
 ) => {
   try {
+    console.log("-------------------------1");
     const { id } = req.params;
     const { role } = req.body;
     let { userId } = getAuth(req) || {};
@@ -282,6 +283,7 @@ const addWorkspaceMember = async (
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
+    console.log("-------------------------");
 
     const member = await workspaceService.addWorkspaceMember(
       id,
@@ -297,6 +299,7 @@ const addWorkspaceMember = async (
       data: memberDto,
     });
   } catch (error) {
+    console.log("error", error);
     next(new AppError("Failed to add workspace member", 500));
   }
 };
