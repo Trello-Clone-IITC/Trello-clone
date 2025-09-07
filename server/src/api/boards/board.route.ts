@@ -1,17 +1,5 @@
 import { Router } from "express";
-import {
-  getBoard,
-  createBoard,
-  updateBoard,
-  deleteBoard,
-  getBoardsByWorkspace,
-  getBoardsByUser,
-  getAllBoards,
-  addBoardMember,
-  removeBoardMember,
-  updateBoardMemberRole,
-  getBoardMembers,
-} from "./board.controller.js";
+import boardController from "./board.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
   createBoardSchema,
@@ -25,30 +13,46 @@ import {
 const router = Router();
 
 // Board CRUD operations
-router.post("/", validateRequest(createBoardSchema), createBoard);
-router.get("/", getAllBoards);
-router.get("/workspace/:workspaceId", getBoardsByWorkspace);
-router.get("/user/:userId", getBoardsByUser);
-router.get("/:id", validateRequest(boardIdSchema), getBoard);
-router.put("/:id", validateRequest(updateBoardSchema), updateBoard);
-router.delete("/:id", validateRequest(boardIdSchema), deleteBoard);
+router.post(
+  "/",
+  validateRequest(createBoardSchema),
+  boardController.createBoard
+);
+router.get("/", boardController.getAllBoards);
+router.get("/workspace/:workspaceId", boardController.getBoardsByWorkspace);
+router.get("/user/:userId", boardController.getBoardsByUser);
+router.get("/:id", validateRequest(boardIdSchema), boardController.getBoard);
+router.put(
+  "/:id",
+  validateRequest(updateBoardSchema),
+  boardController.updateBoard
+);
+router.delete(
+  "/:id",
+  validateRequest(boardIdSchema),
+  boardController.deleteBoard
+);
 
 // Board member management
-router.get("/:id/members", validateRequest(boardIdSchema), getBoardMembers);
+router.get(
+  "/:id/members",
+  validateRequest(boardIdSchema),
+  boardController.getBoardMembers
+);
 router.post(
   "/:id/members",
   validateRequest(addBoardMemberSchema),
-  addBoardMember
+  boardController.addBoardMember
 );
 router.patch(
   "/:id/members/:userId",
   validateRequest(updateBoardMemberSchema),
-  updateBoardMemberRole
+  boardController.updateBoardMemberRole
 );
 router.delete(
   "/:id/members/:userId",
   validateRequest(removeBoardMemberSchema),
-  removeBoardMember
+  boardController.removeBoardMember
 );
 
 export default router;

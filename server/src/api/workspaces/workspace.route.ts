@@ -1,27 +1,10 @@
 import { Router } from "express";
-import {
-  getWorkspace,
-  createWorkspace,
-  updateWorkspace,
-  deleteWorkspace,
-  getWorkspaceBoards,
-  getAllWorkspaces,
-  getWorkspacesByUser,
-  getWorkspacesByCreator,
-  getWorkspaceMembers,
-  addWorkspaceMember,
-  removeWorkspaceMember,
-  updateWorkspaceMemberRole,
-  searchWorkspaces,
-} from "./workspace.controller.js";
+import workspaceController from "./workspace.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
   createWorkspaceSchema,
   updateWorkspaceSchema,
   workspaceIdSchema,
-  addWorkspaceMemberSchema,
-  updateWorkspaceMemberSchema,
-  removeWorkspaceMemberSchema,
   getWorkspacesByUserSchema,
   searchWorkspacesSchema,
 } from "./workspace.validation.js";
@@ -29,54 +12,55 @@ import {
 const router = Router();
 
 // Workspace CRUD operations
-router.post("/", validateRequest(createWorkspaceSchema), createWorkspace);
-router.get("/", getAllWorkspaces);
-router.get(
-  "/search",
-  validateRequest(searchWorkspacesSchema),
-  searchWorkspaces
+router.post(
+  "/",
+  validateRequest(createWorkspaceSchema),
+  workspaceController.createWorkspace
 );
 router.get(
-  "/user/:userId",
-  validateRequest(getWorkspacesByUserSchema),
-  getWorkspacesByUser
+  "/:id",
+  validateRequest(workspaceIdSchema),
+  workspaceController.getWorkspace
 );
-router.get(
-  "/creator/:userId",
-  validateRequest(getWorkspacesByUserSchema),
-  getWorkspacesByCreator
+router.patch(
+  "/:id",
+  validateRequest(updateWorkspaceSchema),
+  workspaceController.updateWorkspace
 );
-router.get("/:id", validateRequest(workspaceIdSchema), getWorkspace);
-router.put("/:id", validateRequest(updateWorkspaceSchema), updateWorkspace);
-router.delete("/:id", validateRequest(workspaceIdSchema), deleteWorkspace);
+router.delete(
+  "/:id",
+  validateRequest(workspaceIdSchema),
+  workspaceController.deleteWorkspace
+);
 
 // Workspace boards
 router.get(
   "/:id/boards",
   validateRequest(workspaceIdSchema),
-  getWorkspaceBoards
+  workspaceController.getWorkspaceBoards
 );
 
 // Workspace member management
 router.get(
   "/:id/members",
   validateRequest(workspaceIdSchema),
-  getWorkspaceMembers
-);
-router.post(
-  "/:id/members",
-  validateRequest(addWorkspaceMemberSchema),
-  addWorkspaceMember
-);
-router.delete(
-  "/:id/members/:userId",
-  validateRequest(removeWorkspaceMemberSchema),
-  removeWorkspaceMember
-);
-router.put(
-  "/:id/members/:userId",
-  validateRequest(updateWorkspaceMemberSchema),
-  updateWorkspaceMemberRole
+  workspaceController.getWorkspaceMembers
 );
 
+router.get("/", workspaceController.getAllWorkspaces);
+router.get(
+  "/search",
+  validateRequest(searchWorkspacesSchema),
+  workspaceController.searchWorkspaces
+);
+router.get(
+  "/user/:userId",
+  validateRequest(getWorkspacesByUserSchema),
+  workspaceController.getWorkspacesByUser
+);
+router.get(
+  "/creator/:userId",
+  validateRequest(getWorkspacesByUserSchema),
+  workspaceController.getWorkspacesByCreator
+);
 export default router;
