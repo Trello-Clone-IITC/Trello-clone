@@ -7,6 +7,10 @@ import { z } from "zod";
 export const validateRequest = (schema: z.ZodType) => {
   return async (req: Request, _: Response, next: NextFunction) => {
     try {
+      console.log("req.body", req.body);
+      console.log("req.query", req.query);
+      console.log("req.params", req.params.id);
+
       await schema.parseAsync({
         body: req.body,
         query: req.query,
@@ -14,6 +18,8 @@ export const validateRequest = (schema: z.ZodType) => {
       });
       next();
     } catch (error) {
+      console.log("error in validation", error);
+
       if (error instanceof z.ZodError) {
         const errorMessage = error.issues.map((err) => err.message).join(", ");
         return next(new AppError(`Validation error: ${errorMessage}`, 400));

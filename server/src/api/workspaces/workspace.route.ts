@@ -8,6 +8,7 @@ import {
   getWorkspacesByUserSchema,
   searchWorkspacesSchema,
 } from "./workspace.validation.js";
+import workspaceMembersRouter from "../workspace-members/workspace-members.route.js";
 
 const router = Router();
 
@@ -63,4 +64,6 @@ router.get(
   validateRequest(getWorkspacesByUserSchema),
   workspaceController.getWorkspacesByCreator
 );
+
+router.use("/", workspaceMembersRouter);
 export default router;
