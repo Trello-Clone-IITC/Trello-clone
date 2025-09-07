@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import {
-
   WorkspaceRole,
   WorkspaceType,
   WorkspaceVisibility,
@@ -15,15 +14,14 @@ import type {
   BoardDto,
   WorkspaceDto,
   WorkspaceMemberDto,
-
 } from "@ronmordo/types";
 import { workspaceService } from "./workspaceService.js";
 import { mapWorkspaceToDto } from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
-import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-member.mapper.js";
+import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
 import { getAuth } from "@clerk/express";
 
-export const createWorkspace = async (
+const createWorkspace = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
@@ -97,7 +95,7 @@ export const createWorkspace = async (
   }
 };
 
-export const getWorkspace = async (
+const getWorkspace = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
@@ -120,7 +118,7 @@ export const getWorkspace = async (
   }
 };
 
-export const updateWorkspace = async (
+const updateWorkspace = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
@@ -147,7 +145,7 @@ export const updateWorkspace = async (
   }
 };
 
-export const deleteWorkspace = async (
+const deleteWorkspace = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -170,7 +168,7 @@ export const deleteWorkspace = async (
   }
 };
 
-export const getWorkspaceBoards = async (
+const getWorkspaceBoards = async (
   req: Request,
   res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
@@ -189,7 +187,7 @@ export const getWorkspaceBoards = async (
   }
 };
 
-export const getAllWorkspaces = async (
+const getAllWorkspaces = async (
   _req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
@@ -206,7 +204,7 @@ export const getAllWorkspaces = async (
   }
 };
 
-export const getWorkspacesByUser = async (
+const getWorkspacesByUser = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
@@ -226,7 +224,7 @@ export const getWorkspacesByUser = async (
   }
 };
 
-export const getWorkspacesByCreator = async (
+const getWorkspacesByCreator = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
@@ -245,7 +243,7 @@ export const getWorkspacesByCreator = async (
   }
 };
 
-export const getWorkspaceMembers = async (
+const getWorkspaceMembers = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceMemberDto[]>>,
   next: NextFunction
@@ -256,7 +254,9 @@ export const getWorkspaceMembers = async (
     const members = await workspaceService.getWorkspaceMembers(id);
 
     // Transform Prisma workspace members to DTO format
-    const memberDtos: WorkspaceMemberDto[] = members.map(mapWorkspaceMemberToDto);
+    const memberDtos: WorkspaceMemberDto[] = members.map(
+      mapWorkspaceMemberToDto
+    );
     res.status(200).json({
       success: true,
       data: memberDtos,
@@ -266,14 +266,14 @@ export const getWorkspaceMembers = async (
   }
 };
 
-export const addWorkspaceMember = async (
+const addWorkspaceMember = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceMemberDto>>,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
-    const {  role } = req.body;
+    const { role } = req.body;
     let { userId } = getAuth(req) || {};
     if (!userId) {
       userId = req.body.userId;
@@ -286,7 +286,7 @@ export const addWorkspaceMember = async (
     const member = await workspaceService.addWorkspaceMember(
       id,
       userId,
-      role || WorkspaceRole.Member,
+      role || WorkspaceRole.Member
     );
 
     // Transform Prisma workspace member to DTO format
@@ -301,7 +301,7 @@ export const addWorkspaceMember = async (
   }
 };
 
-export const removeWorkspaceMember = async (
+const removeWorkspaceMember = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -317,7 +317,7 @@ export const removeWorkspaceMember = async (
       return next(new AppError("User not authenticated", 401));
     }
 
-    const removed = await workspaceService.removeWorkspaceMember(id,  userId);
+    const removed = await workspaceService.removeWorkspaceMember(id, userId);
 
     if (!removed) {
       return next(new AppError("Workspace member not found", 404));
@@ -332,7 +332,7 @@ export const removeWorkspaceMember = async (
   }
 };
 
-export const updateWorkspaceMemberRole = async (
+const updateWorkspaceMemberRole = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceMemberDto>>,
   next: NextFunction
@@ -358,7 +358,7 @@ export const updateWorkspaceMemberRole = async (
     if (!member) {
       return next(new AppError("Workspace member not found", 404));
     }
-   
+
     // Transform Prisma workspace member to DTO format
     const memberDto: WorkspaceMemberDto = mapWorkspaceMemberToDto(member);
 
@@ -371,7 +371,7 @@ export const updateWorkspaceMemberRole = async (
   }
 };
 
-export const searchWorkspaces = async (
+const searchWorkspaces = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
   next: NextFunction
@@ -392,4 +392,20 @@ export const searchWorkspaces = async (
   } catch (error) {
     next(new AppError("Failed to search workspaces", 500));
   }
+};
+
+export default {
+  createWorkspace,
+  getWorkspace,
+  updateWorkspace,
+  deleteWorkspace,
+  getWorkspaceBoards,
+  getAllWorkspaces,
+  getWorkspacesByUser,
+  getWorkspacesByCreator,
+  getWorkspaceMembers,
+  addWorkspaceMember,
+  removeWorkspaceMember,
+  updateWorkspaceMemberRole,
+  searchWorkspaces,
 };

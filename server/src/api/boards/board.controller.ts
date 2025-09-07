@@ -1,13 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import { boardService } from "./boardService.js";
-import type {BoardDto,BoardMemberDto} from "@ronmordo/types";
+import { boardService } from "./board.service.js";
+import type { BoardDto, BoardMemberDto } from "@ronmordo/types";
 import { mapBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { getAuth } from "@clerk/express";
 
-export const createBoard = async (
+const createBoard = async (
   req: Request,
   res: Response<ApiResponse<BoardDto>>,
   next: NextFunction
@@ -22,7 +22,10 @@ export const createBoard = async (
       return next(new AppError("User not authenticated", 401));
     }
 
-    const board = await boardService.createBoard({...req.body, createdBy: userId});
+    const board = await boardService.createBoard({
+      ...req.body,
+      createdBy: userId,
+    });
 
     // Transform Date objects to strings for DTO
     const boardDto: BoardDto = mapBoardToDto(board);
@@ -36,7 +39,7 @@ export const createBoard = async (
   }
 };
 
-export const getBoard = async (
+const getBoard = async (
   req: Request,
   res: Response<ApiResponse<BoardDto>>,
   next: NextFunction
@@ -50,7 +53,6 @@ export const getBoard = async (
     }
     const boardDto: BoardDto = mapBoardToDto(board);
 
-
     res.status(200).json({
       success: true,
       data: boardDto,
@@ -60,7 +62,7 @@ export const getBoard = async (
   }
 };
 
-export const updateBoard = async (
+const updateBoard = async (
   req: Request,
   res: Response<ApiResponse<BoardDto>>,
   next: NextFunction
@@ -75,7 +77,7 @@ export const updateBoard = async (
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
-    const updateData = {...req.body, userId};
+    const updateData = { ...req.body, userId };
 
     const board = await boardService.updateBoard(id, updateData);
 
@@ -92,7 +94,7 @@ export const updateBoard = async (
   }
 };
 
-export const deleteBoard = async (
+const deleteBoard = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -123,7 +125,7 @@ export const deleteBoard = async (
   }
 };
 
-export const getAllBoards = async (
+const getAllBoards = async (
   _req: Request,
   res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
@@ -140,7 +142,7 @@ export const getAllBoards = async (
   }
 };
 
-export const getBoardsByWorkspace = async (
+const getBoardsByWorkspace = async (
   req: Request,
   res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
@@ -158,14 +160,13 @@ export const getBoardsByWorkspace = async (
   }
 };
 
-export const getBoardsByUser = async (
+const getBoardsByUser = async (
   req: Request,
   res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { userId: paramUserId } = req.params;
-
 
     const boards = await boardService.getBoardsByUser(paramUserId);
     const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
@@ -178,7 +179,7 @@ export const getBoardsByUser = async (
   }
 };
 
-export const getBoardMembers = async (
+const getBoardMembers = async (
   req: Request,
   res: Response<ApiResponse<BoardMemberDto[]>>,
   next: NextFunction
@@ -196,7 +197,7 @@ export const getBoardMembers = async (
   }
 };
 
-export const addBoardMember = async (
+const addBoardMember = async (
   req: Request,
   res: Response<ApiResponse<BoardMemberDto>>,
   next: NextFunction
@@ -224,7 +225,7 @@ export const addBoardMember = async (
   }
 };
 
-export const removeBoardMember = async (
+const removeBoardMember = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -239,7 +240,6 @@ export const removeBoardMember = async (
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
-
 
     const removed = await boardService.removeBoardMember(id, memberUserId);
 
@@ -256,7 +256,7 @@ export const removeBoardMember = async (
   }
 };
 
-export const updateBoardMemberRole = async (
+const updateBoardMemberRole = async (
   req: Request,
   res: Response<ApiResponse<BoardMemberDto>>,
   next: NextFunction
@@ -272,11 +272,17 @@ export const updateBoardMemberRole = async (
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
-    if (memberUserId!==userId) {
-      return next(new AppError("User not authorized to update this board member", 403));
+    if (memberUserId !== userId) {
+      return next(
+        new AppError("User not authorized to update this board member", 403)
+      );
     }
 
-    const member = await boardService.updateBoardMemberRole(id, memberUserId, role);
+    const member = await boardService.updateBoardMemberRole(
+      id,
+      memberUserId,
+      role
+    );
     if (!member) {
       return next(new AppError("Board member not found", 404));
     }
@@ -291,3 +297,16 @@ export const updateBoardMemberRole = async (
   }
 };
 
+export default {
+  createBoard,
+  getBoard,
+  updateBoard,
+  deleteBoard,
+  getAllBoards,
+  getBoardsByWorkspace,
+  getBoardsByUser,
+  getBoardMembers,
+  addBoardMember,
+  removeBoardMember,
+  updateBoardMemberRole,
+};

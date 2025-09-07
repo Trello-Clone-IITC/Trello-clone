@@ -6,7 +6,6 @@ import { globalErrorHandler } from "./middlewares/errorHandler.js";
 import router from "./api/index.js";
 import cookieParser from "cookie-parser";
 import { prisma } from "./lib/prismaClient.js";
-import cardsPlayground from "./api/cards/cards.playground.js";
 import { clerkMiddleware } from "@clerk/express";
 
 // ENV variables
@@ -78,5 +77,3 @@ process.on("unhandledRejection", (err) => {
   console.error("unhandledRejection:", err);
   shutdown("unhandledRejection", 1);
 });
-
-// await cardsPlayground();
