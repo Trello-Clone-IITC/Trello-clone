@@ -10,8 +10,8 @@ export const useMe = () => {
       const user = await getMe();
       return user;
     },
-    retry: false,
-    staleTime: 5 * 60 * 1000,
+    retry: 3,
+    staleTime: 120 * 60 * 1000,
     enabled: isSignedIn && authLoaded && userLoaded,
   });
 };

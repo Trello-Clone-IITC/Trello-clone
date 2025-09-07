@@ -10,8 +10,8 @@ const getMe = async (
   next: NextFunction
 ) => {
   try {
-    // const { userId } = getAuth(req);
-    const  userId = "user_32KqXqyVpAZAJf6L1QwWwPLOfPl";
+    const { userId } = getAuth(req);
+    // const userId = "user_32KqXqyVpAZAJf6L1QwWwPLOfPl"; Uncomment to test.
 
     // Since we are protected by validation middleware we can assume safely that userId does exists on req object.
     const user = await userService.getMe(userId!);

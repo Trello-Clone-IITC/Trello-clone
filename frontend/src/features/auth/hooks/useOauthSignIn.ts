@@ -1,10 +1,10 @@
 import { useSignIn } from "@clerk/clerk-react";
 import type { Strategies } from "../types";
 
-export const useOuthSignIn = () => {
+export const useOauthSignIn = () => {
   const { isLoaded, signIn } = useSignIn();
 
-  const oauthsignIn = async (strategy: Strategies) => {
+  const oauthSignIn = async (strategy: Strategies) => {
     if (!isLoaded) {
       return;
     }
@@ -14,5 +14,5 @@ export const useOuthSignIn = () => {
       redirectUrlComplete: "/on-boarding",
     });
   };
-  return { isLoaded, signIn, oauthsignIn };
+  return { isLoaded, signIn, oauthSignIn };
 };

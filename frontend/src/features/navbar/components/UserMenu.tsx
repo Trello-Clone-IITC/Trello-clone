@@ -8,20 +8,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, LogOut, CreditCard, HelpCircle } from "lucide-react";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { useMe } from "@/features/auth/hooks/useMe";
-import { useUser } from "@clerk/clerk-react";
 
 export default function UserMenu() {
-  const { data: user } = useMe();
-  const { user: clerkUser } = useUser();
+  const signOut = useSignOut();
+  const { data: user, isLoading, isError, error } = useMe();
 
-  const getInitials = (email: string) => {
-    return email.split("@")[0].slice(0, 2).toUpperCase();
+  if (!user) {
+    return (
+      <div>
+        <span>Please refresh the page</span>
+      </div>
+    );
+  }
+
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
-  const fullName = clerkUser?.fullName || user?.email?.split("@")[0] || "User";
-  const email = user?.email || clerkUser?.emailAddresses[0].emailAddress || "";
-  const initials = getInitials(email);
+  const fullName = user.email.split("@")[0];
+  const email = user.email;
+  const initials = getInitials(fullName);
 
   return (
     <DropdownMenu>
@@ -31,10 +43,7 @@ export default function UserMenu() {
           className="p-0 h-8 w-8 rounded-full hover:bg-[#333c43]"
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={clerkUser?.imageUrl}
-              alt={`${fullName}'s avatar`}
-            />
+            <AvatarImage src={user.avatarUrl} alt={`${fullName}'s avatar`} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
@@ -70,7 +79,10 @@ export default function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="flex items-center gap-3 p-3 text-red-600">
+        <DropdownMenuItem
+          onClick={signOut}
+          className="flex items-center gap-3 p-3 text-red-600"
+        >
           <LogOut className="h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
