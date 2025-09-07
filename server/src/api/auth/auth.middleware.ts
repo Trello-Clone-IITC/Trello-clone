@@ -12,4 +12,5 @@ export const validateAuthenticatedUser = (
   if (!userId) {
     return next(new AppError("Unauthorized", 401));
   }
+  next();
 };

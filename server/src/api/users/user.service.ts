@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prismaClient.js";
+import { AppError } from "../../utils/appError.js";
 import { mapUserToDto } from "./user.mapper.js";
 import { clerkClient } from "@clerk/express";
 
@@ -7,6 +8,9 @@ const getMe = async (clerkUserId: string) => {
   const { emailAddresses, fullName, imageUrl } =
     await clerkClient.users.getUser(clerkUserId);
 
+  if (!fullName) {
+    throw new AppError("Full name isnt resolved yet");
+  }
   // Since we enfore full name and email on clerk signUp we can safely assume that full name exists on clerk User.
   const email = emailAddresses[0].emailAddress;
 

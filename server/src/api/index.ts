@@ -1,4 +1,9 @@
-import { Router } from "express";
+import {
+  Router,
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import authRouter from "./auth/auth.route.js";
 import userRouter from "./users/user.route.js";
 import workspaceRouter from "./workspaces/workspace.route.js";

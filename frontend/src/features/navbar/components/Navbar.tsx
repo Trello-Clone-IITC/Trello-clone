@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Bell, HelpCircle, MessageSquare } from "lucide-react";
-import Logo from "./components/Logo";
-import SearchBar from "./components/SearchBar";
-import CreateButton from "./components/CreateButton";
-import UserMenu from "./components/UserMenu";
+import Logo from "./Logo";
+import SearchBar from "./SearchBar";
+import CreateButton from "./CreateButton";
+import UserMenu from "./UserMenu";
 const AppSwitcherIcon = (
   <svg
     width="16"

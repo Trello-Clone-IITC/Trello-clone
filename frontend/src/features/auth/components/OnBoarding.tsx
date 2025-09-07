@@ -12,11 +12,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { useEmailPasswordSignUp } from "../hooks/useEmailPasswordSignUp";
 import { useSignUp } from "@clerk/clerk-react";
+import { useOnBoarding } from "../hooks/useOnBoarding";
 
 const formSchema = z.object({
-  fullName: z.string().min(3, "Full name is required"),
+  fullName: z
+    .string()
+    .min(3, "Full name is required")
+    .regex(/^[A-Za-z]+ [A-Za-z]+$/, "Enter first and last name"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -30,17 +33,20 @@ export function Onboarding() {
   });
 
   const navigate = useNavigate();
-  const { completeOnboarding, completing, error } = useEmailPasswordSignUp();
   const { signUp } = useSignUp();
+  const { mutateAsync } = useOnBoarding();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const [firstName, ...rest] = values.fullName.trim().split(" ");
     const lastName = rest.join(" ");
-
-    // FIX: correct parameter order (firstName, lastName, password)
-    const ok = await completeOnboarding(firstName, lastName, values.password);
-    if (ok) {
+    try {
+      await mutateAsync({ firstName, lastName, password: values.password });
       navigate("/");
+    } catch (err) {
+      console.log(
+        `Error: ${err instanceof Error ? err.message : "Unkown Error"}`
+      );
+      navigate("/login");
     }
   };
 
@@ -91,16 +97,11 @@ export function Onboarding() {
                 )}
               />
 
-              {error && (
-                <p className="text-sm text-red-500 text-center">{error}</p>
-              )}
-
               <Button
                 type="submit"
                 className="w-full bg-[#0052cc]/90 hover:bg-[#0052cc]"
-                disabled={completing}
               >
-                {completing ? "Finishing..." : "Complete Sign Up"}
+                Complete Sign Up
               </Button>
             </form>
           </Form>

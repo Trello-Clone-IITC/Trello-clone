@@ -1,14 +1,15 @@
-import { useAuth } from "@clerk/clerk-react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { useMe } from "@/features/auth/hooks/useMe";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isLoaded, isSignedIn } = useAuth();
-  if (!isLoaded)
+  const { data: user, isLoading, isError, error } = useMe();
+  const navigate = useNavigate();
+  if (isLoading)
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-3">
@@ -17,6 +18,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         </div>
       </div>
     );
-  if (!isSignedIn) return <Navigate to="/login" />;
+  if (!user) navigate("/login");
   return children;
 };

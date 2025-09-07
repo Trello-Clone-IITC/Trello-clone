@@ -1,4 +1,4 @@
-import { useSignUp, useClerk } from "@clerk/clerk-react";
+import { useSignUp } from "@clerk/clerk-react";
 import { useState } from "react";
 import { readClerkError } from "../helpers/readClerkError";
 
@@ -6,13 +6,11 @@ type Status = "idle" | "email_sent" | "done";
 
 export function useEmailPasswordSignUp() {
   const { isLoaded, signUp } = useSignUp();
-  const { setActive } = useClerk();
 
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const [sending, setSending] = useState(false);
-  const [completing, setCompleting] = useState(false);
 
   const startSignup = async (email: string) => {
     if (!isLoaded || !signUp) {
@@ -43,39 +41,10 @@ export function useEmailPasswordSignUp() {
     }
   };
 
-  const completeOnboarding = async (
-    firstName: string,
-    lastName: string,
-    password: string
-  ) => {
-    if (!isLoaded || !signUp) return false;
-    setCompleting(true);
-    try {
-      await signUp.update({
-        firstName,
-        lastName,
-        password,
-      });
-
-      if (signUp.status === "complete" && signUp.createdSessionId) {
-        await setActive({ session: signUp.createdSessionId });
-        setStatus("done");
-      }
-      return true;
-    } catch (e: unknown) {
-      setError(readClerkError(e));
-      return false;
-    } finally {
-      setCompleting(false);
-    }
-  };
-
   return {
     startSignup,
-    completeOnboarding,
     status,
     error,
     sending,
-    completing,
   };
 }

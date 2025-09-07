@@ -14,8 +14,8 @@ export function VerifyEmailLink() {
     (async () => {
       try {
         await handleEmailLinkVerification({
-          redirectUrl: `${window.location.origin}/on-boarding`,
-          redirectUrlComplete: `${window.location.origin}/`,
+          // redirectUrl: `${window.location.origin}/on-boarding`,
+          redirectUrlComplete: `${window.location.origin}/on-boarding`,
         });
 
         setStatus("verified");
