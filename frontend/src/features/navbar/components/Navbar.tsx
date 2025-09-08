@@ -3,14 +3,16 @@ import { Bell, HelpCircle, MessageSquare } from "lucide-react";
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
-import UserMenu from "./UserMenu";
-const AppSwitcherIcon = (
+import UserMenuPopover from "./UserMenuPopover";
+import { useContext } from "react";
+import { ThemeProviderContext } from "@/context/ThemeContext";
+const AppSwitcherIcon = (isLight: boolean) => (
   <svg
     width="16"
     height="16"
     viewBox="0 0 16 16"
     fill="none"
-    className="text-gray-600"
+    style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
   >
     <path
       fillRule="evenodd"
@@ -22,17 +24,37 @@ const AppSwitcherIcon = (
 );
 
 export default function Navbar() {
+  const { theme } = useContext(ThemeProviderContext);
+  const isLight = theme === "light";
+
   return (
-    <nav className="bg-[#1d2125] border-b border-[#31383d] px-2 md:px-4 py-2 flex items-center justify-between h-[47px]">
+    <nav
+      className="px-2 md:px-4 py-2 flex items-center justify-between h-[47px]"
+      style={{
+        backgroundColor: isLight ? "#ffffff" : "#1d2125",
+        borderBottom: isLight ? "1px solid #dcdfe4" : "1px solid #31383d",
+      }}
+    >
       {/* Left Section */}
       <div className="flex items-center gap-2 md:gap-4">
         {/* App Switcher */}
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-[#333c43]"
+          className="h-8 w-8"
+          style={{
+            backgroundColor: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#dcdfe4"
+              : "#333c43";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
-          {AppSwitcherIcon}
+          {AppSwitcherIcon(isLight)}
         </Button>
 
         {/* Logo */}
@@ -54,18 +76,46 @@ export default function Navbar() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-[#333c43] hidden sm:flex"
+          className="h-8 w-8 hidden sm:flex"
+          style={{
+            backgroundColor: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#dcdfe4"
+              : "#333c43";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
-          <MessageSquare className="h-4 w-4 text-gray-600" />
+          <MessageSquare
+            className="h-4 w-4"
+            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+          />
         </Button>
 
         {/* Notifications */}
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 relative hover:bg-[#333c43]"
+          className="h-8 w-8 relative"
+          style={{
+            backgroundColor: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#dcdfe4"
+              : "#333c43";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
-          <Bell className="h-4 w-4 text-gray-600" />
+          <Bell
+            className="h-4 w-4"
+            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+          />
           {/* Notification badge could go here */}
         </Button>
 
@@ -73,13 +123,27 @@ export default function Navbar() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-[#333c43] hidden sm:flex"
+          className="h-8 w-8 hidden sm:flex"
+          style={{
+            backgroundColor: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#dcdfe4"
+              : "#333c43";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
-          <HelpCircle className="h-4 w-4 text-gray-600" />
+          <HelpCircle
+            className="h-4 w-4"
+            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+          />
         </Button>
 
         {/* User Menu */}
-        <UserMenu />
+        <UserMenuPopover />
       </div>
     </nav>
   );
