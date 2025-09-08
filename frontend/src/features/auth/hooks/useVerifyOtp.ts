@@ -1,7 +1,7 @@
-import { useSignIn } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useCallback } from "react";
 import { readClerkError } from "../helpers/readClerkError";
+import { useSignIn } from "@clerk/clerk-react";
 
 export const useVerifyOtp = () => {
   const { signIn, setActive, isLoaded } = useSignIn();

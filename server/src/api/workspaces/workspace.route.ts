@@ -9,28 +9,34 @@ import {
   searchWorkspacesSchema,
 } from "./workspace.validation.js";
 import workspaceMembersRouter from "../workspace-members/workspace-members.route.js";
+import {
+  CreateWorkspaceInputSchema,
+  GetByIdRequestSchema,
+  UpdateWorkspaceRequestSchema,
+} from "@ronmordo/types";
 
 const router = Router();
 
 // Workspace CRUD operations
 router.post(
   "/",
-  validateRequest(createWorkspaceSchema),
+  validateRequest(CreateWorkspaceInputSchema),
   workspaceController.createWorkspace
 );
 router.get(
   "/:id",
-  validateRequest(workspaceIdSchema),
+  validateRequest(GetByIdRequestSchema),
   workspaceController.getWorkspace
 );
 router.patch(
   "/:id",
-  validateRequest(updateWorkspaceSchema),
+  validateRequest(UpdateWorkspaceRequestSchema),
+  // validateRequest(updateWorkspaceSchema),
   workspaceController.updateWorkspace
 );
 router.delete(
   "/:id",
-  validateRequest(workspaceIdSchema),
+  validateRequest(GetByIdRequestSchema),
   workspaceController.deleteWorkspace
 );
 
@@ -39,14 +45,14 @@ router.delete(
 // Workspace boards
 router.get(
   "/:id/boards",
-  validateRequest(workspaceIdSchema),
+  validateRequest(GetByIdRequestSchema),
   workspaceController.getWorkspaceBoards
 );
 
 // Workspace member management
 router.get(
   "/:id/members",
-  validateRequest(workspaceIdSchema),
+  validateRequest(GetByIdRequestSchema),
   workspaceController.getWorkspaceMembers
 );
 

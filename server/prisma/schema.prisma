@@ -179,11 +179,11 @@ model Board {
   @@map("boards")
 
   id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId    String?                  @map("workspace_id") @db.Uuid
+  workspaceId    String                   @map("workspace_id") @db.Uuid
   name           String
   description    String?
-  background     String                   @default("default_background_url")
-  createdBy      String?                  @map("created_by") @db.Uuid
+  background     String                   
+  createdBy      String                   @map("created_by") @db.Uuid
   allowCovers    Boolean                  @map("allow_covers") @default(true)
   showComplete   Boolean                  @map("show_complete") @default(true)
   createdAt      DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)
@@ -430,7 +430,7 @@ model Workspace {
   premium                         Boolean                   @default(false)
   createdAt                       DateTime                  @map("created_at") @default(now()) @db.Timestamptz(6)
   updatedAt                       DateTime                  @map("updated_at") @default(now()) @db.Timestamptz(6)
-  type                            WorkspaceType             @default(Other)
+  type                            WorkspaceType             
   createdBy                       String                    @map("created_by") @db.Uuid
   workspaceMembershipRestrictions MembershipRestrictions    @map("workspace_membership_restrictions") @default(Anybody)
   publicBoardCreation             BoardCreationRestrictions @map("public_board_creation") @default(WorkspaceMember)

@@ -1,12 +1,13 @@
 import { env } from "./config/env.js";
-import express from "express";
-import morgan from "morgan";
+import express, { type Request, type Response } from "express";
 import { AppError } from "./utils/appError.js";
 import { globalErrorHandler } from "./middlewares/errorHandler.js";
 import router from "./api/index.js";
 import cookieParser from "cookie-parser";
 import { prisma } from "./lib/prismaClient.js";
 import { clerkMiddleware } from "@clerk/express";
+import pino from "pino";
+import * as pinoHttpNS from "pino-http";
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -16,10 +17,37 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+const pinoHttp = (pinoHttpNS as any).default ?? (pinoHttpNS as any);
+
+const logger = pino({
+  level: "info",
+  transport: {
+    target: "pino-pretty",
+    options: { colorize: true },
+  },
+});
+
 // Global middlewares
 app.use(express.json());
 app.use(cookieParser(SESSION_SECRET));
-app.use(morgan("combined"));
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req: Request) {
+        return {
+          method: req.method,
+          url: req.url,
+        };
+      },
+      res(res: Response) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
+    },
+  })
+);
 app.use(clerkMiddleware());
 
 // Health check endpoint

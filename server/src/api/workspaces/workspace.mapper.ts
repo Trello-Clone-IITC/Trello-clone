@@ -9,7 +9,11 @@ import type {
   BoardSharing,
   SlackSharing,
 } from "@prisma/client";
-import { type WorkspaceDto, WorkspaceDtoSchema } from "@ronmordo/types";
+import {
+  type CreateWorkspaceInput,
+  type WorkspaceDto,
+  WorkspaceDtoSchema,
+} from "@ronmordo/types";
 
 export function mapWorkspaceToDto(ws: Workspace): WorkspaceDto {
   const dto: WorkspaceDto = {
@@ -44,8 +48,8 @@ function mapVisibility(v: WorkspaceVisibility): "private" | "public" {
 
 function mapType(t: WorkspaceType): WorkspaceTypeDto {
   return t.replace(/([A-Z])/g, (_, p1, offset) =>
-  offset > 0 ? "_" + p1.toLowerCase() : p1.toLowerCase()
-) as WorkspaceTypeDto; 
+    offset > 0 ? "_" + p1.toLowerCase() : p1.toLowerCase()
+  ) as WorkspaceTypeDto;
 }
 
 function mapMembership(
@@ -87,30 +91,69 @@ type WorkspaceTypeDto =
 
 // ----------From dto to prisma-------------
 export function mapWorkspaceDtoToCreateInput(
-  dto: WorkspaceDto
-): Prisma.WorkspaceCreateInput {
+  dto: CreateWorkspaceInput
+): Omit<Prisma.WorkspaceCreateInput, "creator"> {
   return {
-    id: dto.id,
     name: dto.name,
-    description: dto.description ?? undefined,
-    visibility: mapWorkspaceVisibilityDto(dto.visibility),
-    premium: dto.premium,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
+    description: dto.description,
     type: mapWorkspaceTypeDto(dto.type),
-    creator: { connect: { id: dto.createdBy } },
-    workspaceMembershipRestrictions: mapMembershipDto(
-      dto.workspaceMembershipRestrictions
-    ),
-    publicBoardCreation: mapBoardCreationDto(dto.publicBoardCreation),
-    workspaceBoardCreation: mapBoardCreationDto(dto.workspaceBoardCreation),
-    privateBoardCreation: mapBoardCreationDto(dto.privateBoardCreation),
-    publicBoardDeletion: mapBoardCreationDto(dto.publicBoardDeletion),
-    workspaceBoardDeletion: mapBoardCreationDto(dto.workspaceBoardDeletion),
-    privateBoardDeletion: mapBoardCreationDto(dto.privateBoardDeletion),
-    allowGuestSharing: mapBoardSharingDto(dto.allowGuestSharing),
-    allowSlackIntegration: mapSlackDto(dto.allowSlackIntegration),
   };
+}
+
+export function mapWorkspaceDtoToUpdateInput(
+  dto: Partial<WorkspaceDto>
+): Prisma.WorkspaceUpdateInput {
+  const updateData: Prisma.WorkspaceUpdateInput = {};
+
+  if (dto.name !== undefined) updateData.name = dto.name;
+  if (dto.description !== undefined) updateData.description = dto.description;
+  if (dto.type !== undefined) updateData.type = mapWorkspaceTypeDto(dto.type);
+  if (dto.visibility !== undefined)
+    updateData.visibility = mapWorkspaceVisibilityDto(dto.visibility);
+  if (dto.workspaceMembershipRestrictions !== undefined) {
+    updateData.workspaceMembershipRestrictions = mapMembershipDto(
+      dto.workspaceMembershipRestrictions
+    );
+  }
+  if (dto.publicBoardCreation !== undefined) {
+    updateData.publicBoardCreation = mapBoardCreationDto(
+      dto.publicBoardCreation
+    );
+  }
+  if (dto.workspaceBoardCreation !== undefined) {
+    updateData.workspaceBoardCreation = mapBoardCreationDto(
+      dto.workspaceBoardCreation
+    );
+  }
+  if (dto.privateBoardCreation !== undefined) {
+    updateData.privateBoardCreation = mapBoardCreationDto(
+      dto.privateBoardCreation
+    );
+  }
+  if (dto.publicBoardDeletion !== undefined) {
+    updateData.publicBoardDeletion = mapBoardCreationDto(
+      dto.publicBoardDeletion
+    );
+  }
+  if (dto.workspaceBoardDeletion !== undefined) {
+    updateData.workspaceBoardDeletion = mapBoardCreationDto(
+      dto.workspaceBoardDeletion
+    );
+  }
+  if (dto.privateBoardDeletion !== undefined) {
+    updateData.privateBoardDeletion = mapBoardCreationDto(
+      dto.privateBoardDeletion
+    );
+  }
+  if (dto.allowGuestSharing !== undefined) {
+    updateData.allowGuestSharing = mapBoardSharingDto(dto.allowGuestSharing);
+  }
+  if (dto.allowSlackIntegration !== undefined) {
+    updateData.allowSlackIntegration = mapSlackDto(dto.allowSlackIntegration);
+  }
+  if (dto.premium !== undefined) updateData.premium = dto.premium;
+
+  return updateData;
 }
 
 // ---- enum helpers ----
