@@ -1,5 +1,5 @@
-import { Prisma, type Checklist } from "@prisma/client";
-import { ChecklistDtoSchema, type ChecklistDto } from "@ronmordo/types";
+import { Prisma, type Checklist, type ChecklistItem } from "@prisma/client";
+import { ChecklistDtoSchema, type ChecklistDto, type ChecklistItemDto } from "@ronmordo/types";
 
 export function mapChecklistToDto(cl: Checklist): ChecklistDto {
   return ChecklistDtoSchema.parse({
@@ -8,6 +8,17 @@ export function mapChecklistToDto(cl: Checklist): ChecklistDto {
     title: cl.title,
     position: Number(cl.position),
   });
+}
+
+export function mapChecklistItemToDto(item: ChecklistItem): ChecklistItemDto {
+  return {
+    id: item.id,
+    checklistId: item.checklistId,
+    text: item.text,
+    isCompleted: item.isCompleted,
+    dueDate: item.dueDate?.toISOString() ?? null,
+    position: Number(item.position),
+  };
 }
 
 export function mapChecklistDtoToCreateInput(

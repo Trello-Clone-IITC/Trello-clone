@@ -1,209 +1,303 @@
-import type { Request, Response } from "express";
-import { checklistService } from "./checklistService.js";
+import type { Request, Response, NextFunction } from "express";
+import checklistService from "./checklist.service.js";
 import { AppError } from "../../utils/appError.js";
-import { catchAsync } from "../../middlewares/errorHandler.js";
+import type { ApiResponse } from "../../utils/globalTypes.js";
+import type { ChecklistDto, ChecklistItemAssigneeDto, ChecklistItemDto } from "@ronmordo/types";
+import { mapChecklistToDto, mapChecklistItemToDto } from "./checklist.mapper.js";
+import { getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { mapChecklistItemAssigneeToDto } from "../checklist-item-assignees/checklist-item-assignee.mapper.js";
 
 export const checklistController = {
   // Create a new checklist
-  createChecklist: catchAsync(async (req: Request, res: Response) => {
-    const { cardId, title, position } = req.body;
-    const userId = req.user?.id;
+  createChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+    try {
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const { cardId } = req.params;
+      const checklist = await checklistService.createChecklist({
+        cardId,
+        ...req.body,
+        userId,
+      });
+      const checklistDto: ChecklistDto = mapChecklistToDto(checklist);
+
+      res.status(201).json({
+        success: true,
+        data: checklistDto,
+      });
+    } catch (error) {
+      console.error("Failed to create checklist", error);
+      next(new AppError("Failed to create checklist", 500));
     }
-
-    const checklist = await checklistService.createChecklist({
-      cardId,
-      title,
-      position: parseFloat(position) || 1000,
-      createdBy: userId,
-    });
-
-    res.status(201).json({
-      status: "success",
-      data: { checklist },
-    });
-  }),
+  },
 
   // Get checklist by ID
-  getChecklist: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
+  getChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const checklist = await checklistService.getChecklistById(id, userId);
+      const checklistDto: ChecklistDto = mapChecklistToDto(checklist);
+
+      res.status(200).json({
+        success: true,
+        data: checklistDto,
+      });
+    } catch (error) {
+      console.error("Failed to get checklist", error);
+      next(new AppError("Failed to get checklist", 500));
     }
-
-    const checklist = await checklistService.getChecklistById(id, userId);
-
-    res.status(200).json({
-      status: "success",
-      data: { checklist },
-    });
-  }),
+  },
 
   // Update checklist
-  updateChecklist: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { title, position } = req.body;
-    const userId = req.user?.id;
+  updateChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const checklist = await checklistService.updateChecklist(id, updateData, userId);
+      const checklistDto: ChecklistDto = mapChecklistToDto(checklist);
+
+      res.status(200).json({
+        success: true,
+        data: checklistDto,
+      });
+    } catch (error) {
+      console.error("Failed to update checklist", error);
+      next(new AppError("Failed to update checklist", 500));
     }
-
-    const checklist = await checklistService.updateChecklist(
-      id,
-      {
-        title,
-        position: position ? parseFloat(position) : undefined,
-      },
-      userId
-    );
-
-    res.status(200).json({
-      status: "success",
-      data: { checklist },
-    });
-  }),
+  },
 
   // Delete checklist
-  deleteChecklist: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
+  deleteChecklist: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      await checklistService.deleteChecklist(id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: "Checklist deleted successfully",
+      });
+    } catch (error) {
+      console.error("Failed to delete checklist", error);
+      next(new AppError("Failed to delete checklist", 500));
     }
+  },
 
-    await checklistService.deleteChecklist(id, userId);
+  // Get checklist items
+  getChecklistItems: async (req: Request, res: Response<ApiResponse<ChecklistItemDto[]>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
-  }),
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const items = await checklistService.getChecklistItems(id, userId);
+      const itemDtos: ChecklistItemDto[] = items.map(item => mapChecklistItemToDto(item));
+
+      res.status(200).json({
+        success: true,
+        data: itemDtos,
+      });
+    } catch (error) {
+      console.error("Failed to get checklist items", error);
+      next(new AppError("Failed to get checklist items", 500));
+    }
+  },
 
   // Create checklist item
-  createChecklistItem: catchAsync(async (req: Request, res: Response) => {
-    const { checklistId, text, dueDate, position } = req.body;
-    const userId = req.user?.id;
+  createChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+    try {
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const { checklistId } = req.params;
+      const item = await checklistService.createChecklistItem({
+        checklistId,
+        ...req.body,
+        userId,
+      });
+      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+
+      res.status(201).json({
+        success: true,
+        data: itemDto,
+      });
+    } catch (error) {
+      console.error("Failed to create checklist item", error);
+      next(new AppError("Failed to create checklist item", 500));
     }
-
-    const item = await checklistService.createChecklistItem({
-      checklistId,
-      text,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
-      position: parseFloat(position) || 1000,
-      createdBy: userId,
-    });
-
-    res.status(201).json({
-      status: "success",
-      data: { item },
-    });
-  }),
+  },
 
   // Update checklist item
-  updateChecklistItem: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { text, isCompleted, dueDate, position } = req.body;
-    const userId = req.user?.id;
+  updateChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const item = await checklistService.updateChecklistItem(id, updateData, userId);
+      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+
+      res.status(200).json({
+        success: true,
+        data: itemDto,
+      });
+    } catch (error) {
+      console.error("Failed to update checklist item", error);
+      next(new AppError("Failed to update checklist item", 500));
     }
-
-    const item = await checklistService.updateChecklistItem(
-      id,
-      {
-        text,
-        isCompleted,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        position: position ? parseFloat(position) : undefined,
-      },
-      userId
-    );
-
-    res.status(200).json({
-      status: "success",
-      data: { item },
-    });
-  }),
+  },
 
   // Delete checklist item
-  deleteChecklistItem: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
+  deleteChecklistItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      await checklistService.deleteChecklistItem(id, userId);
+
+      res.status(200).json({
+        success: true,
+        message: "Checklist item deleted successfully",
+      });
+    } catch (error) {
+      console.error("Failed to delete checklist item", error);
+      next(new AppError("Failed to delete checklist item", 500));
     }
-
-    await checklistService.deleteChecklistItem(id, userId);
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
-  }),
+  },
 
   // Toggle checklist item completion
-  toggleChecklistItem: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
+  toggleChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const item = await checklistService.toggleChecklistItem(id, userId);
+      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+
+      res.status(200).json({
+        success: true,
+        data: itemDto,
+      });
+    } catch (error) {
+      console.error("Failed to toggle checklist item", error);
+      next(new AppError("Failed to toggle checklist item", 500));
     }
-
-    const item = await checklistService.toggleChecklistItem(id, userId);
-
-    res.status(200).json({
-      status: "success",
-      data: { item },
-    });
-  }),
+  },
 
   // Assign user to checklist item
-  assignUserToItem: catchAsync(async (req: Request, res: Response) => {
-    const { itemId, userId: assigneeId } = req.body;
-    const userId = req.user?.id;
+  assignUserToItem: async (req: Request, res: Response<ApiResponse<ChecklistItemAssigneeDto>>, next: NextFunction) => {
+    try {
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const { itemId, userId: assigneeId } = req.body;
+      const assignment = await checklistService.assignUserToItem(itemId, assigneeId, userId);
+      const assignmentDto = mapChecklistItemAssigneeToDto(assignment);
+      res.status(200).json({
+        success: true,
+        data: assignmentDto,
+      });
+    } catch (error) {
+      console.error("Failed to assign user to item", error);
+      next(new AppError("Failed to assign user to item", 500));
     }
-
-    const assignment = await checklistService.assignUserToItem(
-      itemId,
-      assigneeId,
-      userId
-    );
-
-    res.status(200).json({
-      status: "success",
-      data: { assignment },
-    });
-  }),
+  },
 
   // Remove user assignment from checklist item
-  removeUserFromItem: catchAsync(async (req: Request, res: Response) => {
-    const { itemId, userId: assigneeId } = req.params;
-    const userId = req.user?.id;
+  removeUserFromItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+    try {
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const { itemId, userId: assigneeId } = req.params;
+      await checklistService.removeUserFromItem(itemId, assigneeId, userId);
+
+      res.status(200).json({
+        success: true,
+        message: "User assignment removed successfully",
+      });
+    } catch (error) {
+      console.error("Failed to remove user assignment", error);
+      next(new AppError("Failed to remove user assignment", 500));
     }
-
-    await checklistService.removeUserFromItem(itemId, assigneeId, userId);
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
-  }),
+  },
 };

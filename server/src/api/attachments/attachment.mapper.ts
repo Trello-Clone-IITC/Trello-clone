@@ -9,7 +9,7 @@ export function mapAttachmentToDto(att: Attachment): AttachmentDto {
     url: att.url,
     filename: att.filename ?? null,
     bytes: att.bytes ? Number(att.bytes) : null,
-    meta: att.meta ?? undefined,
+    meta: att.meta as Prisma.InputJsonValue | null,
     createdAt: att.createdAt.toISOString(),
   };
   return AttachmentDtoSchema.parse(dto);
@@ -24,8 +24,8 @@ export function mapAttachmentDtoToCreateInput(
     user: dto.userId ? { connect: { id: dto.userId } } : undefined,
     url: dto.url,
     filename: dto.filename ?? undefined,
-    bytes: dto.bytes ?? undefined,
-    meta: dto.meta ?? undefined,
+    bytes: dto.bytes ? BigInt(dto.bytes) : undefined,
+    meta: dto.meta as Prisma.InputJsonValue | undefined,
     createdAt: new Date(dto.createdAt),
   };
 }

@@ -91,7 +91,7 @@ export const cardController = {
   },
 
   // Delete a card
-  deleteCard: async (req: Request, res: Response, next: NextFunction) => {
+  deleteCard: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
     try {
       const { id } = req.params;
       // const userId = req.user?.id;

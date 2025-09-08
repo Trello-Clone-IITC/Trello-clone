@@ -1,125 +1,122 @@
-import type { Request, Response } from "express";
-import { attachmentService } from "./attachmentService.js";
+import type { Request, Response, NextFunction } from "express";
+import attachmentService from "./attachment.service.js";
 import { AppError } from "../../utils/appError.js";
-import { catchAsync } from "../../middlewares/errorHandler.js";
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-  };
-}
+import type { ApiResponse } from "../../utils/globalTypes.js";
+import type { AttachmentDto } from "@ronmordo/types";
+import { mapAttachmentToDto } from "./attachment.mapper.js";
+import { getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 
 export const attachmentController = {
   // Create a new attachment
-  createAttachment: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
-      const { cardId, url, filename, bytes, meta } = req.body;
-      const userId = req.user?.id;
-
+  createAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+    try {
+      let { userId } = getAuth(req) || {};
       if (!userId) {
-        throw new AppError("User not authenticated", 401);
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
       }
 
+      if (!userId) {
+        return next(new AppError("User not authenticated", 401));
+      }
+
+      const { cardId } = req.params;
       const attachment = await attachmentService.createAttachment({
         cardId,
-        url,
-        filename,
-        bytes: bytes ? BigInt(bytes) : undefined,
-        meta,
+        ...req.body,
         userId,
       });
+      const attachmentDto: AttachmentDto = mapAttachmentToDto(attachment);
 
       res.status(201).json({
-        status: "success",
-        data: { attachment },
+        success: true,
+        data: attachmentDto,
       });
+    } catch (error) {
+      console.error("Failed to create attachment", error);
+      next(new AppError("Failed to create attachment", 500));
     }
-  ),
+  },
 
-  // Get attachment by ID
-  getAttachment: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
+  // Get a single attachment by ID
+  getAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+    try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
       if (!userId) {
-        throw new AppError("User not authenticated", 401);
+        return next(new AppError("User not authenticated", 401));
       }
 
       const attachment = await attachmentService.getAttachmentById(id, userId);
+      const attachmentDto: AttachmentDto = mapAttachmentToDto(attachment);
 
       res.status(200).json({
-        status: "success",
-        data: { attachment },
+        success: true,
+        data: attachmentDto,
       });
+    } catch (error) {
+      console.error("Failed to get attachment", error);
+      next(new AppError("Failed to get attachment", 500));
     }
-  ),
+  },
 
-  // Get all attachments for a card
-  getCardAttachments: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
-      const { cardId } = req.params;
-      const userId = req.user?.id;
 
+  // Update an attachment
+  updateAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      let { userId } = getAuth(req) || {};
       if (!userId) {
-        throw new AppError("User not authenticated", 401);
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
       }
 
-      const attachments = await attachmentService.getAttachmentsByCard(
-        cardId,
-        userId
-      );
-
-      res.status(200).json({
-        status: "success",
-        data: { attachments },
-      });
-    }
-  ),
-
-  // Update attachment
-  updateAttachment: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
-      const { filename, meta } = req.body;
-      const userId = req.user?.id;
-
       if (!userId) {
-        throw new AppError("User not authenticated", 401);
+        return next(new AppError("User not authenticated", 401));
       }
 
-      const attachment = await attachmentService.updateAttachment(
-        id,
-        {
-          filename,
-          meta,
-        },
-        userId
-      );
+      const attachment = await attachmentService.updateAttachment(id, {
+        ...updateData,
+        bytes: updateData.bytes ? BigInt(updateData.bytes) : undefined,
+      }, userId);
+      const attachmentDto: AttachmentDto = mapAttachmentToDto(attachment);
 
       res.status(200).json({
-        status: "success",
-        data: { attachment },
+        success: true,
+        data: attachmentDto,
       });
+    } catch (error) {
+      console.error("Failed to update attachment", error);
+      next(new AppError("Failed to update attachment", 500));
     }
-  ),
+  },
 
-  // Delete attachment
-  deleteAttachment: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
+  // Delete an attachment
+  deleteAttachment: async (req: Request, res: Response, next: NextFunction) => {
+    try {
       const { id } = req.params;
-      const userId = req.user?.id;
+      let { userId } = getAuth(req) || {};
+      if (!userId) {
+        userId = DUMMY_USER_ID; // TODO: remove this after testing
+      }
 
       if (!userId) {
-        throw new AppError("User not authenticated", 401);
+        return next(new AppError("User not authenticated", 401));
       }
 
       await attachmentService.deleteAttachment(id, userId);
 
-      res.status(204).json({
-        status: "success",
-        data: null,
+      res.status(200).json({
+        success: true,
+        message: "Attachment deleted successfully",
       });
+    } catch (error) {
+      console.error("Failed to delete attachment", error);
+      next(new AppError("Failed to delete attachment", 500));
     }
-  ),
+  },
 };
