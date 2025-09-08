@@ -2,13 +2,10 @@ import { Navbar } from "@/features/navbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/features/dashboard/components/Sidebar";
 
-interface DashboardLayoutProps {
-  children?: React.ReactNode;
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout() {
   return (
     <div className="min-h-screen w-full flex flex-col">
+      {/* TO DO ------> insert NavBar to Header component and render it here */}
       <Navbar />
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - Hidden on mobile, visible on desktop */}
@@ -21,7 +18,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="flex-1 overflow-y-auto"
           style={{ backgroundColor: "#1d2125" }}
         >
-          <div className="p-3 md:p-6">{children || <Outlet />}</div>
+          <div className="p-3 md:p-6">{<Outlet />}</div>
         </main>
       </div>
     </div>

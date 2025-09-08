@@ -3,6 +3,24 @@ import type { Request, Response, NextFunction } from "express";
 import { authService } from "./auth.service.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 
+const checkEmail = async (
+  req: Request<{}, {}, {}, { email: string }>,
+  res: Response<
+    ApiResponse<{
+      clerkUserExists: boolean;
+      dbUserExists: boolean;
+    }>
+  >,
+  next: NextFunction
+) => {
+  try {
+    const emailVarificationData = await authService.checkEmail(req.query.email);
+    return res.status(200).json({ success: true, data: emailVarificationData });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const onBoarding = async (
   req: Request<
     {},
@@ -27,4 +45,4 @@ const onBoarding = async (
   }
 };
 
-export const authController = { onBoarding };
+export const authController = { onBoarding, checkEmail };

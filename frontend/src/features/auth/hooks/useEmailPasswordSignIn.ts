@@ -1,13 +1,11 @@
 import { useSignIn } from "@clerk/clerk-react";
 import { useCallback, useState } from "react";
 import { readClerkError } from "../helpers/readClerkError";
-import { useQueryClient } from "@tanstack/react-query";
 
 export function useEmailPasswordSignIn() {
   const { isLoaded, signIn, setActive } = useSignIn();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const qc = useQueryClient();
 
   const signInWithPassword = useCallback(
     async (email: string, password: string) => {
@@ -24,11 +22,8 @@ export function useEmailPasswordSignIn() {
           password,
         });
 
-        console.log(result);
-
         if (result.status === "complete") {
           await setActive({ session: result.createdSessionId });
-          qc.invalidateQueries({ queryKey: ["me"] });
           return true;
         }
 
@@ -41,7 +36,7 @@ export function useEmailPasswordSignIn() {
         setSubmitting(false);
       }
     },
-    [isLoaded, signIn, setActive, qc]
+    [isLoaded, signIn, setActive]
   );
 
   return { signInWithPassword, submitting, error };

@@ -17,3 +17,10 @@ export const patchUser = (
 export const onBoarding = (data: OnBoardingData) => {
   return api.post("/auth/onboarding", data);
 };
+
+export const userExists = async (email: string) => {
+  const response = await api.get<
+    ApiResponse<{ clerkUserExists: boolean; dbUserExists: boolean }>
+  >(`/auth/checkEmail?email=${email}`);
+  return response.data.data;
+};

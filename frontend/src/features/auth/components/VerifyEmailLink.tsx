@@ -10,6 +10,7 @@ export function VerifyEmailLink() {
 
   useEffect(() => {
     if (!loaded) return;
+    console.log("Inside verify link");
 
     (async () => {
       try {

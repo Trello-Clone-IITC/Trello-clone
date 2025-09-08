@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
-import { useVerifyClerkUser } from "../hooks/useVerifyClerkUser";
 import {
   Form,
   FormControl,
@@ -27,6 +26,8 @@ import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
 import { ClockLoader } from "react-spinners";
 import { useOauthSignIn } from "../hooks/useOauthSignIn";
 import { useState } from "react";
+import { userExists } from "../api";
+import { useSignIn } from "@clerk/clerk-react";
 
 const formSchema = z.object({
   email: z.email(),
@@ -53,42 +54,50 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const { isLoaded, oauthSignIn } = useOauthSignIn();
   const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
-  const {
-    checkUserExists,
-    checking,
-    error: verifyUserError,
-    userExists,
-  } = useVerifyClerkUser();
+  const { signIn, isLoaded: clerkLoaded } = useSignIn();
 
-  const handleContinue = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!clerkLoaded || !signIn) {
+      console.warn("Clerk not loaded yet.");
+      return;
+    }
+
     if (!showPassword) {
-      const exists = await checkUserExists(values.email);
-      if (exists) {
-        setShowPassword(true);
-        setEmail(values.email);
+      const exists = await userExists(values.email);
+      if (exists.clerkUserExists) {
+        if (exists.dbUserExists) {
+          setShowPassword(true);
+          setEmail(values.email);
+        } else {
+          try {
+            const result = await signIn.create({
+              identifier: values.email,
+              strategy: "email_code",
+            });
+
+            if (result.status === "needs_first_factor") {
+              navigate("/verify/otp", { state: { email: values.email } });
+            } else {
+              console.warn("Unexpected sign-in status:", result.status);
+            }
+          } catch (err) {
+            console.error("Error starting OTP flow:", err);
+          }
+        }
+      } else {
+        console.warn("No Clerk user found for", values.email);
       }
     } else {
       const success = await signInWithPassword(email, values.password || "");
       if (success) {
-        navigate("/test");
         form.reset();
         setShowPassword(false);
+        navigate("/", { replace: true });
       }
     }
   };
 
-  const handleBackToEmail = () => {
-    setShowPassword(false);
-    form.reset();
-    form.setValue("password", "");
-  };
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // TODO: Implement actual sign in logic
-    console.log("Login values:", values);
-    navigate("/");
-    form.reset();
-  };
+  const disableSubmit = submitting || !clerkLoaded || !signIn;
 
   const trelloLogo = (
     <svg height="40" viewBox="0 0 113 32">
@@ -159,7 +168,7 @@ export default function LoginForm() {
       >
         <CardContent className="h-[686px] w-full px-0">
           <Form {...form}>
-            <form className="" onSubmit={form.handleSubmit(handleContinue)}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-[10px]">
                 <div className="flex flex-col items-center text-center gap-6">
                   <div className="h-8 mb-2">{trelloLogo}</div>
@@ -262,10 +271,11 @@ export default function LoginForm() {
                 {error && <span className="text-[#da565f]">{error}</span>}
                 <div id="clerk-captcha" data-cl-size="normal" />
                 <Button
+                  disabled={disableSubmit}
                   type="submit"
                   className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded"
                 >
-                  {submitting ? (
+                  {submitting || !clerkLoaded ? (
                     <ClockLoader
                       size={25}
                       color={theme === "dark" ? "#25103e" : "#f8f8f9"}

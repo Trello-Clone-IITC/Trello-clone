@@ -1,15 +1,16 @@
-import { useNavigate } from "react-router-dom";
-import type { ReactNode } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useMe } from "@/features/auth/hooks/useMe";
+import { useUser } from "@clerk/clerk-react";
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
+export const ProtectedRoute = () => {
+  const { data: backendUser, isLoading } = useMe();
+  const { user, isLoaded } = useUser();
+  const location = useLocation();
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { data: user, isLoading, isError, error } = useMe();
-  const navigate = useNavigate();
-  if (isLoading)
+  console.log("Protected route:", backendUser, user);
+
+  // Still loading Clerk or backend user
+  if (isLoading || !isLoaded) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-3">
@@ -18,6 +19,23 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         </div>
       </div>
     );
-  if (!user) navigate("/login");
-  return children;
+  }
+
+  // Not logged in → go to login
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Logged in but not onboarded → onboarding
+  if (!backendUser && location.pathname !== "/on-boarding") {
+    return <Navigate to="/on-boarding" replace />;
+  }
+
+  // already onboarded but tries to go back to onboarding manually
+  if (backendUser && location.pathname === "/on-boarding") {
+    return <Navigate to="/" replace />;
+  }
+
+  // Otherwise → show protected content
+  return <Outlet />;
 };
