@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { z } from "zod";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useSignUp } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { useOnBoarding } from "../hooks/useOnBoarding";
 import { useMediaQuery } from "usehooks-ts";
 import { SquareArrowOutUpRight, Eye, EyeOff } from "lucide-react";
@@ -102,7 +102,7 @@ export function Onboarding() {
   });
 
   const navigate = useNavigate();
-  const { signUp } = useSignUp();
+  const { user } = useUser();
   const { mutateAsync } = useOnBoarding();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -132,14 +132,17 @@ export function Onboarding() {
         alt="Trello"
       />
       <Card
-        className={`overflow-hidden px-4 md:px-8 py-10 rounded-[3px] bg-[white] backdrop-blur-lg flex justify-start items-center  w-[400px] ${
+        className={`overflow-hidden px-8 py-10 rounded-[3px] bg-[white] backdrop-blur-lg flex justify-start items-center  w-[400px] ${
           isMobile ? "w-full h-screen" : "md:w-[400px] md:min-w-[400px]"
         }`}
       >
         <CardContent className="w-full p-0 border-b-1 border-[#c1c7d0] pb-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="flex flex-col items-center justify-center text-center text-[#172b4d] mb-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-1.5"
+            >
+              <div className="flex flex-col items-center justify-center text-center text-[#172b4d] mb-1">
                 <div className="h-8 mb-2">{trelloLogo}</div>
                 <div className="flex flex-col items-center justify-center text-center pt-6">
                   <h2 className="text-[16px] font-bold text-center flex items-center justify-center gap-1">
@@ -151,11 +154,11 @@ export function Onboarding() {
                 </div>
               </div>
 
-              {signUp?.emailAddress && (
-                <p className="text-center text-xs text-[#44546f]  flex flex-col items-center justify-center gap-1">
+              {user?.emailAddresses?.[0]?.emailAddress && (
+                <p className="text-left text-xs font-bold text-[#44546f]  flex flex-col items-start justify-center gap-1">
                   Email address{" "}
-                  <span className="text-sm text-[#172b4d] font-medium">
-                    {signUp.emailAddress}
+                  <span className="text-sm text-[#172b4d] font-bold">
+                    {user.emailAddresses[0].emailAddress}
                   </span>
                 </p>
               )}
@@ -187,7 +190,7 @@ export function Onboarding() {
                     <FormControl>
                       <div className="relative">
                         <Input
-                          className={input}
+                          className={`${input} -mb-[11px]`}
                           type={showPassword ? "text" : "password"}
                           placeholder="Create password"
                           {...field}
@@ -195,7 +198,7 @@ export function Onboarding() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#44546f] hover:text-[#172b4d] focus:outline-none"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/4 text-[#44546f] hover:text-[#172b4d] focus:outline-none"
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -239,30 +242,32 @@ export function Onboarding() {
                 )}
               />
 
-              <p className="text-[12px] text-[#44546f] text-left">
-                By signing up, I accept the Atlassian{" "}
-                <a
-                  href="https://www.atlassian.com/legal/atlassian-customer-agreement"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                  aria-label="Atlassian Customer Agreement, (opens new window)"
-                >
-                  Cloud Terms of Service
-                  <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
-                </a>{" "}
-                and acknowledge the{" "}
-                <a
-                  href="https://www.atlassian.com/legal/privacy-policy"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
-                  aria-label="Privacy Policy, (opens new window)"
-                >
-                  Privacy Policy
-                  <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
-                </a>
-              </p>
+              <div className="mb-[3px]">
+                <p className="text-[12px] text-[#44546f] text-left">
+                  By signing up, I accept the Atlassian{" "}
+                  <a
+                    href="https://www.atlassian.com/legal/atlassian-customer-agreement"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                    aria-label="Atlassian Customer Agreement, (opens new window)"
+                  >
+                    Cloud Terms of Service
+                    <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+                  </a>{" "}
+                  and acknowledge the{" "}
+                  <a
+                    href="https://www.atlassian.com/legal/privacy-policy"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-[#2777e7] underline underline-offset-1 hover:no-underline"
+                    aria-label="Privacy Policy, (opens new window)"
+                  >
+                    Privacy Policy
+                    <SquareArrowOutUpRight className="w-3 h-3 ml-1 inline" />
+                  </a>
+                </p>
+              </div>
               <Button
                 type="submit"
                 className="w-full bg-[#0052cc]/90 hover:bg-[#0052cc] rounded cursor-pointer"

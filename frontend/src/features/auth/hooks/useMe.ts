@@ -10,7 +10,7 @@ export const useMe = () => {
       const user = await getMe();
       return user;
     },
-    retry: 3,
+    retry: false,
     staleTime: 120 * 60 * 1000,
     enabled: isSignedIn && authLoaded && userLoaded,
   });
