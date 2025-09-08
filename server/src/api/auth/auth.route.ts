@@ -4,6 +4,8 @@ import { validateAuthenticatedUser } from "./auth.middleware.js";
 
 const router = Router();
 
+router.get("/checkEmail", authController.checkEmail);
+
 router.post(
   "/onboarding",
   validateAuthenticatedUser,

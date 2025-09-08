@@ -9,6 +9,9 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { ClockLoader } from "react-spinners";
+import { useTheme } from "@/hooks/useTheme";
+import { useVerifyOtp } from "../hooks/useVerifyOtp";
 
 const trelloLogo = (
   <svg height="40" viewBox="0 0 113 32">
@@ -50,6 +53,8 @@ const OTPstyle = "border-1 border-[#8590a2] rounded px-2 py-[6px]";
 
 export function VerifyEmailCode() {
   const [code, setCode] = useState("");
+  const { theme } = useTheme();
+  const { verifyOtp, submitting, error } = useVerifyOtp();
 
   const isMobile = useMediaQuery("(max-width: 425px)");
 
@@ -103,17 +108,19 @@ export function VerifyEmailCode() {
                 </InputOTPGroup>
               </InputOTP>
               <Button
+                onClick={() => verifyOtp(code)}
                 type="submit"
+                disabled={!(code.length === 6)}
                 className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded mt-[14px]"
               >
-                {/* {submitting ? (
+                {submitting ? (
                   <ClockLoader
                     size={25}
                     color={theme === "dark" ? "#25103e" : "#f8f8f9"}
                   />
-                ) : ( */}
-                Verify
-                {/* )} */}
+                ) : (
+                  "Verify"
+                )}
               </Button>
               <Button className="bg-transparent cursor-pointer p-0 m-0 text-[#0c66e4] text-sm font-normal hover:bg-transparent hover:underline">
                 Didn't receive an email? Resend email
