@@ -1,68 +1,44 @@
 import { Router } from "express";
-import {
-  createList,
-  getList,
-  updateList,
-  deleteList,
-  getListsByBoard,
-  updateListPosition,
-  archiveList,
-  subscribeToList,
-  getListWatchers,
-  addListWatcher,
-  removeListWatcher,
-} from "./list.controller.js";
+import listController from "./list.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
   createListSchema,
   updateListSchema,
   listIdSchema,
-  boardIdSchema,
   updateListPositionSchema,
   archiveListSchema,
   subscribeToListSchema,
   getListWatchersSchema,
-  addListWatcherSchema,
-  removeListWatcherSchema,
 } from "./list.validation.js";
 
 const router = Router();
 
 // List CRUD operations
-router.post("/board/:boardId", validateRequest(createListSchema), createList);
-router.get("/board/:boardId", validateRequest(boardIdSchema), getListsByBoard);
-router.get("/:listId", validateRequest(listIdSchema), getList);
-router.put("/:listId", validateRequest(updateListSchema), updateList);
-router.delete("/:listId", validateRequest(listIdSchema), deleteList);
+router.post("/board/:boardId", validateRequest(createListSchema), listController.createList);
+router.get("/:listId", validateRequest(listIdSchema), listController.getList);
+router.patch("/:listId", validateRequest(updateListSchema), listController.updateList);
+router.delete("/:listId", validateRequest(listIdSchema), listController.deleteList);
+
+
 
 // List specific operations
-router.put(
+router.patch(
   "/:listId/position",
   validateRequest(updateListPositionSchema),
-  updateListPosition
+  listController.updateListPosition
 );
-router.put("/:listId/archive", validateRequest(archiveListSchema), archiveList);
-router.put(
+router.patch("/:listId/archive", validateRequest(archiveListSchema), listController.archiveList);
+router.patch(
   "/:listId/subscribe",
   validateRequest(subscribeToListSchema),
-  subscribeToList
+  listController.subscribeToList
 );
 
-// List watcher management
+// -------------------------nested routes-------------------------
 router.get(
   "/:listId/watchers",
   validateRequest(getListWatchersSchema),
-  getListWatchers
-);
-router.post(
-  "/:listId/watchers",
-  validateRequest(addListWatcherSchema),
-  addListWatcher
-);
-router.delete(
-  "/:listId/watchers/:userId",
-  validateRequest(removeListWatcherSchema),
-  removeListWatcher
+  listController.getListWatchers
 );
 
 export default router;

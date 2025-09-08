@@ -5,9 +5,6 @@ import {
   createBoardSchema,
   updateBoardSchema,
   boardIdSchema,
-  addBoardMemberSchema,
-  updateBoardMemberSchema,
-  removeBoardMemberSchema,
 } from "./board.validation.js";
 
 const router = Router();
@@ -18,11 +15,10 @@ router.post(
   validateRequest(createBoardSchema),
   boardController.createBoard
 );
-router.get("/", boardController.getAllBoards);
-router.get("/workspace/:workspaceId", boardController.getBoardsByWorkspace);
-router.get("/user/:userId", boardController.getBoardsByUser);
+router.get("/", boardController.getAllBoards);//for aiman dev only
+router.get("/user/:userId", boardController.getBoardsByUser);//here untill ron add it to user controller
 router.get("/:id", validateRequest(boardIdSchema), boardController.getBoard);
-router.put(
+router.patch(
   "/:id",
   validateRequest(updateBoardSchema),
   boardController.updateBoard
@@ -33,26 +29,37 @@ router.delete(
   boardController.deleteBoard
 );
 
+//---------------------------nested routes--------------------------------
+
 // Board member management
 router.get(
   "/:id/members",
   validateRequest(boardIdSchema),
   boardController.getBoardMembers
 );
-router.post(
-  "/:id/members",
-  validateRequest(addBoardMemberSchema),
-  boardController.addBoardMember
+
+// Board lists management
+router.get(
+  "/:id/lists",
+  validateRequest(boardIdSchema),
+  boardController.getBoardLists
 );
-router.patch(
-  "/:id/members/:userId",
-  validateRequest(updateBoardMemberSchema),
-  boardController.updateBoardMemberRole
+
+// Board labels management
+router.get(
+  "/:id/labels",
+  validateRequest(boardIdSchema),
+  boardController.getBoardLabels
 );
-router.delete(
-  "/:id/members/:userId",
-  validateRequest(removeBoardMemberSchema),
-  boardController.removeBoardMember
+
+// Board activity logs management
+router.get(
+  "/:id/activity-logs",
+  validateRequest(boardIdSchema),
+  boardController.getBoardActivityLogs
 );
+
+
+
 
 export default router;

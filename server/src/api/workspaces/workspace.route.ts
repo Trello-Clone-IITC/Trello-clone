@@ -34,6 +34,8 @@ router.delete(
   workspaceController.deleteWorkspace
 );
 
+// --------------------------nested routes--------------------------
+
 // Workspace boards
 router.get(
   "/:id/boards",
@@ -47,6 +49,8 @@ router.get(
   validateRequest(workspaceIdSchema),
   workspaceController.getWorkspaceMembers
 );
+
+//extra routes
 
 router.get("/", workspaceController.getAllWorkspaces);
 router.get(
