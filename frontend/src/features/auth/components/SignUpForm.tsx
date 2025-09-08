@@ -37,7 +37,8 @@ export default function SignupForm() {
       remember: false,
     },
   });
-
+  const input =
+    "border-1 border-[#8590a2] px-2 py-1.5 rounded-[3px]  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#0052cc] placeholder:text-[#727e92]";
   const isMobile = useMediaQuery("(max-width: 425px)");
   const { setTheme } = useTheme();
   setTheme("light");
@@ -105,29 +106,33 @@ export default function SignupForm() {
         alt="Trello"
       />
       <Card
-        className={`overflow-hidden px-4 md:px-8 py-10 rounded-none bg-[white] backdrop-blur-lg min-h-[725px] flex justify-start items-center h-[725px] w-[400px] ${
+        className={`overflow-hidden px-8 py-10 rounded-none bg-[white] backdrop-blur-lg  flex justify-start items-center gap-4  w-[400px] ${
           isMobile ? "w-full min-h-screen" : "md:w-[400px] md:min-w-[400px]"
         }`}
       >
-        <CardContent className="h-[686px] w-full px-0">
+        <CardContent className=" w-full px-0">
           <Form {...form}>
             <form className="" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-2.5">
                 <div className="flex flex-col items-center text-center gap-6">
-                  <div className="h-8 mb-2">{trelloLogo}</div>
+                  <div className="h-8 mb-1.5">{trelloLogo}</div>
                   <p className="text-[#172b4d] text-balance font-bold ">
                     Sign up to continue
                   </p>
                 </div>
 
-                <div className="grid gap-3">
+                <div className="grid gap-2.5">
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input placeholder="m@example.com" {...field} />
+                          <Input
+                            className={input}
+                            placeholder="Enter your email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -268,7 +273,7 @@ export default function SignupForm() {
                   </div>
                 </div>
 
-                <div className="text-center text-sm flex justify-center items-center border-b-1 border-[#c1c7d0] py-4">
+                <div className="text-center text-sm flex justify-center items-center border-b-1 border-[#c1c7d0] pt-4 pb-4">
                   <NavLink
                     to="/login"
                     className="text-[#2777e7]  hover:underline"
