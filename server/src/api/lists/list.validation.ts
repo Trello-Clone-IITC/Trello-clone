@@ -38,11 +38,6 @@ export const listIdSchema = z.object({
   }),
 });
 
-export const boardIdSchema = z.object({
-  params: z.object({
-    boardId: z.string().uuid("Invalid board ID"),
-  }),
-});
 
 export const updateListPositionSchema = z.object({
   params: z.object({
@@ -71,22 +66,6 @@ export const subscribeToListSchema = z.object({
   }),
 });
 
-// List watcher validation schemas
-export const addListWatcherSchema = z.object({
-  params: z.object({
-    listId: z.string().uuid("Invalid list ID"),
-  }),
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID"),
-  }),
-});
-
-export const removeListWatcherSchema = z.object({
-  params: z.object({
-    listId: z.string().uuid("Invalid list ID"),
-    userId: z.string().uuid("Invalid user ID"),
-  }),
-});
 
 export const getListWatchersSchema = z.object({
   params: z.object({

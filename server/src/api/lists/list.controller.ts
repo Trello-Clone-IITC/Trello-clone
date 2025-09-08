@@ -1,13 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import { listService } from "./listService.js";
+import listService from "./list.service.js";
 import type { ListDto, ListWatcherDto } from "@ronmordo/types";
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 
-export const createList = async (
+ const createList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -16,7 +17,7 @@ export const createList = async (
     const { boardId } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -36,7 +37,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
-export const getList = async (
+ const getList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -60,7 +61,7 @@ export const getList = async (
   }
 };
 
-export const updateList = async (
+ const updateList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -69,15 +70,16 @@ export const updateList = async (
     const { listId } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
-    const updateData = {...req.body, userId};
+    const updateData = {...req.body};
 
     const list = await listService.updateList(listId, updateData);
+    console.log("list", list);
 
     if (!list) {
       return next(new AppError("List not found", 404));
@@ -94,7 +96,7 @@ export const updateList = async (
   }
 };
 
-export const deleteList = async (
+ const deleteList = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -116,26 +118,8 @@ export const deleteList = async (
   }
 };
 
-export const getListsByBoard = async (
-  req: Request,
-  res: Response<ApiResponse<ListDto[]>>,
-  next: NextFunction
-) => {
-  try {
-    const { boardId } = req.params;
-    const lists = await listService.getListsByBoard(boardId);
-    const listsDto: ListDto[] = lists.map(mapListToDto);
 
-    res.status(200).json({
-      success: true,
-      data: listsDto,
-    });
-  } catch (error) {
-    next(new AppError("Failed to get lists by board", 500));
-  }
-};
-
-export const updateListPosition = async (
+ const updateListPosition = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -160,7 +144,7 @@ export const updateListPosition = async (
   }
 };
 
-export const archiveList = async (
+ const archiveList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -185,7 +169,7 @@ export const archiveList = async (
   }
 };
 
-export const subscribeToList = async (
+ const subscribeToList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -211,7 +195,7 @@ export const subscribeToList = async (
 };
 
 // List Watcher Management
-export const getListWatchers = async (
+ const getListWatchers = async (
   req: Request,
   res: Response<ApiResponse<ListWatcherDto[]>>,
   next: NextFunction
@@ -230,47 +214,14 @@ export const getListWatchers = async (
   }
 };
 
-export const addListWatcher = async (
-  req: Request,
-  res: Response<ApiResponse<{ message: string }>>,
-  next: NextFunction
-) => {
-  try {
-    const { listId } = req.params;
-    const { userId } = req.body;
-    const added = await listService.addListWatcher(listId, userId);
 
-    if (!added) {
-      return next(new AppError("Failed to add list watcher", 400));
-    }
-
-    res.status(201).json({
-      success: true,
-      data: { message: "List watcher added successfully" },
-    });
-  } catch (error) {
-    next(new AppError("Failed to add list watcher", 500));
-  }
-};
-
-export const removeListWatcher = async (
-  req: Request,
-  res: Response<ApiResponse<{ message: string }>>,
-  next: NextFunction
-) => {
-  try {
-    const { listId, userId } = req.params;
-    const removed = await listService.removeListWatcher(listId, userId);
-
-    if (!removed) {
-      return next(new AppError("List watcher not found", 404));
-    }
-
-    res.status(200).json({
-      success: true,
-      data: { message: "List watcher removed successfully" },
-    });
-  } catch (error) {
-    next(new AppError("Failed to remove list watcher", 500));
-  }
+export default {
+  createList,
+  getList,
+  updateList,
+  deleteList,
+  updateListPosition,
+  archiveList,
+  subscribeToList,
+  getListWatchers,
 };

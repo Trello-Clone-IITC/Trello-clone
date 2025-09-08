@@ -15,11 +15,12 @@ import type {
   WorkspaceDto,
   WorkspaceMemberDto,
 } from "@ronmordo/types";
-import { workspaceService } from "./workspaceService.js";
+import workspaceService from "./workspaceService.js";
 import { mapWorkspaceToDto } from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
 import { getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 
 const createWorkspace = async (
   req: Request,
@@ -29,7 +30,7 @@ const createWorkspace = async (
   try {
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -277,7 +278,7 @@ const addWorkspaceMember = async (
     const { role } = req.body;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+        userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -313,7 +314,7 @@ const removeWorkspaceMember = async (
     const { id } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -345,7 +346,7 @@ const updateWorkspaceMemberRole = async (
     const { role } = req.body;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {

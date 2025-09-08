@@ -1,11 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import { boardService } from "./board.service.js";
-import type { BoardDto, BoardMemberDto } from "@ronmordo/types";
+import boardService from "./board.service.js";
+import boardMembersService from "../board-members/board-members.service.js";
+import type { BoardDto, BoardMemberDto, ListDto, LabelDto, ActivityLogDto } from "@ronmordo/types";
 import { mapBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
+import { mapListToDto } from "../lists/list.mapper.js";
+import { mapLabelToDto } from "../labels/label.mapper.js";
+import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 import { getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 
 const createBoard = async (
   req: Request,
@@ -15,7 +20,7 @@ const createBoard = async (
   try {
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -26,15 +31,16 @@ const createBoard = async (
       ...req.body,
       createdBy: userId,
     });
-
     // Transform Date objects to strings for DTO
     const boardDto: BoardDto = mapBoardToDto(board);
+
 
     res.status(201).json({
       success: true,
       data: boardDto,
     });
   } catch (error) {
+    console.log(error);
     next(new AppError("Failed to create board", 500));
   }
 };
@@ -71,13 +77,13 @@ const updateBoard = async (
     const { id } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
-    const updateData = { ...req.body, userId };
+    const updateData = { ...req.body };
 
     const board = await boardService.updateBoard(id, updateData);
 
@@ -90,6 +96,7 @@ const updateBoard = async (
       data: boardDto,
     });
   } catch (error) {
+    console.log("error from update board", error);
     next(new AppError("Failed to update board", 500));
   }
 };
@@ -103,7 +110,7 @@ const deleteBoard = async (
     const { id } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = req.body.userId;
+      userId = DUMMY_USER_ID//TODO: remove this after testing;
     }
 
     if (!userId) {
@@ -121,6 +128,7 @@ const deleteBoard = async (
       data: { message: "Board deleted successfully" },
     });
   } catch (error) {
+    console.log("error from delete board", error);
     next(new AppError("Failed to delete board", 500));
   }
 };
@@ -142,23 +150,7 @@ const getAllBoards = async (
   }
 };
 
-const getBoardsByWorkspace = async (
-  req: Request,
-  res: Response<ApiResponse<BoardDto[]>>,
-  next: NextFunction
-) => {
-  try {
-    const { workspaceId } = req.params;
-    const boards = await boardService.getBoardsByWorkspace(workspaceId);
-    const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
-    res.status(200).json({
-      success: true,
-      data: boardsDto,
-    });
-  } catch (error) {
-    next(new AppError("Failed to get boards by workspace", 500));
-  }
-};
+
 
 const getBoardsByUser = async (
   req: Request,
@@ -167,8 +159,11 @@ const getBoardsByUser = async (
 ) => {
   try {
     const { userId: paramUserId } = req.params;
+    console.log("paramUserId", paramUserId);
+    
 
     const boards = await boardService.getBoardsByUser(paramUserId);
+    console.log("boards", boards);
     const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
     res.status(200).json({
       success: true,
@@ -186,7 +181,7 @@ const getBoardMembers = async (
 ) => {
   try {
     const { id } = req.params;
-    const members = await boardService.getBoardMembers(id);
+    const members = await boardMembersService.getBoardMembers(id);
     const membersDto = members.map(mapBoardMemberToDto);
     res.status(200).json({
       success: true,
@@ -197,105 +192,60 @@ const getBoardMembers = async (
   }
 };
 
-const addBoardMember = async (
+const getBoardLists = async (
   req: Request,
-  res: Response<ApiResponse<BoardMemberDto>>,
+  res: Response<ApiResponse<ListDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
-    const { userId: memberUserId, role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = req.body.userId;
-    }
-
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-
-    const member = await boardService.addBoardMember(id, memberUserId, role);
-    const memberDto = mapBoardMemberToDto(member);
-    res.status(201).json({
+    const lists = await boardService.getBoardLists(id);
+    const listsDto = lists.map(mapListToDto);
+    res.status(200).json({
       success: true,
-      data: memberDto,
+      data: listsDto,
     });
   } catch (error) {
-    next(new AppError("Failed to add board member", 500));
+    next(new AppError("Failed to get board lists", 500));
   }
 };
 
-const removeBoardMember = async (
+const getBoardLabels = async (
   req: Request,
-  res: Response<ApiResponse<{ message: string }>>,
+  res: Response<ApiResponse<LabelDto[]>>,
   next: NextFunction
 ) => {
   try {
-    const { id, userId: memberUserId } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = req.body.userId;
-    }
-
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-
-    const removed = await boardService.removeBoardMember(id, memberUserId);
-
-    if (!removed) {
-      return next(new AppError("Board member not found", 404));
-    }
-
+    const { id } = req.params;
+    const labels = await boardService.getBoardLabels(id);
+    const labelsDto = labels.map(mapLabelToDto);
     res.status(200).json({
       success: true,
-      data: { message: "Board member removed successfully" },
+      data: labelsDto,
     });
   } catch (error) {
-    next(new AppError("Failed to remove board member", 500));
+    next(new AppError("Failed to get board labels", 500));
   }
 };
 
-const updateBoardMemberRole = async (
+const getBoardActivityLogs = async (
   req: Request,
-  res: Response<ApiResponse<BoardMemberDto>>,
+  res: Response<ApiResponse<ActivityLogDto[]>>,
   next: NextFunction
 ) => {
   try {
-    const { id, userId: memberUserId } = req.params;
-    const { role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = req.body.userId;
-    }
-
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-    if (memberUserId !== userId) {
-      return next(
-        new AppError("User not authorized to update this board member", 403)
-      );
-    }
-
-    const member = await boardService.updateBoardMemberRole(
-      id,
-      memberUserId,
-      role
-    );
-    if (!member) {
-      return next(new AppError("Board member not found", 404));
-    }
-    const memberDto = mapBoardMemberToDto(member);
-
+    const { id } = req.params;
+    const activityLogs = await boardService.getBoardActivityLogs(id);
+    const activityLogsDto = activityLogs.map(mapActivityLogToDto);
     res.status(200).json({
       success: true,
-      data: memberDto,
+      data: activityLogsDto,
     });
   } catch (error) {
-    next(new AppError("Failed to update board member role", 500));
+    next(new AppError("Failed to get board activity logs", 500));
   }
 };
+
 
 export default {
   createBoard,
@@ -303,10 +253,9 @@ export default {
   updateBoard,
   deleteBoard,
   getAllBoards,
-  getBoardsByWorkspace,
   getBoardsByUser,
   getBoardMembers,
-  addBoardMember,
-  removeBoardMember,
-  updateBoardMemberRole,
+  getBoardLists,
+  getBoardLabels,
+  getBoardActivityLogs,
 };

@@ -11,12 +11,13 @@ const getMe = async (
 ) => {
   try {
     const { userId } = getAuth(req);
-    // const userId = "user_32KqXqyVpAZAJf6L1QwWwPLOfPl"; Uncomment to test.
+    // const userId = "user_32NBmRKkpRhHjJYCl8ev7hQV8PW"; // Uncomment to test.
 
     // Since we are protected by validation middleware we can assume safely that userId does exists on req object.
     const user = await userService.getMe(userId!);
     return res.status(200).json({ success: true, data: user });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };

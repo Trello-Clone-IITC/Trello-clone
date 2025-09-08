@@ -43,29 +43,16 @@ export const getCardSchema = z.object({
   params: z.object({
     id: z.string().uuid("Invalid card ID"),
   }),
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID").optional(),
-  }),
+
 });
 
-// Get cards by list validation schema
-export const getCardsByListSchema = z.object({
-  params: z.object({
-    listId: z.string().uuid("Invalid list ID"),
-  }),
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID").optional(),
-  }),
-});
 
 // Delete card validation schema
 export const deleteCardSchema = z.object({
   params: z.object({
     id: z.string().uuid("Invalid card ID"),
   }),
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID").optional(),
-  }),
+
 });
 
 // Move card validation schema
@@ -313,5 +300,42 @@ export const removeChecklistItemAssigneeSchema = z.object({
     checklistId: z.string().uuid("Invalid checklist ID"),
     itemId: z.string().uuid("Invalid item ID"),
     userId: z.string().uuid("Invalid user ID").optional(),
+  }),
+});
+
+// Card nested resources validation schemas
+export const getCardChecklistsSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
+  }),
+});
+
+export const getCardCommentsSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
+  }),
+});
+
+export const getCardAssigneesSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
+  }),
+});
+
+export const getCardLabelsSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
+  }),
+});
+
+export const getCardWatchersSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
+  }),
+});
+
+export const getCardAttachmentsSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("Invalid card ID"),
   }),
 });

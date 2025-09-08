@@ -10,7 +10,6 @@ export const createBoardSchema = z.object({
       .max(255, "Board name too long"),
     description: z.string().max(1000, "Description too long").optional(),
     background: z.string().url("Invalid background URL").optional(),
-    createdBy: z.string().uuid("Invalid user ID"),
     allowCovers: z.boolean().optional(),
     showComplete: z.boolean().optional(),
     visibility: z.enum(["Private", "WorkspaceMembers", "Public"]).optional(),
@@ -50,32 +49,6 @@ export const boardIdSchema = z.object({
   }),
 });
 
-export const addBoardMemberSchema = z.object({
-  params: z.object({
-    id: z.string().uuid("Invalid board ID"),
-  }),
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID"),
-    role: z.enum(["Admin", "Member", "Observer"]).default("Member"),
-  }),
-});
-
-export const updateBoardMemberSchema = z.object({
-  params: z.object({
-    id: z.string().uuid("Invalid board ID"),
-    userId: z.string().uuid("Invalid user ID"),
-  }),
-  body: z.object({
-    role: z.enum(["Admin", "Member", "Observer"]),
-  }),
-});
-
-export const removeBoardMemberSchema = z.object({
-  params: z.object({
-    id: z.string().uuid("Invalid board ID"),
-    userId: z.string().uuid("Invalid user ID"),
-  }),
-});
 
 // List validation schemas
 export const createListSchema = z.object({
