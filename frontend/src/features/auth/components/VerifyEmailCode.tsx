@@ -4,7 +4,7 @@ import {
   InputOTPGroup,
 } from "@/components/ui/input-otp";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { useState } from "react";
 import { ClockLoader } from "react-spinners";
 import { useTheme } from "@/hooks/useTheme";
 import { useVerifyOtp } from "../hooks/useVerifyOtp";
+import { useSignIn } from "@clerk/clerk-react";
 
 const trelloLogo = (
   <svg height="40" viewBox="0 0 113 32">
@@ -55,8 +56,32 @@ export function VerifyEmailCode() {
   const [code, setCode] = useState("");
   const { theme } = useTheme();
   const { verifyOtp, submitting, error } = useVerifyOtp();
+  const location = useLocation();
+  const email = location.state.email as string | undefined;
+  const { signIn } = useSignIn();
 
   const isMobile = useMediaQuery("(max-width: 425px)");
+
+  const resendOtp = async () => {
+    if (!signIn || !signIn.supportedFirstFactors) return;
+
+    // Find the correct email address factor from Clerk
+    const emailFactor = signIn.supportedFirstFactors.find(
+      (f) => f.strategy === "email_code"
+    );
+
+    if (!emailFactor || emailFactor.strategy !== "email_code") {
+      console.error("No email factor available to resend OTP");
+      return;
+    }
+
+    await signIn.prepareFirstFactor({
+      strategy: "email_code",
+      emailAddressId: emailFactor.emailAddressId,
+    });
+
+    console.log("OTP resent successfully");
+  };
 
   return (
     <div className="bg-[#fafbfc] min-h-screen w-full flex justify-center items-center overflow-y-clip">
@@ -84,14 +109,17 @@ export function VerifyEmailCode() {
                   We've emailed you a code
                 </h2>
               </div>
-              <div className="flex flex-col items-center justify-center gap-1 text-left">
+              <div className="flex flex-col items-start justify-center gap-1 text-left">
                 <p className="text-[#172b4d] text-sm">
                   To complete your accout setup, enter the code we've sent to:{" "}
                 </p>
-                <p className="text-[#44546f] text-[16px] font-bold text-left w-full">
-                  {/* {email} */}
-                  test@test.com
-                </p>
+                {email && (
+                  <p className="text-left text-xs font-bold text-[#44546f] flex flex-col items-center justify-center gap-1">
+                    <span className="text-sm text-[#172b4d] font-bold">
+                      {email}
+                    </span>
+                  </p>
+                )}
               </div>
               <InputOTP
                 maxLength={6}
@@ -122,7 +150,10 @@ export function VerifyEmailCode() {
                   "Verify"
                 )}
               </Button>
-              <Button className="bg-transparent cursor-pointer p-0 m-0 text-[#0c66e4] text-sm font-normal hover:bg-transparent hover:underline">
+              <Button
+                onClick={resendOtp}
+                className="bg-transparent cursor-pointer p-0 m-0 text-[#0c66e4] text-sm font-normal hover:bg-transparent hover:underline"
+              >
                 Didn't receive an email? Resend email
               </Button>
             </section>

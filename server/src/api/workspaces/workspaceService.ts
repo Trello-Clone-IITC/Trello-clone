@@ -1,25 +1,51 @@
+import type {
+  BoardDto,
+  CreateWorkspaceInput,
+  UpdateWorkspaceInput,
+  WorkspaceDto,
+} from "@ronmordo/types";
 import { prisma } from "../../lib/prismaClient.js";
 import {
   type Workspace,
   type WorkspaceMember,
   WorkspaceRole,
 } from "@prisma/client";
+import {
+  mapWorkspaceDtoToCreateInput,
+  mapWorkspaceDtoToUpdateInput,
+  mapWorkspaceToDto,
+} from "./workspace.mapper.js";
+import { AppError } from "../../utils/appError.js";
+import { mapBoardToDto } from "../boards/board.mapper.js";
 
 const createWorkspace = async (
-  workspaceData: Omit<Workspace, "id" | "createdAt" | "updatedAt">
-): Promise<Workspace> => {
+  workspaceDto: CreateWorkspaceInput,
+  creatorId: string
+): Promise<WorkspaceDto> => {
+  const workspaceData = mapWorkspaceDtoToCreateInput(workspaceDto);
+
   const workspace = await prisma.workspace.create({
-    data: workspaceData,
+    data: {
+      ...workspaceData,
+      creator: { connect: { id: creatorId } },
+    },
   });
-  console.log("workspace from service", workspace);
-  return workspace;
+
+  await addWorkspaceMember(workspace.id, workspace.createdBy, "Admin");
+
+  return mapWorkspaceToDto(workspace);
 };
 
-const getWorkspaceById = async (id: string): Promise<Workspace | null> => {
+const getWorkspaceById = async (id: string): Promise<WorkspaceDto> => {
   const workspace = await prisma.workspace.findUnique({
     where: { id },
   });
-  return workspace;
+
+  if (!workspace) {
+    throw new AppError("Workspace not found", 404);
+  }
+
+  return mapWorkspaceToDto(workspace);
 };
 
 const getWorkspaceWithMembers = async (
@@ -57,10 +83,13 @@ const getWorkspacesByUser = async (userId: string): Promise<Workspace[]> => {
       createdAt: "desc",
     },
   });
+
   return workspaces;
 };
 
-const getWorkspacesByCreator = async (createdBy: string): Promise<Workspace[]> => {
+const getWorkspacesByCreator = async (
+  createdBy: string
+): Promise<Workspace[]> => {
   const workspaces = await prisma.workspace.findMany({
     where: {
       createdBy,
@@ -74,42 +103,22 @@ const getWorkspacesByCreator = async (createdBy: string): Promise<Workspace[]> =
 
 const updateWorkspace = async (
   id: string,
-  updates: Partial<
-    Pick<
-      Workspace,
-      | "name"
-      | "description"
-      | "visibility"
-      | "premium"
-      | "type"
-      | "workspaceMembershipRestrictions"
-      | "publicBoardCreation"
-      | "workspaceBoardCreation"
-      | "privateBoardCreation"
-      | "publicBoardDeletion"
-      | "workspaceBoardDeletion"
-      | "privateBoardDeletion"
-      | "allowGuestSharing"
-      | "allowSlackIntegration"
-    >
-  >
-): Promise<Workspace | null> => {
+  updateDtoData: UpdateWorkspaceInput
+): Promise<WorkspaceDto> => {
+  const updateData = mapWorkspaceDtoToUpdateInput(updateDtoData);
+
   const workspace = await prisma.workspace.update({
     where: { id },
-    data: updates,
+    data: updateData,
   });
-  return workspace;
+
+  return mapWorkspaceToDto(workspace);
 };
 
-const deleteWorkspace = async (id: string): Promise<boolean> => {
-  try {
-    await prisma.workspace.delete({
-      where: { id },
-    });
-    return true;
-  } catch (error) {
-    return false;
-  }
+const deleteWorkspace = (id: string) => {
+  return prisma.workspace.delete({
+    where: { id },
+  });
 };
 
 const getAllWorkspaces = async (): Promise<Workspace[]> => {
@@ -180,7 +189,9 @@ const updateWorkspaceMemberRole = async (
   }
 };
 
-const getWorkspaceMembers = async (workspaceId: string): Promise<WorkspaceMember[]> => {
+const getWorkspaceMembers = async (
+  workspaceId: string
+): Promise<WorkspaceMember[]> => {
   const members = await prisma.workspaceMember.findMany({
     where: {
       workspaceId,
@@ -201,7 +212,7 @@ const getWorkspaceMembers = async (workspaceId: string): Promise<WorkspaceMember
   return members;
 };
 
-const getWorkspaceBoards = async (workspaceId: string): Promise<any[]> => {
+const getWorkspaceBoards = async (workspaceId: string): Promise<BoardDto[]> => {
   const boards = await prisma.board.findMany({
     where: {
       workspaceId,
@@ -210,7 +221,8 @@ const getWorkspaceBoards = async (workspaceId: string): Promise<any[]> => {
       createdAt: "desc",
     },
   });
-  return boards;
+
+  return boards.map(mapBoardToDto);
 };
 
 const searchWorkspaces = async (

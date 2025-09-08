@@ -4,6 +4,7 @@ import { z } from "zod";
 
 // Since ZodSchema type is deprecated I changed the schema type to z.ZodType which follows latest zod docs.
 // Since Response isnt used in our functions changed the parameter name to _ following unused paramaters naming conventions.
+
 export const validateRequest = (schema: z.ZodType) => {
   return async (req: Request, _: Response, next: NextFunction) => {
     try {
@@ -21,8 +22,8 @@ export const validateRequest = (schema: z.ZodType) => {
       console.log("error in validation", error);
 
       if (error instanceof z.ZodError) {
-        const errorMessage = error.issues.map((err) => err.message).join(", ");
-        return next(new AppError(`Validation error: ${errorMessage}`, 400));
+        const errorMessages = error.issues.map((err) => err.message);
+        return next(new AppError(`Validation error`, 400, errorMessages));
       }
       next(error);
     }

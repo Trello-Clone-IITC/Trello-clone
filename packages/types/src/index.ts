@@ -168,9 +168,9 @@ export const ChecklistDtoSchema = z.object({
 });
 
 export const CommentDtoSchema = z.object({
-  id: z.string().uuid(),
-  cardId: z.string().uuid(),
-  userId: z.string().uuid(),
+  id: z.uuid(),
+  cardId: z.uuid(),
+  userId: z.uuid(),
   text: z.string(),
   createdAt: z.iso.datetime(),
 });
@@ -481,6 +481,68 @@ export const WorkspaceFullDtoSchema = WorkspaceDtoSchema.extend({
 });
 
 // ==========================
+// Create Input Schemas
+// ==========================
+export const CreateWorkspaceInputSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).nullable().optional(),
+  type: WorkspaceTypeSchema,
+});
+
+export const CreateBoardInputSchema = z.object({
+  name: z.string().min(1).max(100),
+  workspaceId: z.uuid(),
+  background: z.string(),
+  visibility: BoardVisibilitySchema,
+});
+
+// ==========================
+// BASE PARAM & QUERY SCHEMAS
+// ==========================
+export const IdParamSchema = z.object({
+  id: z.uuid(),
+});
+
+export const SearchQuerySchema = z.object({
+  search: z.string().optional(),
+});
+
+export const GetByIdRequestSchema = z.object({
+  params: IdParamSchema,
+});
+
+// ==========================
+// WORKSPACE REQUEST SCHEMAS
+// ==========================
+export const CreateWorkspaceRequestSchema = z.object({
+  body: CreateWorkspaceInputSchema,
+  query: z.object({}),
+  params: z.object({}),
+});
+
+export const UpdateWorkspaceRequestSchema = z.object({
+  body: WorkspaceDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// BOARD REQUEST SCHEMAS
+// ==========================
+
+export const CreateBoardRequestSchema = z.object({
+  body: CreateBoardInputSchema,
+  query: z.object({}),
+  params: z.object({}),
+});
+
+export const UpdateBoardRequestSchema = z.object({
+  body: BoardDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
 // TYPES FROM SCHEMAS
 // ==========================
 export type ActivityLogDto = z.infer<typeof ActivityLogDtoSchema>;
@@ -503,6 +565,24 @@ export type ListWatcherDto = z.infer<typeof ListWatcherDtoSchema>;
 export type UserDto = z.infer<typeof UserDtoSchema>;
 export type WorkspaceDto = z.infer<typeof WorkspaceDtoSchema>;
 export type WorkspaceMemberDto = z.infer<typeof WorkspaceMemberDtoSchema>;
+
+// ==========================
+// CREATE INPUT TYPES FROM SCHEMAS
+// ==========================
+export type CreateWorkspaceInput = z.infer<typeof CreateWorkspaceInputSchema>;
+export type CreateBoardInput = z.infer<typeof CreateBoardInputSchema>;
+
+// ==========================
+// UPDATE INPUT TYPES FROM SCHEMAS
+// ==========================
+export type UpdateWorkspaceInput = z.infer<typeof WorkspaceDtoSchema>;
+export type UpdateBoardInput = z.infer<typeof BoardDtoSchema>;
+
+// ==========================
+// PARAM & QUERY TYPES FROM SCHEMAS
+// ==========================
+export type IdParam = z.infer<typeof IdParamSchema>;
+export type SearchQuery = z.infer<typeof SearchQuerySchema>;
 
 // ==========================
 // COMPLEX TYPES FROM SCHEMAS

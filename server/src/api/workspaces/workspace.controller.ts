@@ -1,190 +1,128 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
+import { WorkspaceRole } from "@prisma/client";
 import {
-  WorkspaceRole,
-  WorkspaceType,
-  WorkspaceVisibility,
-  MembershipRestrictions,
-  BoardCreationRestrictions,
-  BoardSharing,
-  SlackSharing,
-} from "@prisma/client";
-import type {
-  BoardDto,
-  WorkspaceDto,
-  WorkspaceMemberDto,
+  type BoardDto,
+  type CreateWorkspaceInput,
+  type IdParam,
+  type UpdateWorkspaceInput,
+  type WorkspaceDto,
+  type WorkspaceMemberDto,
 } from "@ronmordo/types";
 import workspaceService from "./workspaceService.js";
-import { mapWorkspaceToDto } from "./workspace.mapper.js";
+import {
+  mapWorkspaceDtoToCreateInput,
+  mapWorkspaceToDto,
+} from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
 import { getAuth } from "@clerk/express";
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 const createWorkspace = async (
-  req: Request,
+  req: Request<{}, {}, CreateWorkspaceInput>,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
+    let { userId: userClerkId } = getAuth(req) || {};
+    if (!userClerkId) {
+      userClerkId = DUMMY_USER_ID; //TODO: remove this after testing; Changed to clerkId
     }
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
+    if (!userClerkId) {
+      throw new AppError("User not authenticated", 401);
     }
 
-    const {
-      name,
-      description,
-      visibility,
-      type,
-      workspaceMembershipRestrictions,
-      publicBoardCreation,
-      workspaceBoardCreation,
-      privateBoardCreation,
-      publicBoardDeletion,
-      workspaceBoardDeletion,
-      privateBoardDeletion,
-      allowGuestSharing,
-      allowSlackIntegration,
-      premium,
-    } = req.body;
+    const userWithId = await userService.getUserIdByClerkId(userClerkId);
 
-    if (!name) {
-      return next(new AppError("Name is required", 400));
+    if (!userWithId) {
+      throw new AppError("Missing user in database", 500);
     }
 
-    const workspace = await workspaceService.createWorkspace({
-      name,
-      description,
-      createdBy: userId,
-      visibility: visibility || WorkspaceVisibility.Private,
-      premium: premium ?? false,
-      type: type ?? WorkspaceType.Other,
-      workspaceMembershipRestrictions:
-        workspaceMembershipRestrictions ?? MembershipRestrictions.Anybody,
-      publicBoardCreation:
-        publicBoardCreation ?? BoardCreationRestrictions.WorkspaceMember,
-      workspaceBoardCreation:
-        workspaceBoardCreation ?? BoardCreationRestrictions.WorkspaceMember,
-      privateBoardCreation:
-        privateBoardCreation ?? BoardCreationRestrictions.WorkspaceMember,
-      publicBoardDeletion:
-        publicBoardDeletion ?? BoardCreationRestrictions.WorkspaceMember,
-      workspaceBoardDeletion:
-        workspaceBoardDeletion ?? BoardCreationRestrictions.WorkspaceMember,
-      privateBoardDeletion:
-        privateBoardDeletion ?? BoardCreationRestrictions.WorkspaceMember,
-      allowGuestSharing: allowGuestSharing ?? BoardSharing.Anybody,
-      allowSlackIntegration:
-        allowSlackIntegration ?? SlackSharing.WorkspaceMember,
-    });
+    const workspace = await workspaceService.createWorkspace(
+      req.body,
+      userWithId.id
+    );
 
-    // Transform Prisma workspace to DTO format
-    const workspaceDto = mapWorkspaceToDto(workspace);
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: workspaceDto,
+      data: workspace,
     });
   } catch (error) {
-    console.log("creating workspace error", error);
-    next(new AppError("Failed to create workspace", 500));
+    return next(error);
   }
 };
 
 const getWorkspace = async (
-  req: Request,
+  req: Request<IdParam>,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const workspace = await workspaceService.getWorkspaceById(req.params.id);
 
-    const workspace = await workspaceService.getWorkspaceById(id);
-
-    if (!workspace) {
-      return next(new AppError("Workspace not found", 404));
-    }
-    const workspaceDto = mapWorkspaceToDto(workspace);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: workspaceDto,
+      data: workspace,
     });
   } catch (error) {
-    next(new AppError("Failed to get workspace", 500));
+    return next(error);
   }
 };
 
 const updateWorkspace = async (
-  req: Request,
+  req: Request<IdParam, {}, UpdateWorkspaceInput>,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
-    const updates = req.body;
-
     const updatedWorkspace = await workspaceService.updateWorkspace(
-      id,
-      updates
+      req.params.id,
+      req.body
     );
 
-    if (!updatedWorkspace) {
-      return next(new AppError("Workspace not found", 404));
-    }
-    const updatedWorkspaceDto = mapWorkspaceToDto(updatedWorkspace);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: updatedWorkspaceDto,
+      data: updatedWorkspace,
     });
   } catch (error) {
-    next(new AppError("Failed to update workspace", 500));
+    return next(error);
   }
 };
 
 const deleteWorkspace = async (
-  req: Request,
+  req: Request<IdParam>,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    await workspaceService.deleteWorkspace(req.params.id);
 
-    const deleted = await workspaceService.deleteWorkspace(id);
-
-    if (!deleted) {
-      return next(new AppError("Workspace not found", 404));
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: { message: "Workspace deleted successfully" },
     });
   } catch (error) {
-    next(new AppError("Failed to delete workspace", 500));
+    return next(error);
   }
 };
 
 const getWorkspaceBoards = async (
-  req: Request,
+  req: Request<IdParam>,
   res: Response<ApiResponse<BoardDto[]>>,
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
-
-    const boards = await workspaceService.getWorkspaceBoards(id);
-    const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
-    res.status(200).json({
+    const boards = await workspaceService.getWorkspaceBoards(req.params.id);
+    return res.status(200).json({
       success: true,
-      data: boardsDto,
+      data: boards,
     });
   } catch (error) {
-    next(new AppError("Failed to get workspace boards", 500));
+    return next(error);
   }
 };
 
@@ -196,12 +134,12 @@ const getAllWorkspaces = async (
   try {
     const workspaces = await workspaceService.getAllWorkspaces();
     const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: workspacesDto,
     });
   } catch (error) {
-    next(new AppError("Failed to get workspaces", 500));
+    return next(error);
   }
 };
 
@@ -215,13 +153,12 @@ const getWorkspacesByUser = async (
     const workspaces = await workspaceService.getWorkspacesByUser(userId);
     console.log("workspaces", workspaces);
     const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: workspacesDto,
     });
   } catch (error) {
-    console.log("error", error);
-    next(new AppError("Failed to get workspaces by user", 500));
+    return next(error);
   }
 };
 
@@ -235,12 +172,12 @@ const getWorkspacesByCreator = async (
 
     const workspaces = await workspaceService.getWorkspacesByCreator(userId);
     const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: workspacesDto,
     });
   } catch (error) {
-    next(new AppError("Failed to get workspaces by creator", 500));
+    return next(error);
   }
 };
 
@@ -258,12 +195,12 @@ const getWorkspaceMembers = async (
     const memberDtos: WorkspaceMemberDto[] = members.map(
       mapWorkspaceMemberToDto
     );
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: memberDtos,
     });
   } catch (error) {
-    next(new AppError("Failed to get workspace members", 500));
+    return next(error);
   }
 };
 
@@ -278,11 +215,11 @@ const addWorkspaceMember = async (
     const { role } = req.body;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
+      userId = DUMMY_USER_ID; //TODO: remove this after testing;
     }
 
     if (!userId) {
-      return next(new AppError("User not authenticated", 401));
+      throw new AppError("User not authenticated", 401);
     }
     console.log("-------------------------");
 
@@ -295,13 +232,12 @@ const addWorkspaceMember = async (
     // Transform Prisma workspace member to DTO format
     const memberDto: WorkspaceMemberDto = mapWorkspaceMemberToDto(member);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: memberDto,
     });
   } catch (error) {
-    console.log("error", error);
-    next(new AppError("Failed to add workspace member", 500));
+    return next(error);
   }
 };
 
@@ -314,11 +250,11 @@ const removeWorkspaceMember = async (
     const { id } = req.params;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
+      userId = DUMMY_USER_ID; //TODO: remove this after testing;
     }
 
     if (!userId) {
-      return next(new AppError("User not authenticated", 401));
+      throw new AppError("User not authenticated", 401);
     }
 
     const removed = await workspaceService.removeWorkspaceMember(id, userId);
@@ -327,12 +263,12 @@ const removeWorkspaceMember = async (
       return next(new AppError("Workspace member not found", 404));
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: { message: "Workspace member removed successfully" },
     });
   } catch (error) {
-    next(new AppError("Failed to remove workspace member", 500));
+    return next(error);
   }
 };
 
@@ -346,11 +282,11 @@ const updateWorkspaceMemberRole = async (
     const { role } = req.body;
     let { userId } = getAuth(req) || {};
     if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
+      userId = DUMMY_USER_ID; //TODO: remove this after testing;
     }
 
     if (!userId) {
-      return next(new AppError("User not authenticated", 401));
+      throw new AppError("User not authenticated", 401);
     }
 
     const member = await workspaceService.updateWorkspaceMemberRole(
@@ -360,18 +296,18 @@ const updateWorkspaceMemberRole = async (
     );
 
     if (!member) {
-      return next(new AppError("Workspace member not found", 404));
+      throw new AppError("Workspace member not found", 404);
     }
 
     // Transform Prisma workspace member to DTO format
     const memberDto: WorkspaceMemberDto = mapWorkspaceMemberToDto(member);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: memberDto,
     });
   } catch (error) {
-    next(new AppError("Failed to update workspace member role", 500));
+    return next(error);
   }
 };
 
@@ -389,12 +325,12 @@ const searchWorkspaces = async (
     );
 
     const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: workspacesDto,
     });
   } catch (error) {
-    next(new AppError("Failed to search workspaces", 500));
+    return next(error);
   }
 };
 
