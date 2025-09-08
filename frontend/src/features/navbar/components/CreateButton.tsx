@@ -5,12 +5,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useContext } from "react";
+import { ThemeProviderContext } from "@/context/ThemeContext";
 
 export default function CreateButton() {
+  const { theme } = useContext(ThemeProviderContext);
+  const isLight = theme === "light";
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="flex rounded items-center gap-2 px-3 py-2 h-8 text-sm font-medium bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] border-0 cursor-pointer">
+        <Button
+          className="flex rounded items-center gap-2 px-3 py-2 h-8 text-sm font-medium border-0 cursor-pointer"
+          style={{
+            backgroundColor: isLight ? "#0c66e4" : "#579dff",
+            color: isLight ? "white" : "#1d2125",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#0055cc"
+              : "#85b8ff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = isLight
+              ? "#0c66e4"
+              : "#579dff";
+          }}
+        >
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
