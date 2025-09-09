@@ -590,6 +590,54 @@ export const GetByIdRequestSchema = z.object({
 });
 
 // ==========================
+// RESOURCE ID SCHEMAS
+// ==========================
+// User
+export const UserIdParam = z.object({
+  userId: z.uuid(),
+});
+
+// Workspace
+export const WorkspacesIdParam = z.object({
+  workspaceId: z.uuid(),
+});
+
+// Board
+export const BoardIdParam = z.object({
+  boardId: z.uuid(),
+});
+
+// List
+export const ListIdParam = z.object({
+  listId: z.uuid(),
+});
+
+// Card
+export const CardIdParam = z.object({
+  cardId: z.uuid(),
+});
+
+// Label
+export const LabelIdParam = z.object({
+  labelId: z.uuid(),
+});
+
+// Checklist
+export const ChecklistIdParam = z.object({
+  checklistId: z.uuid(),
+});
+
+// Checklist Item
+export const ChecklistItemIdParam = z.object({
+  itemId: z.uuid(),
+});
+
+// Comment
+export const CommentIdParam = z.object({
+  commentId: z.uuid(),
+});
+
+// ==========================
 // WORKSPACE REQUEST SCHEMAS
 // ==========================
 export const CreateWorkspaceRequestSchema = z.object({
