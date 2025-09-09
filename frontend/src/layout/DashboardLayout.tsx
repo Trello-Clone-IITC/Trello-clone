@@ -12,7 +12,7 @@ export function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="h-dvh w-dvw flex flex-col">
       {/* TO DO ------> insert NavBar to Header component and render it here */}
       <Navbar />
       <div className="flex-1 flex overflow-hidden">

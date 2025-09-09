@@ -49,6 +49,7 @@ import { useMe } from "@/features/auth/hooks/useMe";
 import { useUpdateUserTheme } from "@/features/auth/hooks/useUpdateUserTheme";
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
+import CreateWorkspaceModal from "@/features/dashboard/components/CreateWorkspaceModal";
 
 export default function UserMenuPopover() {
   const signOut = useSignOut();
@@ -56,6 +57,8 @@ export default function UserMenuPopover() {
   const { theme, setTheme } = useTheme();
   const { mutateAsync: updateUserTheme } = useUpdateUserTheme();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isCreateWorkspaceModalOpen, setIsCreateWorkspaceModalOpen] =
+    useState(false);
 
   const handleThemeChange = async (newTheme: "light" | "dark" | "system") => {
     setTheme(newTheme);
@@ -149,10 +152,13 @@ export default function UserMenuPopover() {
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
-            className="p-0 h-8 w-8 rounded-full hover:bg-[#333c43]"
+            className={`h-10 w-10 bg-transparent relative cursor-pointer ${
+              isLight
+                ? "text-[#505258] hover:bg-[#dddedd]"
+                : "text-[#a9abaf] hover:bg-[#37373a]"
+            }`}
           >
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-6 w-6">
               <AvatarImage src={user.avatarUrl} alt={`${fullName}'s avatar`} />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
@@ -535,6 +541,7 @@ export default function UserMenuPopover() {
                   ? "text-[#172b4d] hover:bg-[#dcdfe4]"
                   : "text-[#abadb0] hover:bg-[#323940]"
               }  `}
+              onClick={() => setIsCreateWorkspaceModalOpen(true)}
             >
               <img
                 src={isLight ? peopleIconLight : peopleIcon}
@@ -595,6 +602,12 @@ export default function UserMenuPopover() {
           </div>
         </PopoverContent>
       </Popover>
+
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal
+        isOpen={isCreateWorkspaceModalOpen}
+        onClose={() => setIsCreateWorkspaceModalOpen(false)}
+      />
     </>
   );
 }
