@@ -18,6 +18,39 @@ export const ActivityActionSchema = z.enum([
   "detached",
 ]);
 
+export const Color = z.enum([
+  "subtle_yellow",
+  "subtle_orange",
+  "subtle_red",
+  "subtle_purple",
+  "green",
+  "yellow",
+  "orange",
+  "red",
+  "purple",
+  "bold_green",
+  "bold_yellow",
+  "bold_orange",
+  "bold_red",
+  "bold_purple",
+  "subtle_blue",
+  "subtle_sky",
+  "subtle_lime",
+  "subtle_pink",
+  "subtle_black",
+  "blue",
+  "sky",
+  "lime",
+  "pink",
+  "black",
+  "bold_blue",
+  "bold_sky",
+  "bold_lime",
+  "bold_pink",
+  "bold_black",
+  "default",
+]);
+
 export const BoardCreationRestrictionsSchema = z.enum([
   "workspace_member",
   "workspace_admin",
@@ -178,8 +211,8 @@ export const CommentDtoSchema = z.object({
 export const LabelDtoSchema = z.object({
   id: z.uuid(),
   boardId: z.uuid(),
-  name: z.string(),
-  color: z.string(),
+  name: z.string().optional().nullable(),
+  color: Color,
 });
 
 export const ListWatcherDtoSchema = z.object({
@@ -491,9 +524,54 @@ export const CreateWorkspaceInputSchema = z.object({
 
 export const CreateBoardInputSchema = z.object({
   name: z.string().min(1).max(100),
-  workspaceId: z.uuid(),
   background: z.string(),
   visibility: BoardVisibilitySchema,
+});
+
+export const CreateListInputSchema = z.object({
+  name: z.string().min(1).max(100),
+  position: z.number().min(0),
+});
+
+export const CreateLabelInputSchema = z.object({
+  name: z.string().min(1).max(50).optional().nullable(),
+  color: Color,
+});
+
+export const CreateCardLabelInputSchema = z.object({
+  labelId: z.uuid(),
+});
+
+export const CreateCardInputSchema = z.object({
+  title: z.string().min(1).max(100),
+  position: z.number().min(0),
+});
+
+export const CreateChecklistInputSchema = z.object({
+  title: z.string().min(1).max(100),
+  position: z.number().min(0),
+});
+
+export const CreateChecklistItemInputSchema = z.object({
+  text: z.string().min(1).max(200),
+  position: z.number().min(0),
+});
+
+export const CreateOnBoardingInputSchema = z.object({
+  fullName: z.string().min(1).max(100),
+  email: z.email(),
+  avatarUrl: z.url(),
+  password: z.string().min(8).max(100).optional(),
+});
+
+export const CreateUserInputSchema = z.object({
+  email: z.email(),
+  fullName: z.string().min(1).max(100),
+  avatarUrl: z.url(),
+});
+
+export const CreateCommentInputSchema = z.object({
+  text: z.string().min(1).max(1000),
 });
 
 // ==========================
@@ -543,7 +621,127 @@ export const UpdateBoardRequestSchema = z.object({
 });
 
 // ==========================
-// TYPES FROM SCHEMAS
+// LIST REQUEST SCHEMAS
+// ==========================
+export const CreateListRequestSchema = z.object({
+  body: CreateListInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateListRequestSchema = z.object({
+  body: ListDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// LABEL REQUEST SCHEMAS
+// ==========================
+export const CreateLabelRequestSchema = z.object({
+  body: CreateLabelInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const CreateCardLabelRequestSchema = z.object({
+  body: CreateCardLabelInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateLabelRequestSchema = z.object({
+  body: LabelDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// CARD REQUEST SCHEMAS
+// ==========================
+export const CreateCardRequestSchema = z.object({
+  body: CreateCardInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateCardRequestSchema = z.object({
+  body: CardDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// CHECKLIST REQUEST SCHEMAS
+// ==========================
+export const CreateChecklistRequestSchema = z.object({
+  body: CreateChecklistInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateChecklistRequestSchema = z.object({
+  body: ChecklistDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// CHECKLIST ITEMS REQUEST SCHEMAS
+// ==========================
+export const CreateChecklistItemRequestSchema = z.object({
+  body: CreateChecklistItemInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateChecklistItemRequestSchema = z.object({
+  body: ChecklistItemDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// ONBOARDING ITEMS REQUEST SCHEMAS
+// ==========================
+export const CreateOnBoardingRequestSchema = z.object({
+  body: CreateOnBoardingInputSchema,
+  params: z.object({}),
+  query: z.object({}),
+});
+
+// ==========================
+// USER REQUEST SCHEMAS
+// ==========================
+export const CreateUserRequestSchema = z.object({
+  body: CreateUserInputSchema,
+  params: z.object({}),
+  query: z.object({}),
+});
+
+export const UpdateUserRequestSchema = z.object({
+  body: UserDtoSchema.partial(),
+  params: z.object({}),
+  query: z.object({}),
+});
+
+// ==========================
+// COMMENT REQUEST SCHEMAS
+// ==========================
+export const CreateCommentRequestSchema = z.object({
+  body: CreateCommentInputSchema,
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+export const UpdateCommentRequestSchema = z.object({
+  body: CommentDtoSchema.partial(),
+  params: IdParamSchema,
+  query: z.object({}),
+});
+
+// ==========================
+// DTO TYPES FROM SCHEMAS
 // ==========================
 export type ActivityLogDto = z.infer<typeof ActivityLogDtoSchema>;
 export type AttachmentDto = z.infer<typeof AttachmentDtoSchema>;
@@ -571,18 +769,62 @@ export type WorkspaceMemberDto = z.infer<typeof WorkspaceMemberDtoSchema>;
 // ==========================
 export type CreateWorkspaceInput = z.infer<typeof CreateWorkspaceInputSchema>;
 export type CreateBoardInput = z.infer<typeof CreateBoardInputSchema>;
+export type CreateListInput = z.infer<typeof CreateListInputSchema>;
+export type CreateLabelInput = z.infer<typeof CreateLabelInputSchema>;
+export type CreateCardLabelInput = z.infer<typeof CreateCardLabelInputSchema>;
+export type CreateCardInput = z.infer<typeof CreateCardInputSchema>;
+export type CreateChecklistInput = z.infer<typeof CreateChecklistInputSchema>;
+export type CreateChecklistItemInput = z.infer<
+  typeof CreateChecklistItemInputSchema
+>;
+export type CreateCommentInput = z.infer<typeof CreateCommentInputSchema>;
+export type CreateOnBoardingInput = z.infer<typeof CreateOnBoardingInputSchema>;
+export type CreateUserInput = z.infer<typeof CreateUserInputSchema>;
 
 // ==========================
 // UPDATE INPUT TYPES FROM SCHEMAS
 // ==========================
 export type UpdateWorkspaceInput = z.infer<typeof WorkspaceDtoSchema>;
 export type UpdateBoardInput = z.infer<typeof BoardDtoSchema>;
+export type UpdateListInput = z.infer<typeof ListDtoSchema>;
+export type UpdateLabelInput = z.infer<typeof LabelDtoSchema>;
+export type UpdateCardInput = z.infer<typeof CardDtoSchema>;
+export type UpdateChecklistInput = z.infer<typeof ChecklistDtoSchema>;
+export type UpdateChecklistItemInput = z.infer<typeof ChecklistItemDtoSchema>;
+export type UpdateUserInput = z.infer<typeof UserDtoSchema>;
+export type UpdateCommentInput = z.infer<typeof CommentDtoSchema>;
 
 // ==========================
 // PARAM & QUERY TYPES FROM SCHEMAS
 // ==========================
 export type IdParam = z.infer<typeof IdParamSchema>;
 export type SearchQuery = z.infer<typeof SearchQuerySchema>;
+
+// ==========================
+// ENUM TYPES FROM SCHEMAS
+// ==========================
+export type ActivityAction = z.infer<typeof ActivityActionSchema>;
+export type ColorType = z.infer<typeof Color>;
+export type BoardCreationRestrictions = z.infer<
+  typeof BoardCreationRestrictionsSchema
+>;
+export type BoardRole = z.infer<typeof BoardRoleSchema>;
+export type BoardSharing = z.infer<typeof BoardSharingSchema>;
+export type BoardVisibility = z.infer<typeof BoardVisibilitySchema>;
+export type CommentingRestrictions = z.infer<
+  typeof CommentingRestrictionsSchema
+>;
+export type MemberManageRestrictions = z.infer<
+  typeof MemberManageRestrictionsSchema
+>;
+export type MembershipRestrictions = z.infer<
+  typeof MembershipRestrictionsSchema
+>;
+export type SlackSharing = z.infer<typeof SlackSharingSchema>;
+export type Theme = z.infer<typeof ThemeSchema>;
+export type WorkspaceRole = z.infer<typeof WorkspaceRoleSchema>;
+export type WorkspaceType = z.infer<typeof WorkspaceTypeSchema>;
+export type WorkspaceVisibility = z.infer<typeof WorkspaceVisibilitySchema>;
 
 // ==========================
 // COMPLEX TYPES FROM SCHEMAS
