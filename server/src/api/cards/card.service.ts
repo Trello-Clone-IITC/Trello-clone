@@ -791,8 +791,9 @@ const getCardChecklists = async (cardId: string, userId: string) => {
 };
 
 // Get card comments
-const getCardComments = async (cardId: string, userId: string) => {
+const getCardComments = async (cardId: string, userClerkId: string) => {
   // Verify user has access to the card
+  try {
   const card = await prisma.card.findFirst({
     where: { id: cardId },
     include: {
@@ -801,7 +802,7 @@ const getCardComments = async (cardId: string, userId: string) => {
           board: {
             include: {
               boardMembers: {
-                where: { userId: userId },
+                where: { user: { clerkId: userClerkId } },
               },
             },
           },
@@ -809,6 +810,7 @@ const getCardComments = async (cardId: string, userId: string) => {
       },
     },
   });
+
 
   if (!card) {
     throw new AppError("Card not found", 404);
@@ -823,7 +825,11 @@ const getCardComments = async (cardId: string, userId: string) => {
     orderBy: { createdAt: "desc" },
   });
 
-  return comments;
+    return comments;
+  } catch (error) {
+    console.log("Failed to get card comments:---", error);
+    throw new AppError("Failed to get card comments", 500);
+  }
 };
 
 // Get card assignees

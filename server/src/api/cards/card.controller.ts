@@ -14,16 +14,16 @@ export const cardController = {
   createCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
+      let {userId:userClerkId} = getAuth(req) || {};
+      if (!userClerkId) {
+        userClerkId = DUMMY_USER_ID//TODO: remove this after testing;
       }
 
-      if (!userId) {
+      if (!userClerkId) {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.createCard({...req.body, createdBy: userId});
+      const card = await cardService.createCard({...req.body, createdBy: userClerkId});
       const cardDto: CardDto = mapCardToDto(card);
 
       res.status(201).json({
@@ -289,22 +289,23 @@ export const cardController = {
   getCardComments: async (req: Request, res: Response<ApiResponse<CommentDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
+      let { userId:userClerkId } = getAuth(req) || {};
+      if (!userClerkId) {
+        userClerkId = DUMMY_USER_ID;
       }
 
-      if (!userId) {
+      if (!userClerkId) {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const comments = await cardService.getCardComments(id, userId);
+      const comments = await cardService.getCardComments(id, userClerkId);
       const commentsDto = comments.map(mapCommentToDto);
       res.status(200).json({
         success: true,
         data: commentsDto,
       });
     } catch (error) {
+      console.log("Failed to get card comments:---", error);
       next(new AppError("Failed to get card comments", 500));
     }
   },
