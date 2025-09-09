@@ -10,7 +10,7 @@ import {
 } from "./workspace.validation.js";
 import workspaceMembersRouter from "../workspace-members/workspace-members.route.js";
 import {
-  CreateWorkspaceInputSchema,
+  CreateWorkspaceRequestSchema,
   GetByIdRequestSchema,
   UpdateWorkspaceRequestSchema,
 } from "@ronmordo/types";
@@ -20,7 +20,7 @@ const router = Router();
 // Workspace CRUD operations
 router.post(
   "/",
-  validateRequest(CreateWorkspaceInputSchema),
+  validateRequest(CreateWorkspaceRequestSchema),
   workspaceController.createWorkspace
 );
 router.get(

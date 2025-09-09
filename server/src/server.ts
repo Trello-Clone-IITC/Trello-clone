@@ -8,6 +8,8 @@ import { prisma } from "./lib/prismaClient.js";
 import { clerkMiddleware } from "@clerk/express";
 import pino from "pino";
 import * as pinoHttpNS from "pino-http";
+import swaggerUi from "swagger-ui-express";
+import { openApiDoc } from "./openapi.js";
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -49,6 +51,8 @@ app.use(
   })
 );
 app.use(clerkMiddleware());
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
 
 // Health check endpoint
 app.get("/health", (_req, res) => {

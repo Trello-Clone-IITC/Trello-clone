@@ -1,4 +1,4 @@
-import { Router} from "express";
+import { Router } from "express";
 import authRouter from "./auth/auth.route.js";
 import userRouter from "./users/user.route.js";
 import workspaceRouter from "./workspaces/workspace.route.js";
