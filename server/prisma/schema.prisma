@@ -26,6 +26,41 @@ enum ActivityAction {
   @@map("activity_action")
 }
 
+enum Color {
+  SubtleYellow   @map("subtle_yellow")
+  SubtleOrange   @map("subtle_orange")
+  SubtleRed      @map("subtle_red")
+  SubtlePurple   @map("subtle_purple")
+  Green          @map("green")
+  Yellow         @map("yellow")
+  Orange         @map("orange")
+  Red            @map("red")
+  Purple         @map("purple")
+  BoldGreen      @map("bold_green")
+  BoldYellow     @map("bold_yellow")
+  BoldOrange     @map("bold_orange")
+  BoldRed        @map("bold_red")
+  BoldPurple     @map("bold_purple")
+  SubtleBlue     @map("subtle_blue")
+  SubtleSky      @map("subtle_sky")
+  SubtleLime     @map("subtle_lime")
+  SubtlePink     @map("subtle_pink")
+  SubtleBlack    @map("subtle_black")
+  Blue           @map("blue")
+  Sky            @map("sky")
+  Lime           @map("lime")
+  Pink           @map("pink")
+  Black          @map("black")
+  BoldBlue       @map("bold_blue")
+  BoldSky        @map("bold_sky")
+  BoldLime       @map("bold_lime")
+  BoldPink       @map("bold_pink")
+  BoldBlack      @map("bold_black")
+  Default        @map("default")
+
+  @@map("color")
+}
+
 enum BoardCreationRestrictions {
   WorkspaceMember @map("workspace_member")
   WorkspaceAdmin  @map("workspace_admin")
@@ -336,8 +371,8 @@ model Label {
 
   id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   boardId    String     @map("board_id") @db.Uuid
-  name       String
-  color      String
+  name       String?
+  color      Color
 
   cardLabels CardLabel[]
   board      Board      @relation(fields: [boardId], references: [id], onDelete: Cascade, onUpdate: NoAction)

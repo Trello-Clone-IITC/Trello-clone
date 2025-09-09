@@ -1,0 +1,1 @@
+-- DB already has enum value `default` and labels.name is nullable
