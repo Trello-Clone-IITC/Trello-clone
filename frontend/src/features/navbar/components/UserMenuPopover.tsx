@@ -6,49 +6,65 @@ import {
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Users, SquareArrowOutUpRight, ChevronRight } from "lucide-react";
+import { SquareArrowOutUpRight, ChevronRight } from "lucide-react";
+import peopleIcon from "../../../assets/people-icon.svg";
+import peopleIconLight from "../../../assets/people-icon-light.svg";
+import lightThemeIcon from "../../../assets/light-theme-icon.svg";
+import darkThemeIcon from "../../../assets/dark-theme-icon.svg";
+import systemThemeIcon from "../../../assets/system-theme-icon.svg";
 
 // Trello Theme Icons
 const LightThemeIcon: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="https://trello.com/assets/a3a279edd7e5baaef4f7.svg"
+    src={lightThemeIcon}
     alt="Light theme"
     width="64"
     height="48"
-    className={className}
+    className={`rounded-lg ${className}`}
   />
 );
 
 const DarkThemeIcon: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="https://trello.com/assets/cb4097b01b57e5d91727.svg"
+    src={darkThemeIcon}
     alt="Dark theme"
     width="64"
     height="48"
-    className={className}
+    className={`rounded-lg ${className}`}
   />
 );
 
 const SystemThemeIcon: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="https://trello.com/assets/37c3bf748ee7dbf33e66.svg"
+    src={systemThemeIcon}
     alt="System theme"
     width="64"
     height="48"
-    className={className}
+    className={`rounded-lg ${className}`}
   />
 );
 
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { useMe } from "@/features/auth/hooks/useMe";
-import { useContext, useState } from "react";
-import { ThemeProviderContext } from "@/context/ThemeContext";
+import { useUpdateUserTheme } from "@/features/auth/hooks/useUpdateUserTheme";
+import { useState } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function UserMenuPopover() {
   const signOut = useSignOut();
   const { data: user } = useMe();
-  const { theme, setTheme } = useContext(ThemeProviderContext);
+  const { theme, setTheme } = useTheme();
+  const { mutateAsync: updateUserTheme } = useUpdateUserTheme();
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+
+  const handleThemeChange = async (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+    try {
+      await updateUserTheme(newTheme);
+    } catch (error) {
+      console.error("Failed to update theme:", error);
+    }
+  };
 
   const isLight = theme === "light";
 
@@ -144,18 +160,19 @@ export default function UserMenuPopover() {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="w-[304px] p-0"
-          style={{
-            backgroundColor: isLight ? "#ffffff" : "#282e33",
-            border: isLight ? "1px solid #dcdfe4" : "1px solid #39424a",
-          }}
+          className={`w-[304px] p-0 ${
+            isLight
+              ? "bg-[#fff] border-1-[#dcdfe4]"
+              : "bg-[#2b2c2f] border-1-[#39424a]"
+          }`}
         >
           <div className="p-3 w-full">
             {/* ACCOUNT Section */}
             <div className="w-full p-0">
               <h2
-                className="text-[11px] font-bold uppercase tracking-wide px-2 w-full leading-tight mt-4 mx-0 mb-2"
-                style={{ color: isLight ? "#626f86" : "#8390a0" }}
+                className={`text-[11px] font-bold uppercase tracking-wide px-2 w-full leading-tight mt-4 mx-0 mb-2 ${
+                  isLight ? "text-[#626f86]" : "text-[#abadb0]"
+                }`}
               >
                 ACCOUNT
               </h2>
@@ -169,14 +186,16 @@ export default function UserMenuPopover() {
                 </Avatar>
                 <div className="flex flex-col">
                   <div
-                    className="text-sm font-normal mt-[2px]"
-                    style={{ color: isLight ? "#172b4d" : "#b6c2cf" }}
+                    className={`text-sm font-normal mt-[2px] ${
+                      isLight ? "text-[#172b4d]" : "text-[#abadb0]"
+                    }`}
                   >
                     {fullName}
                   </div>
                   <div
-                    className="text-xs font-light"
-                    style={{ color: isLight ? "#172b4d" : "#b6c2cf" }}
+                    className={`text-xs font-light mt-[2px] ${
+                      isLight ? "text-[#172b4d]" : "text-[#abadb0]"
+                    }`}
                   >
                     {email}
                   </div>
@@ -184,38 +203,22 @@ export default function UserMenuPopover() {
               </div>
               <div className="space-y-1">
                 <div
-                  className="flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3"
-                  style={{
-                    color: isLight ? "#172b4d" : "#b6c2cf",
-                    backgroundColor: "transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isLight
-                      ? "#dcdfe4"
-                      : "#323940";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  className={`flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3 bg-transparent ${
+                    isLight
+                      ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                      : "text-[#abadb0] hover:bg-[#323940]"
+                  }`}
                 >
                   <span className="text-sm font-normal w-full">
                     Switch accounts
                   </span>
                 </div>
                 <div
-                  className="flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3"
-                  style={{
-                    color: isLight ? "#172b4d" : "#b6c2cf",
-                    backgroundColor: "transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isLight
-                      ? "#dcdfe4"
-                      : "#323940";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  className={`flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3 bg-transparent ${
+                    isLight
+                      ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                      : "text-[#abadb0] hover:bg-[#323940]"
+                  }`}
                 >
                   <span className="text-sm font-normal">Manage account</span>
                   <SquareArrowOutUpRight className="h-4 w-4" />
@@ -224,17 +227,16 @@ export default function UserMenuPopover() {
             </div>
 
             <Separator
-              style={{
-                backgroundColor: isLight ? "#dcdfe4" : "#3d474f",
-                margin: "8px 0",
-              }}
+              className={`my-2 mx-0 ${
+                isLight ? "bg-[#dcdfe4]" : "bg-[#424346]"
+              }`}
             />
 
             {/* TRELLO Section */}
             <div className="w-full p-0 rounded-none">
               <h2
                 className="text-[11px] font-bold uppercase tracking-wide mt-4 mx-0 mb-2 px-2 leading-tight"
-                style={{ color: isLight ? "#626f86" : "#8390a0" }}
+                style={{ color: isLight ? "#626f86" : "#abadb0" }}
               >
                 TRELLO
               </h2>
@@ -246,7 +248,7 @@ export default function UserMenuPopover() {
               <li
                 className="w-full px-5 py-1.5 cursor-pointer list-none"
                 style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
+                  color: isLight ? "#172b4d" : "#abadb0",
                   backgroundColor: "transparent",
                 }}
                 onMouseEnter={(e) => {
@@ -267,7 +269,7 @@ export default function UserMenuPopover() {
               <li
                 className="w-full px-5 py-1.5 cursor-pointer list-none"
                 style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
+                  color: isLight ? "#172b4d" : "#abadb0",
                   backgroundColor: "transparent",
                 }}
                 onMouseEnter={(e) => {
@@ -286,7 +288,7 @@ export default function UserMenuPopover() {
               <li
                 className="w-full px-5 py-1.5 cursor-pointer list-none"
                 style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
+                  color: isLight ? "#172b4d" : "#abadb0",
                   backgroundColor: "transparent",
                 }}
                 onMouseEnter={(e) => {
@@ -305,7 +307,7 @@ export default function UserMenuPopover() {
               <li
                 className="w-full px-5 py-1.5 cursor-pointer list-none"
                 style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
+                  color: isLight ? "#172b4d" : "#abadb0",
                   backgroundColor: "transparent",
                 }}
                 onMouseEnter={(e) => {
@@ -333,7 +335,7 @@ export default function UserMenuPopover() {
                             : "#579dff"
                           : isLight
                           ? "#172b4d"
-                          : "#b6c2cf",
+                          : "#abadb0",
                         backgroundColor: isThemeOpen
                           ? isLight
                             ? "#e9f2ff"
@@ -385,7 +387,7 @@ export default function UserMenuPopover() {
                               : "#579dff"
                             : isLight
                             ? "#172b4d"
-                            : "#b6c2cf",
+                            : "#abadb0",
                         backgroundColor:
                           theme === "light"
                             ? isLight
@@ -393,7 +395,7 @@ export default function UserMenuPopover() {
                               : "#1c2b41"
                             : "transparent",
                       }}
-                      onClick={() => setTheme("light")}
+                      onClick={() => handleThemeChange("light")}
                       onMouseEnter={(e) => {
                         if (theme !== "light") {
                           e.currentTarget.style.backgroundColor = isLight
@@ -412,7 +414,7 @@ export default function UserMenuPopover() {
                         name="theme"
                         value="light"
                         checked={theme === "light"}
-                        onChange={() => setTheme("light")}
+                        onChange={() => handleThemeChange("light")}
                         className="mr-2"
                       />
                       <LightThemeIcon className="mr-[13px]" />
@@ -432,7 +434,7 @@ export default function UserMenuPopover() {
                               : "#579dff"
                             : isLight
                             ? "#172b4d"
-                            : "#b6c2cf",
+                            : "#abadb0",
                         backgroundColor:
                           theme === "dark"
                             ? isLight
@@ -440,7 +442,7 @@ export default function UserMenuPopover() {
                               : "#1c2b41"
                             : "transparent",
                       }}
-                      onClick={() => setTheme("dark")}
+                      onClick={() => handleThemeChange("dark")}
                       onMouseEnter={(e) => {
                         if (theme !== "dark") {
                           e.currentTarget.style.backgroundColor = isLight
@@ -459,7 +461,7 @@ export default function UserMenuPopover() {
                         name="theme"
                         value="dark"
                         checked={theme === "dark"}
-                        onChange={() => setTheme("dark")}
+                        onChange={() => handleThemeChange("dark")}
                         className="mr-2"
                       />
                       <DarkThemeIcon className="mr-[13px]" />
@@ -479,7 +481,7 @@ export default function UserMenuPopover() {
                               : "#579dff"
                             : isLight
                             ? "#172b4d"
-                            : "#b6c2cf",
+                            : "#abadb0",
                         backgroundColor:
                           theme === "system"
                             ? isLight
@@ -487,7 +489,7 @@ export default function UserMenuPopover() {
                               : "#1c2b41"
                             : "transparent",
                       }}
-                      onClick={() => setTheme("system")}
+                      onClick={() => handleThemeChange("system")}
                       onMouseEnter={(e) => {
                         if (theme !== "system") {
                           e.currentTarget.style.backgroundColor = isLight
@@ -506,7 +508,7 @@ export default function UserMenuPopover() {
                         name="theme"
                         value="system"
                         checked={theme === "system"}
-                        onChange={() => setTheme("system")}
+                        onChange={() => handleThemeChange("system")}
                         className="mr-2"
                       />
                       <SystemThemeIcon className="mr-[13px]" />
@@ -521,82 +523,60 @@ export default function UserMenuPopover() {
 
             <Separator
               style={{
-                backgroundColor: isLight ? "#dcdfe4" : "#3d474f",
+                backgroundColor: isLight ? "#dcdfe4" : "#424346",
                 margin: "8px 0",
               }}
             />
 
             {/* Create Workspace */}
             <div
-              className="w-full px-5 py-1.5 cursor-pointer flex items-center gap-2 -mx-3"
-              style={{
-                color: isLight ? "#172b4d" : "#b6c2cf",
-                marginLeft: "-12px",
-                marginRight: "-12px",
-                width: "calc(100% + 24px)",
-                backgroundColor: "transparent",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isLight
-                  ? "#dcdfe4"
-                  : "#323940";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              className={`w-[calc(100% + 24px)] px-5 py-1.5 cursor-pointer flex items-center gap-2 -mx-3 ${
+                isLight
+                  ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                  : "text-[#abadb0] hover:bg-[#323940]"
+              }  `}
             >
-              <Users className="h-4 w-4" />
+              <img
+                src={isLight ? peopleIconLight : peopleIcon}
+                alt="People"
+                className="h-4 w-4"
+              />
               <span className="text-sm font-normal">Create Workspace</span>
             </div>
 
             <Separator
               style={{
-                backgroundColor: isLight ? "#dcdfe4" : "#3d474f",
+                backgroundColor: isLight ? "#dcdfe4" : "#424346",
                 margin: "8px 0",
               }}
             />
 
             {/* Help and Shortcuts */}
-            <div className="space-y-1 -mx-3">
+            <div className="-mx-3">
               <div
-                className="w-full px-5 py-1.5 cursor-pointer"
-                style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
-                  backgroundColor: "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isLight
-                    ? "#dcdfe4"
-                    : "#323940";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
+                className={`w-[calc(100% + 24px)] px-5 py-1.5 ${
+                  isLight
+                    ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                    : "text-[#abadb0] hover:bg-[#323940]"
+                } cursor-pointer`}
               >
                 <span className="text-sm font-normal">Help</span>
               </div>
               <div
-                className="w-full px-5 py-1.5 cursor-pointer"
-                style={{
-                  color: isLight ? "#172b4d" : "#b6c2cf",
-                  backgroundColor: "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isLight
-                    ? "#dcdfe4"
-                    : "#323940";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
+                className={`w-[calc(100% + 24px)] px-5 py-1.5 ${
+                  isLight
+                    ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                    : "text-[#abadb0] hover:bg-[#323940]"
+                } cursor-pointer`}
               >
                 <span className="text-sm font-normal">Shortcuts</span>
               </div>
             </div>
 
             <Separator
+              className={`${isLight ? "bg-[#dcdfe4]" : "bg-[#424346]"}`}
               style={{
-                backgroundColor: isLight ? "#dcdfe4" : "#3d474f",
+                backgroundColor: isLight ? "#dcdfe4" : "#424346",
                 margin: "8px 0",
               }}
             />
@@ -604,22 +584,11 @@ export default function UserMenuPopover() {
             {/* Log Out */}
             <div
               onClick={signOut}
-              className="w-full px-5 py-1.5 cursor-pointer -mx-3"
-              style={{
-                color: isLight ? "#172b4d" : "#b6c2cf",
-                marginLeft: "-12px",
-                marginRight: "-12px",
-                width: "calc(100% + 24px)",
-                backgroundColor: "transparent",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isLight
-                  ? "#dcdfe4"
-                  : "#323940";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              className={`w-[calc(100% + 24px)] -mx-3 px-5 py-1.5 ${
+                isLight
+                  ? "text-[#172b4d] hover:bg-[#dcdfe4]"
+                  : "text-[#abadb0] hover:bg-[#323940]"
+              } cursor-pointer`}
             >
               <span className="text-sm font-normal">Log Out</span>
             </div>

@@ -4,16 +4,9 @@ import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
 import UserMenuPopover from "./UserMenuPopover";
-import { useContext } from "react";
-import { ThemeProviderContext } from "@/context/ThemeContext";
-const AppSwitcherIcon = (isLight: boolean) => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
-  >
+import { useTheme } from "@/hooks/useTheme";
+const AppSwitcherIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
@@ -24,37 +17,27 @@ const AppSwitcherIcon = (isLight: boolean) => (
 );
 
 export default function Navbar() {
-  const { theme } = useContext(ThemeProviderContext);
+  const { theme } = useTheme();
   const isLight = theme === "light";
 
   return (
     <nav
-      className="px-2 md:px-4 py-2 flex items-center justify-between h-[47px]"
-      style={{
-        backgroundColor: isLight ? "#ffffff" : "#1d2125",
-        borderBottom: isLight ? "1px solid #dcdfe4" : "1px solid #31383d",
-      }}
+      className={`px-2 md:px-4 py-2 flex items-center justify-between h-[47px] border-b-1 ${
+        isLight ? "bg-white border-[#dcdfe4]" : "bg-[#1f1f21] border-[#434345]"
+      }`}
     >
       {/* Left Section */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-1 md:gap-1">
         {/* App Switcher */}
         <Button
-          variant="ghost"
           size="icon"
-          className="h-8 w-8"
-          style={{
-            backgroundColor: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isLight
-              ? "#dcdfe4"
-              : "#333c43";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className={`h-8 w-8 bg-transparent shadow-none cursor-pointer  ${
+            isLight
+              ? "text-[#505258] hover:bg-[#dddedd]"
+              : "text-[#a9abaf] hover:bg-[#37373a]"
+          }`}
         >
-          {AppSwitcherIcon(isLight)}
+          {AppSwitcherIcon()}
         </Button>
 
         {/* Logo */}

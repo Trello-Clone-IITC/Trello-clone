@@ -130,3 +130,28 @@
   max-height: 817px !important;
   overflow-y: auto !important;
 }
+
+.scrollbar {
+  scrollbar-width: 15px;
+  scrollbar-color: #484d64 #252835;
+}
+
+@keyframes forward-pulse {
+  0% {
+    height: 55%;
+  }
+
+  100% {
+    height: 25%;
+  }
+}
+
+@keyframes reverse-pulse {
+  0% {
+    height: 25%;
+  }
+
+  100% {
+    height: 55%;
+  }
+}

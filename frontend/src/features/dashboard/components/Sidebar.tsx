@@ -1,6 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -9,17 +9,21 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useUserWorkspaces } from "../hooks/useUserWorkspaces";
-import { ThemeProviderContext } from "@/context/ThemeContext";
+import { useTheme } from "@/hooks/useTheme";
+import gearwheelIcon from "../../../assets/gearwheel.svg";
+import gearwheelLightIcon from "../../../assets/gearwheel-light.svg";
+import peopleIcon from "../../../assets/people-icon.svg";
+import peopleLightIcon from "../../../assets/people-icon-light.svg";
 
 // Custom SVG Icons
 const HomeIcon: React.FC<{
   className?: string;
   isActive?: boolean;
   isLight?: boolean;
-}> = ({ className, isActive, isLight = false }) => {
+}> = ({ isActive, isLight = false }) => {
   const getFillColor = () => {
     if (isActive) return isLight ? "#186de5" : "#579dff";
-    return isLight ? "#172b4d" : "#9fadbc";
+    return isLight ? "#292a2e" : "#bfc1c4";
   };
 
   return (
@@ -28,9 +32,9 @@ const HomeIcon: React.FC<{
       id="Layer_1"
       data-name="Layer 1"
       viewBox="0 0 24 24"
-      width="512"
-      height="512"
-      className={className}
+      width="14"
+      height="14"
+      className="mr-3"
     >
       <path
         fill={getFillColor()}
@@ -44,10 +48,10 @@ const BoardsIcon: React.FC<{
   className?: string;
   isActive?: boolean;
   isLight?: boolean;
-}> = ({ className, isActive, isLight = false }) => {
+}> = ({ isActive, isLight = false }) => {
   const getFillColor = () => {
     if (isActive) return isLight ? "#186de5" : "#579dff";
-    return isLight ? "#172b4d" : "#9fadbc";
+    return isLight ? "#292a2e" : "#bfc1c4";
   };
 
   return (
@@ -60,9 +64,9 @@ const BoardsIcon: React.FC<{
       y="0px"
       viewBox="0 0 24 24"
       xmlSpace="preserve"
-      width="512"
-      height="512"
-      className={className}
+      width="12"
+      height="12"
+      className="mr-3"
     >
       <path
         fill={getFillColor()}
@@ -77,15 +81,15 @@ const TemplatesIcon: React.FC<{
   className?: string;
   isActive?: boolean;
   isLight?: boolean;
-}> = ({ className, isActive, isLight = false }) => {
+}> = ({ isActive, isLight = false }) => {
   const getStrokeColor = () => {
     if (isActive) return isLight ? "#186de5" : "#579dff";
-    return isLight ? "#172b4d" : "#9fadbc";
+    return isLight ? "#292a2e" : "#bfc1c4";
   };
 
   const getFillColor = () => {
     if (isActive) return isLight ? "#186de5" : "#579dff";
-    return isLight ? "#172b4d" : "#9fadbc";
+    return isLight ? "#292a2e" : "#bfc1c4";
   };
 
   return (
@@ -93,8 +97,8 @@ const TemplatesIcon: React.FC<{
       {/* Background icon - dashed kanban outline only */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke={getStrokeColor()}
@@ -102,7 +106,7 @@ const TemplatesIcon: React.FC<{
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeDasharray="2,2"
-        className={cn("absolute -left-1 -top-1", className)}
+        className="absolute -left-1 -top-1 mr-3"
       >
         <path d="M5 3a2 2 0 0 0-2 2" />
         <path d="M3 3h14" />
@@ -122,9 +126,9 @@ const TemplatesIcon: React.FC<{
         y="0px"
         viewBox="0 0 24 24"
         xmlSpace="preserve"
-        width="512"
-        height="512"
-        className={cn("relative z-10", className)}
+        width="12"
+        height="12"
+        className="relative z-10 mr-3"
       >
         <path
           fill={getFillColor()}
@@ -141,7 +145,7 @@ const TemplatesIcon: React.FC<{
                 : "fill-[#579dff]"
               : isLight
               ? "fill-[#ffffff] group-hover:fill-[#dcdfe4]"
-              : "fill-[#1d2125] group-hover:fill-[#333c43]"
+              : "fill-[#1f1f21] group-hover:fill-[#333c43]"
           )}
           d="M10.351,17.283c0,0.253-0.104,0.497-0.283,0.675  c-0.181,0.179-0.424,0.275-0.678,0.275c0,0-3.999,0-3.999,0c-0.251-0.001-0.492-0.101-0.669-0.28  c-0.177-0.178-0.277-0.419-0.277-0.67v-11.9c0-0.251,0.1-0.492,0.277-0.67c0.177-0.178,0.418-0.278,0.669-0.28h3.999  c0.252,0.001,0.492,0.101,0.67,0.279c0.178,0.178,0.278,0.419,0.279,0.67C10.339,5.383,10.351,17.282,10.351,17.283z M19.578,11.819  c0.001,0.253-0.102,0.498-0.282,0.676c-0.176,0.174-0.432,0.277-0.679,0.274h-3.999c-0.252-0.001-0.493-0.101-0.67-0.279  c-0.178-0.178-0.278-0.419-0.279-0.67V5.383c0.001-0.252,0.101-0.493,0.279-0.67c0.178-0.178,0.419-0.278,0.67-0.279h3.999  c0.251,0.001,0.492,0.102,0.669,0.28c0.177,0.178,0.277,0.419,0.277,0.67C19.563,5.383,19.578,11.819,19.578,11.819z"
         />
@@ -161,21 +165,26 @@ const navigationItems = [
   { name: "Home", href: "/", icon: HomeIcon, current: false },
 ];
 
-const getWorkspaceDisplayProps = (name: string, index: number) => {
+const getWorkspaceDisplayProps = (
+  name: string,
+  index: number,
+  isLight: boolean
+) => {
   const initial = name.charAt(0).toUpperCase();
   const colors = [
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-purple-500",
-    "bg-red-500",
-    "bg-yellow-500",
-    "bg-indigo-500",
-    "bg-pink-500",
-    "bg-orange-500",
+    "bg-gradient-to-b from-blue-300 to-blue-200",
+    "bg-gradient-to-b from-green-300 to-green-200",
+    "bg-gradient-to-b from-purple-300 to-purple-200",
+    "bg-gradient-to-b from-red-300 to-red-200",
+    "bg-gradient-to-b from-yellow-300 to-yellow-200",
+    "bg-gradient-to-b from-indigo-300 to-indigo-200",
+    "bg-gradient-to-b from-pink-300 to-pink-200",
+    "bg-gradient-to-b from-orange-300 to-orange-200",
   ];
+  const textColor = isLight ? "!text-[#1f1f21]" : "!text-white";
   return {
     initial,
-    color: colors[index % colors.length],
+    color: `${colors[index % colors.length]} ${textColor}`,
   };
 };
 
@@ -183,7 +192,7 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { data: workspaces, isLoading, error } = useUserWorkspaces();
   const [openWorkspaces, setOpenWorkspaces] = useState<Set<string>>(new Set());
-  const { theme } = useContext(ThemeProviderContext);
+  const { theme } = useTheme();
 
   const isLight = theme === "light";
 
@@ -297,8 +306,10 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className="flex h-full w-64 flex-col pl-8"
-      style={{ backgroundColor: isLight ? "#ffffff" : "#1d2125" }}
+      className={cn(
+        "flex h-full w-64 flex-col pl-8",
+        isLight ? "bg-white" : "bg-[#1f1f21]"
+      )}
     >
       {/* Main Navigation */}
       <div className="flex-1 flex flex-col pt-3 pb-4 overflow-y-auto">
@@ -312,34 +323,14 @@ const Sidebar: React.FC = () => {
                     to={item.href}
                     className={cn(
                       "group flex items-center text-sm font-medium rounded-md transition-colors px-1.5 py-2 w-full",
-                      isActive ? "text-blue-700" : "hover:text-gray-900"
-                    )}
-                    style={{
-                      color: isActive
+                      isActive
                         ? isLight
-                          ? "#186de5"
-                          : "#579dff"
+                          ? "text-[#186de5] bg-[#e9f2ff]"
+                          : "text-[#579dff] bg-[#1c2b41]"
                         : isLight
-                        ? "#172b4d"
-                        : "#b6c2cf",
-                      backgroundColor: isActive
-                        ? isLight
-                          ? "#e9f2ff"
-                          : "#1c2b41"
-                        : undefined,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = isLight
-                          ? "#dcdfe4"
-                          : "#333c43";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }
-                    }}
+                        ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                        : "text-[#bfc1c4] hover:bg-[#333c43]"
+                    )}
                   >
                     <span className="flex items-center">
                       <span className="flex items-center">
@@ -364,18 +355,19 @@ const Sidebar: React.FC = () => {
         </nav>
 
         <Separator
-          className="mb-2"
-          style={{
-            backgroundColor: isLight ? "#dcdfe4" : "#3d474f",
-            margin: "8px 0",
-          }}
+          className={cn(
+            "mb-2 my-[1px]",
+            isLight ? "bg-[#dcdfe4]" : "bg-[#37373a]"
+          )}
         />
 
         {/* Workspaces Section */}
-        <div className="px-2">
+        <div className="py-4">
           <div
-            className="flex items-center justify-between py-2 w-full text-xs font-semibold"
-            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+            className={cn(
+              "flex items-center justify-between py-2 w-full text-xs font-semibold",
+              isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+            )}
           >
             Workspaces
           </div>
@@ -384,12 +376,16 @@ const Sidebar: React.FC = () => {
             {isLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2
-                  className="h-4 w-4 animate-spin"
-                  style={{ color: isLight ? "#172b4d" : "#b6c2cf" }}
+                  className={cn(
+                    "h-4 w-4 animate-spin",
+                    isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                  )}
                 />
                 <span
-                  className="ml-2 text-sm"
-                  style={{ color: isLight ? "#172b4d" : "#b6c2cf" }}
+                  className={cn(
+                    "ml-2 text-sm",
+                    isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                  )}
                 >
                   Loading workspaces...
                 </span>
@@ -402,7 +398,8 @@ const Sidebar: React.FC = () => {
               displayWorkspaces.map((workspace, index) => {
                 const { initial, color } = getWorkspaceDisplayProps(
                   workspace.name,
-                  index
+                  index,
+                  isLight
                 );
                 const isOpen = openWorkspaces.has(workspace.id);
 
@@ -422,46 +419,47 @@ const Sidebar: React.FC = () => {
                       });
                     }}
                   >
-                    <div className="space-y-1">
+                    <div className="flex flex-col items-stretch gap-0.5 justify-center">
                       <CollapsibleTrigger asChild>
                         <div className="flex items-center justify-between group">
                           <div
-                            className="flex items-center flex-1 min-w-0 px-2 py-2 rounded-md transition-colors cursor-pointer"
-                            style={{ color: isLight ? "#172b4d" : "#b6c2cf" }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = isLight
-                                ? "#dcdfe4"
-                                : "#333c43";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                "transparent";
-                            }}
+                            className={cn(
+                              "flex items-center flex-1 min-w-0 px-2 py-1.5 rounded-md transition-colors cursor-pointer",
+                              isLight
+                                ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                                : "text-[#bfc1c4] hover:bg-[#37373a]"
+                            )}
                           >
                             <div
                               className={cn(
-                                "flex-shrink-0 h-6 w-6 rounded flex items-center justify-center text-white text-xs font-medium",
+                                `flex-shrink-0 h-6 w-6 rounded flex items-center justify-center text-xs font-medium  `,
                                 color
                               )}
                             >
-                              {initial}
+                              <span
+                                className={`${
+                                  isLight ? "text-[#fff]" : "text-[#1f1f21]"
+                                }`}
+                              >
+                                {initial}
+                              </span>
                             </div>
                             <span className="ml-3 text-sm font-medium truncate flex-1">
                               {workspace.name}
                             </span>
                             {isOpen ? (
                               <ChevronUp
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{
-                                  color: isLight ? "#172b4d" : "#b6c2cf",
-                                }}
+                                className={cn(
+                                  "h-4 w-4 opacity-100 transition-opacity",
+                                  isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                                )}
                               />
                             ) : (
                               <ChevronDown
-                                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{
-                                  color: isLight ? "#172b4d" : "#b6c2cf",
-                                }}
+                                className={cn(
+                                  "h-4 w-4 opacity-100 transition-opacity",
+                                  isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                                )}
                               />
                             )}
                           </div>
@@ -469,13 +467,63 @@ const Sidebar: React.FC = () => {
                       </CollapsibleTrigger>
 
                       <CollapsibleContent>
-                        {/* Workspace Boards - for now just show placeholder */}
-                        <div className="ml-9 space-y-1">
+                        <div className="ml-9 space-y-0.5">
+                          {/* Boards */}
                           <div
-                            className="text-xs px-2 py-1"
-                            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+                            className={cn(
+                              "flex items-center px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              isLight
+                                ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                                : "text-[#bfc1c4] hover:bg-[#37373a]"
+                            )}
                           >
-                            No boards yet
+                            <BoardsIcon
+                              className="mr-2 h-3 w-3"
+                              isActive={false}
+                              isLight={isLight}
+                            />
+                            <span className="text-xs font-medium">Boards</span>
+                          </div>
+
+                          {/* Members */}
+                          <div
+                            className={cn(
+                              "flex items-center justify-between px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              isLight
+                                ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                                : "text-[#bfc1c4] hover:bg-[#37373a]"
+                            )}
+                          >
+                            <div className="flex items-center">
+                              <img
+                                src={isLight ? peopleLightIcon : peopleIcon}
+                                alt="Members"
+                                className="mr-2 h-3 w-3"
+                              />
+                              <span className="text-xs font-medium">
+                                Members
+                              </span>
+                            </div>
+                            <Plus className="h-3 w-3 opacity-60" />
+                          </div>
+
+                          {/* Settings */}
+                          <div
+                            className={cn(
+                              "flex items-center px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              isLight
+                                ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                                : "text-[#bfc1c4] hover:bg-[#37373a]"
+                            )}
+                          >
+                            <img
+                              src={isLight ? gearwheelLightIcon : gearwheelIcon}
+                              alt="Settings"
+                              className="mr-2 h-3 w-3"
+                            />
+                            <span className="text-xs font-medium">
+                              Settings
+                            </span>
                           </div>
                         </div>
                       </CollapsibleContent>
@@ -485,8 +533,10 @@ const Sidebar: React.FC = () => {
               })
             ) : (
               <div
-                className="text-sm px-2 py-2"
-                style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+                className={cn(
+                  "text-sm px-2 py-2",
+                  isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                )}
               >
                 No workspaces found
               </div>

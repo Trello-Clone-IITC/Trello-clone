@@ -1,15 +1,14 @@
 import { Navbar } from "@/features/navbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/features/dashboard/components/Sidebar";
-import { useContext } from "react";
-import { ThemeProviderContext } from "@/context/ThemeContext";
+import { useTheme } from "@/hooks/useTheme";
 
 export function DashboardLayout() {
-  const { theme } = useContext(ThemeProviderContext);
+  const { theme } = useTheme();
 
   const getMainBackgroundColor = () => {
     if (theme === "light") return "#ffffff";
-    return "#1d2125";
+    return "#1f1f21";
   };
 
   return (
@@ -24,10 +23,12 @@ export function DashboardLayout() {
 
         {/* Main content area */}
         <main
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto px-12 pb-14 scrollbar"
           style={{ backgroundColor: getMainBackgroundColor() }}
         >
-          <div className="p-3 md:p-6">{<Outlet />}</div>
+          <div className="p-0 h-full mt-[40px] mx-[49.5px] mb-0">
+            {<Outlet />}
+          </div>
         </main>
       </div>
     </div>

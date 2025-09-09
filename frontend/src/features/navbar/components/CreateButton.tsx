@@ -5,11 +5,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useContext } from "react";
-import { ThemeProviderContext } from "@/context/ThemeContext";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function CreateButton() {
-  const { theme } = useContext(ThemeProviderContext);
+  const { theme } = useTheme();
   const isLight = theme === "light";
   return (
     <DropdownMenu>

@@ -12,9 +12,9 @@ const checkEmail = async (email: string) => {
 
 const onBoarding = async (
   clerkUserId: string,
-  firstName: string | undefined,
-  lastName: string | undefined,
-  password: string | undefined
+  firstName?: string,
+  lastName?: string,
+  password?: string
 ) => {
   if (!firstName || !lastName || !password) {
     throw new AppError("Missing fields", 400);
