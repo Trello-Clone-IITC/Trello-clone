@@ -6,7 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 
 type DatesDropdownProps = {
   children: React.ReactNode;

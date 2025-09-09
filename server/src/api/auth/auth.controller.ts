@@ -25,11 +25,11 @@ const onBoarding = async (
   req: Request<
     {},
     {},
-    {
+    Partial<{
       firstName: string;
       lastName: string;
       password: string;
-    }
+    }>
   >,
   res: Response<ApiResponse>,
   next: NextFunction

@@ -26,7 +26,7 @@ const formSchema = z.object({
     .string()
     .min(3, "Full name is required")
     .regex(/^[A-Za-z]+ [A-Za-z]+$/, "Enter first and last name"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().optional(),
   newsletter: z.boolean().optional(),
 });
 const trelloLogo = (
@@ -87,27 +87,44 @@ const Checkmark = (
 
 const formLabel = "text-xs text-[#44546f] font-bold";
 const input =
-  "border-1 border-[#8590a2] px-2 py-1.5 rounded-[3px]  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#0052cc] placeholder:text-[#727e92]";
+  "border-1 border-[#8590a2] px-2 py-1.5 rounded-[3px] text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#0052cc] placeholder:text-[#727e92]";
 
 export function Onboarding() {
   const isMobile = useMediaQuery("(max-width: 425px)");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
+  const { mutateAsync } = useOnBoarding();
+  console.log("external accounts", user?.externalAccounts[0]);
+  // Check if user signed in with OAuth and has full name
+  const clerkFullName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`.trim()
+      : "";
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
+      fullName: clerkFullName,
       password: "",
       newsletter: false,
     },
   });
 
-  const navigate = useNavigate();
-  const { user } = useUser();
-  const { mutateAsync } = useOnBoarding();
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Check if user has external accounts (Logged in using clerk)
+    const isOAuthUser = !!user?.externalAccounts[0];
+    if (isOAuthUser) {
+      navigate("/");
+    }
     const [firstName, ...rest] = values.fullName.trim().split(" ");
     const lastName = rest.join(" ");
+
+    if (!isOAuthUser && (!values.password || values.password.length < 8)) {
+      form.setError("password", {
+        message: "Password must be at least 8 characters",
+      });
+    }
     try {
       await mutateAsync({ firstName, lastName, password: values.password });
       navigate("/");
@@ -118,7 +135,12 @@ export function Onboarding() {
       navigate("/login");
     }
   };
-
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+  if (!user) {
+    return <div>User not found</div>;
+  }
   return (
     <div className="bg-[#fafbfc] min-h-screen w-full flex justify-center items-center">
       <img
@@ -154,7 +176,7 @@ export function Onboarding() {
                 </div>
               </div>
 
-              {user?.emailAddresses?.[0]?.emailAddress && (
+              {user.emailAddresses[0].emailAddress && (
                 <p className="text-left text-xs font-bold text-[#44546f]  flex flex-col items-start justify-center gap-1">
                   Email address{" "}
                   <span className="text-sm text-[#172b4d] font-bold">
@@ -162,66 +184,76 @@ export function Onboarding() {
                   </span>
                 </p>
               )}
-
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={formLabel}>Full name</FormLabel>
-                    <FormControl>
-                      <Input
-                        className={input}
-                        placeholder="Enter full name"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={formLabel}>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          className={`${input} -mb-[11px]`}
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Create password"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/4 text-[#44546f] hover:text-[#172b4d] focus:outline-none"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                        >
-                          {showPassword ? (
-                            <EyeOff
-                              className="w-5 h-5"
-                              style={{ color: "#314361" }}
+              {user.externalAccounts[0] ? (
+                <p className="text-left text-xs font-bold text-[#44546f]  flex flex-col items-start justify-center gap-1">
+                  Full name
+                  <span className="text-sm text-[#172b4d] font-bold">
+                    {clerkFullName}
+                  </span>
+                </p>
+              ) : (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={formLabel}>Full name</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`${input}`}
+                            placeholder="Enter full name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={formLabel}>Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              className={`${input} -mb-[11px]`}
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Create password"
+                              {...field}
                             />
-                          ) : (
-                            <Eye
-                              className="w-5 h-5"
-                              style={{ color: "#314361" }}
-                            />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                    <PasswordStrengthIndicator password={field.value} />
-                  </FormItem>
-                )}
-              />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 transform -translate-y-1/4 text-[#44546f] hover:text-[#172b4d] focus:outline-none"
+                              aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                              }
+                            >
+                              {showPassword ? (
+                                <EyeOff
+                                  className="w-5 h-5"
+                                  style={{ color: "#314361" }}
+                                />
+                              ) : (
+                                <Eye
+                                  className="w-5 h-5"
+                                  style={{ color: "#314361" }}
+                                />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                        <PasswordStrengthIndicator password={field.value} />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
               <FormField
                 control={form.control}
                 name="newsletter"
@@ -270,7 +302,7 @@ export function Onboarding() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-[#0052cc]/90 hover:bg-[#0052cc] rounded cursor-pointer"
+                className="w-full bg-[#0052cc]/90 hover:bg-[#0052cc] rounded cursor-pointer text-white"
               >
                 Continue
               </Button>

@@ -1,6 +1,16 @@
+import { useTheme } from "@/hooks/useTheme";
+
 export default function Logo() {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   return (
-    <a href="/" className="flex items-center" aria-label="Back to home">
+    <a
+      href="/"
+      className={`group flex items-center rounded-sm py-1 px-2 transition ease-in-out ${
+        isLight ? "hover:bg-[#dddedd]" : "hover:bg-[#37373a]"
+      }`}
+      aria-label="Back to home"
+    >
       <div className="flex items-center">
         {/* Trello Logo SVG */}
         <svg
@@ -24,6 +34,7 @@ export default function Logo() {
             rx="0.947869"
             ry="0.947869"
             fill="white"
+            className="group-hover:animate-[reverse-pulse_0.43s_ease-in-out_infinite_alternate]"
           />
           <rect
             x="13.6617"
@@ -33,8 +44,10 @@ export default function Logo() {
             rx="0.947869"
             ry="0.947869"
             fill="white"
+            className="group-hover:animate-[forward-pulse_0.43s_ease-in-out_infinite_alternate]"
           />
         </svg>
+        <p className="ml-1.5 font-[500] text-sm">Trello</p>
       </div>
     </a>
   );

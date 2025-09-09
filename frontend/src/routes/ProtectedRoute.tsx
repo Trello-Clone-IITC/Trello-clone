@@ -3,19 +3,26 @@ import { useMe } from "@/features/auth/hooks/useMe";
 import { useUser } from "@clerk/clerk-react";
 
 export const ProtectedRoute = () => {
-  const { data: backendUser, isLoading } = useMe();
+  const { data: backendUser, isLoading, error, isFetching } = useMe();
   const { user, isLoaded } = useUser();
   const location = useLocation();
 
-  console.log("Protected route:", backendUser, user);
+  console.log("Protected route:", {
+    backendUser,
+    user,
+    error,
+    isLoading,
+    isFetching,
+    isLoaded,
+    pathname: location.pathname,
+  });
 
-  // Still loading Clerk or backend user
-  if (isLoading || !isLoaded) {
+  // Still loading Clerk
+  if (!isLoaded || isLoading || isFetching) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -26,7 +33,7 @@ export const ProtectedRoute = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Logged in but not onboarded → onboarding
+  // Logged in but not onboarded (no backend user or error fetching user) → onboarding
   if (!backendUser && location.pathname !== "/on-boarding") {
     return <Navigate to="/on-boarding" replace />;
   }
