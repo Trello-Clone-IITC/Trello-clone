@@ -8,6 +8,5 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["src"],
-  "exclude": ["src/base-dtos-deprecated.ts", "src/with-dtos-deprecated.ts"]
+  "include": ["src"]
 }

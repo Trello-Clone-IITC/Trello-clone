@@ -18,7 +18,7 @@ export const ActivityActionSchema = z.enum([
   "detached",
 ]);
 
-export const Color = z.enum([
+export const ColorSchema = z.enum([
   "subtle_yellow",
   "subtle_orange",
   "subtle_red",
@@ -212,7 +212,7 @@ export const LabelDtoSchema = z.object({
   id: z.uuid(),
   boardId: z.uuid(),
   name: z.string().optional().nullable(),
-  color: Color,
+  color: ColorSchema,
 });
 
 export const ListWatcherDtoSchema = z.object({
@@ -516,45 +516,45 @@ export const WorkspaceFullDtoSchema = WorkspaceDtoSchema.extend({
 // ==========================
 // Create Input Schemas
 // ==========================
-export const CreateWorkspaceInputSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(500).nullable().optional(),
-  type: WorkspaceTypeSchema,
+export const CreateWorkspaceInputSchema = WorkspaceDtoSchema.pick({
+  name: true,
+  description: true,
+  type: true,
 });
 
-export const CreateBoardInputSchema = z.object({
-  name: z.string().min(1).max(100),
-  background: z.string(),
-  visibility: BoardVisibilitySchema,
+export const CreateBoardInputSchema = BoardDtoSchema.pick({
+  name: true,
+  background: true,
+  visibility: true,
 });
 
-export const CreateListInputSchema = z.object({
-  name: z.string().min(1).max(100),
-  position: z.number().min(0),
+export const CreateListInputSchema = ListDtoSchema.pick({
+  name: true,
+  position: true,
 });
 
-export const CreateLabelInputSchema = z.object({
-  name: z.string().min(1).max(50).optional().nullable(),
-  color: Color,
+export const CreateLabelInputSchema = LabelDtoSchema.pick({
+  name: true,
+  color: true,
 });
 
-export const CreateCardLabelInputSchema = z.object({
-  labelId: z.uuid(),
+export const CreateCardLabelInputSchema = CardLabelDtoSchema.pick({
+  labelId: true,
 });
 
-export const CreateCardInputSchema = z.object({
-  title: z.string().min(1).max(100),
-  position: z.number().min(0),
+export const CreateCardInputSchema = CardDtoSchema.pick({
+  title: true,
+  position: true,
 });
 
-export const CreateChecklistInputSchema = z.object({
-  title: z.string().min(1).max(100),
-  position: z.number().min(0),
+export const CreateChecklistInputSchema = ChecklistDtoSchema.pick({
+  title: true,
+  position: true,
 });
 
-export const CreateChecklistItemInputSchema = z.object({
-  text: z.string().min(1).max(200),
-  position: z.number().min(0),
+export const CreateChecklistItemInputSchema = ChecklistItemDtoSchema.pick({
+  text: true,
+  position: true,
 });
 
 export const CreateOnBoardingInputSchema = z.object({
@@ -564,15 +564,28 @@ export const CreateOnBoardingInputSchema = z.object({
   password: z.string().min(8).max(100).optional(),
 });
 
-export const CreateUserInputSchema = z.object({
-  email: z.email(),
-  fullName: z.string().min(1).max(100),
-  avatarUrl: z.url(),
+export const CreateUserInputSchema = UserDtoSchema.pick({
+  email: true,
+  fullName: true,
+  avatarUrl: true,
 });
 
-export const CreateCommentInputSchema = z.object({
-  text: z.string().min(1).max(1000),
+export const CreateCommentInputSchema = CommentDtoSchema.pick({
+  text: true,
 });
+
+// ==========================
+//  Update Input Schemas
+// ==========================
+export const UpdateWorkspaceSchema = WorkspaceDtoSchema.partial();
+export const UpdateBoardSchema = BoardDtoSchema.partial();
+export const UpdateListSchema = ListDtoSchema.partial();
+export const UpdateLabelSchema = LabelDtoSchema.partial();
+export const UpdateCardSchema = CardDtoSchema.partial();
+export const UpdateChecklistSchema = ChecklistDtoSchema.partial();
+export const UpdateChecklistItemSchema = ChecklistItemDtoSchema.partial();
+export const UpdateUserSchema = UserDtoSchema.partial();
+export const UpdateCommentSchema = CommentDtoSchema.partial();
 
 // ==========================
 // BASE PARAM & QUERY SCHEMAS
@@ -585,207 +598,52 @@ export const SearchQuerySchema = z.object({
   search: z.string().optional(),
 });
 
-export const GetByIdRequestSchema = z.object({
-  params: IdParamSchema,
-});
-
 // ==========================
 // RESOURCE ID SCHEMAS
 // ==========================
 // User
-export const UserIdParam = z.object({
+export const UserIdParamSchema = z.object({
   userId: z.uuid(),
 });
 
 // Workspace
-export const WorkspacesIdParam = z.object({
+export const WorkspacesIdParamSchema = z.object({
   workspaceId: z.uuid(),
 });
 
 // Board
-export const BoardIdParam = z.object({
+export const BoardIdParamSchema = z.object({
   boardId: z.uuid(),
 });
 
 // List
-export const ListIdParam = z.object({
+export const ListIdParamSchema = z.object({
   listId: z.uuid(),
 });
 
 // Card
-export const CardIdParam = z.object({
+export const CardIdParamSchema = z.object({
   cardId: z.uuid(),
 });
 
 // Label
-export const LabelIdParam = z.object({
+export const LabelIdParamSchema = z.object({
   labelId: z.uuid(),
 });
 
 // Checklist
-export const ChecklistIdParam = z.object({
+export const ChecklistIdParamSchema = z.object({
   checklistId: z.uuid(),
 });
 
 // Checklist Item
-export const ChecklistItemIdParam = z.object({
+export const ChecklistItemIdParamSchema = z.object({
   itemId: z.uuid(),
 });
 
 // Comment
-export const CommentIdParam = z.object({
+export const CommentIdParamSchema = z.object({
   commentId: z.uuid(),
-});
-
-// ==========================
-// WORKSPACE REQUEST SCHEMAS
-// ==========================
-export const CreateWorkspaceRequestSchema = z.object({
-  body: CreateWorkspaceInputSchema,
-  query: z.object({}),
-  params: z.object({}),
-});
-
-export const UpdateWorkspaceRequestSchema = z.object({
-  body: WorkspaceDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// BOARD REQUEST SCHEMAS
-// ==========================
-
-export const CreateBoardRequestSchema = z.object({
-  body: CreateBoardInputSchema,
-  query: z.object({}),
-  params: z.object({}),
-});
-
-export const UpdateBoardRequestSchema = z.object({
-  body: BoardDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// LIST REQUEST SCHEMAS
-// ==========================
-export const CreateListRequestSchema = z.object({
-  body: CreateListInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateListRequestSchema = z.object({
-  body: ListDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// LABEL REQUEST SCHEMAS
-// ==========================
-export const CreateLabelRequestSchema = z.object({
-  body: CreateLabelInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const CreateCardLabelRequestSchema = z.object({
-  body: CreateCardLabelInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateLabelRequestSchema = z.object({
-  body: LabelDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// CARD REQUEST SCHEMAS
-// ==========================
-export const CreateCardRequestSchema = z.object({
-  body: CreateCardInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateCardRequestSchema = z.object({
-  body: CardDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// CHECKLIST REQUEST SCHEMAS
-// ==========================
-export const CreateChecklistRequestSchema = z.object({
-  body: CreateChecklistInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateChecklistRequestSchema = z.object({
-  body: ChecklistDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// CHECKLIST ITEMS REQUEST SCHEMAS
-// ==========================
-export const CreateChecklistItemRequestSchema = z.object({
-  body: CreateChecklistItemInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateChecklistItemRequestSchema = z.object({
-  body: ChecklistItemDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-// ==========================
-// ONBOARDING ITEMS REQUEST SCHEMAS
-// ==========================
-export const CreateOnBoardingRequestSchema = z.object({
-  body: CreateOnBoardingInputSchema,
-  params: z.object({}),
-  query: z.object({}),
-});
-
-// ==========================
-// USER REQUEST SCHEMAS
-// ==========================
-export const CreateUserRequestSchema = z.object({
-  body: CreateUserInputSchema,
-  params: z.object({}),
-  query: z.object({}),
-});
-
-export const UpdateUserRequestSchema = z.object({
-  body: UserDtoSchema.partial(),
-  params: z.object({}),
-  query: z.object({}),
-});
-
-// ==========================
-// COMMENT REQUEST SCHEMAS
-// ==========================
-export const CreateCommentRequestSchema = z.object({
-  body: CreateCommentInputSchema,
-  params: IdParamSchema,
-  query: z.object({}),
-});
-
-export const UpdateCommentRequestSchema = z.object({
-  body: CommentDtoSchema.partial(),
-  params: IdParamSchema,
-  query: z.object({}),
 });
 
 // ==========================
@@ -832,15 +690,17 @@ export type CreateUserInput = z.infer<typeof CreateUserInputSchema>;
 // ==========================
 // UPDATE INPUT TYPES FROM SCHEMAS
 // ==========================
-export type UpdateWorkspaceInput = z.infer<typeof WorkspaceDtoSchema>;
-export type UpdateBoardInput = z.infer<typeof BoardDtoSchema>;
-export type UpdateListInput = z.infer<typeof ListDtoSchema>;
-export type UpdateLabelInput = z.infer<typeof LabelDtoSchema>;
-export type UpdateCardInput = z.infer<typeof CardDtoSchema>;
-export type UpdateChecklistInput = z.infer<typeof ChecklistDtoSchema>;
-export type UpdateChecklistItemInput = z.infer<typeof ChecklistItemDtoSchema>;
-export type UpdateUserInput = z.infer<typeof UserDtoSchema>;
-export type UpdateCommentInput = z.infer<typeof CommentDtoSchema>;
+export type UpdateWorkspaceInput = z.infer<typeof UpdateWorkspaceSchema>;
+export type UpdateBoardInput = z.infer<typeof UpdateBoardSchema>;
+export type UpdateListInput = z.infer<typeof UpdateListSchema>;
+export type UpdateLabelInput = z.infer<typeof UpdateLabelSchema>;
+export type UpdateCardInput = z.infer<typeof UpdateCardSchema>;
+export type UpdateChecklistInput = z.infer<typeof UpdateChecklistSchema>;
+export type UpdateChecklistItemInput = z.infer<
+  typeof UpdateChecklistItemSchema
+>;
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+export type UpdateCommentInput = z.infer<typeof UpdateCommentSchema>;
 
 // ==========================
 // PARAM & QUERY TYPES FROM SCHEMAS
@@ -852,7 +712,7 @@ export type SearchQuery = z.infer<typeof SearchQuerySchema>;
 // ENUM TYPES FROM SCHEMAS
 // ==========================
 export type ActivityAction = z.infer<typeof ActivityActionSchema>;
-export type ColorType = z.infer<typeof Color>;
+export type ColorType = z.infer<typeof ColorSchema>;
 export type BoardCreationRestrictions = z.infer<
   typeof BoardCreationRestrictionsSchema
 >;
