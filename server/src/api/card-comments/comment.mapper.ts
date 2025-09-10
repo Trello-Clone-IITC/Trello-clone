@@ -1,4 +1,4 @@
-import {  type Comment } from "@prisma/client";
+import { type Comment } from "@prisma/client";
 import { CommentDtoSchema, type CommentDto } from "@ronmordo/types";
 
 export function mapCommentToDto(comment: Comment): CommentDto {
@@ -12,9 +12,7 @@ export function mapCommentToDto(comment: Comment): CommentDto {
   return CommentDtoSchema.parse(dto);
 }
 
-export function mapCommentDtoToCreateInput(
-  dto: CommentDto
-): any {
+export function mapCommentDtoToCreateInput(dto: CommentDto): any {
   return {
     id: dto.id,
     card: { connect: { id: dto.cardId } },
