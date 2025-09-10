@@ -791,7 +791,7 @@ const getCardChecklists = async (cardId: string, userId: string) => {
 };
 
 // Get card comments
-const getCardComments = async (cardId: string, userClerkId: string) => {
+const getCardComments = async (cardId: string, userId: string) => {
   // Verify user has access to the card
   try {
   const card = await prisma.card.findFirst({
@@ -802,7 +802,7 @@ const getCardComments = async (cardId: string, userClerkId: string) => {
           board: {
             include: {
               boardMembers: {
-                where: { user: { clerkId: userClerkId } },
+                where: { userId: userId } ,
               },
             },
           },

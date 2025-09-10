@@ -1,7 +1,9 @@
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { mapUserToDto } from "./user.mapper.js";
-import { clerkClient } from "@clerk/express";
+import { clerkClient, getAuth } from "@clerk/express";
+import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { type Request } from "express";
 
 const getMe = async (clerkUserId: string) => {
   // First we get the latest user data from clerk provider.
@@ -45,8 +47,8 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
-const getUserIdByClerkId = (clerkId: string) => {
-  const userId = prisma.user.findUnique({
+const getUserIdByClerkId = async (clerkId: string) => {
+  const user = await prisma.user.findUnique({
     where: {
       clerkId,
     },
@@ -54,7 +56,17 @@ const getUserIdByClerkId = (clerkId: string) => {
       id: true,
     },
   });
+  return user?.id;
+};
+
+const getUserIdByRequest = async (req: Request) => {
+  let { userId:clerkId } = getAuth(req);
+  if (!clerkId) clerkId = DUMMY_USER_ID //TODO: remove this on production
+  const userId = await getUserIdByClerkId(clerkId)
+  if (!userId) {
+    throw new AppError("User not authenticated", 401);
+  }
   return userId;
 };
 
-export const userService = { getMe, getUserByEmail, getUserIdByClerkId };
+export const userService = { getMe, getUserByEmail, getUserIdByClerkId, getUserIdByRequest };

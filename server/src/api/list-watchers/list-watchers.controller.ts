@@ -4,8 +4,8 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import listWatchersService from "./list-watchers.service.js";
 import type { ListWatcherDto } from "@ronmordo/types";
 import { mapListWatcherToDto } from "./list-watcher.mapper.js";
-import { getAuth } from "@clerk/express";
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 const addListWatcher = async (
   req: Request,
@@ -15,10 +15,7 @@ const addListWatcher = async (
   try {
     const { listId } = req.params;
     const { userId } = req.body;
-    let { userId: authUserId } = getAuth(req) || {};
-    if (!authUserId) {
-      authUserId = DUMMY_USER_ID; // TODO: remove this after testing
-    }
+    const authUserId = await userService.getUserIdByRequest(req);
 
     if (!authUserId) {
       return next(new AppError("User not authenticated", 401));
@@ -46,11 +43,7 @@ const removeListWatcher = async (
 ) => {
   try {
     const { listId, userId } = req.params;
-    let { userId: authUserId } = getAuth(req) || {};
-    if (!authUserId) {
-      authUserId = DUMMY_USER_ID; // TODO: remove this after testing
-    }
-
+    const authUserId = await userService.getUserIdByRequest(req);
     if (!authUserId) {
       return next(new AppError("User not authenticated", 401));
     }

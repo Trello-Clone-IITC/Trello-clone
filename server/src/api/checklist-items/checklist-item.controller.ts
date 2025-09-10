@@ -4,22 +4,18 @@ import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type { ChecklistItemDto, UserDto } from "@ronmordo/types";
 import { mapChecklistItemToDto } from "./checklist-item.mapper.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { mapUserToDto } from "../users/user.mapper.js";
+import { userService } from "../users/user.service.js";
 
 export const checklistItemController = {
   // Create checklist item
-  createChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  createChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       const { checklistId } = req.params;
       const item = await checklistItemService.createChecklistItem({
@@ -40,17 +36,14 @@ export const checklistItemController = {
   },
 
   // Get checklist item by ID
-  getChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  getChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       const item = await checklistItemService.getChecklistItemById(id, userId);
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
@@ -66,20 +59,21 @@ export const checklistItemController = {
   },
 
   // Update checklist item
-  updateChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  updateChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
-      const item = await checklistItemService.updateChecklistItem(id, updateData, userId);
+      const item = await checklistItemService.updateChecklistItem(
+        id,
+        updateData,
+        userId
+      );
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
       res.status(200).json({
@@ -93,17 +87,14 @@ export const checklistItemController = {
   },
 
   // Delete checklist item
-  deleteChecklistItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+  deleteChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       await checklistItemService.deleteChecklistItem(id, userId);
 
@@ -118,17 +109,14 @@ export const checklistItemController = {
   },
 
   // Toggle checklist item completion
-  toggleChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  toggleChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       const item = await checklistItemService.toggleChecklistItem(id, userId);
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
@@ -144,20 +132,22 @@ export const checklistItemController = {
   },
 
   // Get checklist item assignees
-  getChecklistItemAssignees: async (req: Request, res: Response<ApiResponse<UserDto[]>>, next: NextFunction) => {
+  getChecklistItemAssignees: async (
+    req: Request,
+    res: Response<ApiResponse<UserDto[]>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
-      const assignees = await checklistItemService.getChecklistItemAssignees(id, userId);
-      const assigneesDto = assignees.map((assignee) => mapUserToDto(assignee.user));
+      const assignees = await checklistItemService.getChecklistItemAssignees(
+        id,
+        userId
+      );
+      const assigneesDto = assignees.map((assignee) =>
+        mapUserToDto(assignee.user)
+      );
 
       res.status(200).json({
         success: true,

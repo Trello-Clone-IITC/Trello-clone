@@ -4,23 +4,18 @@ import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type { CommentDto } from "@ronmordo/types";
 import { mapCommentToDto } from "./comment.mapper.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 export const commentController = {
   // Create a new comment
-  createComment: async (req: Request, res: Response<ApiResponse<CommentDto>>, next: NextFunction) => {
+  createComment: async (
+    req: Request,
+    res: Response<ApiResponse<CommentDto>>,
+    next: NextFunction
+  ) => {
     try {
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
-      const { cardId } = req.params;
+      const userId = await userService.getUserIdByRequest(req);
+      const { id: cardId } = req.params;
       const comment = await commentService.createComment({
         cardId,
         ...req.body,
@@ -39,18 +34,14 @@ export const commentController = {
   },
 
   // Get a single comment by ID
-  getComment: async (req: Request, res: Response<ApiResponse<CommentDto>>, next: NextFunction) => {
+  getComment: async (
+    req: Request,
+    res: Response<ApiResponse<CommentDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
+      const userId = await userService.getUserIdByRequest(req);
       const comment = await commentService.getCommentById(id, userId);
       const commentDto: CommentDto = mapCommentToDto(comment);
 
@@ -64,22 +55,21 @@ export const commentController = {
     }
   },
 
-
   // Update a comment
-  updateComment: async (req: Request, res: Response<ApiResponse<CommentDto>>, next: NextFunction) => {
+  updateComment: async (
+    req: Request,
+    res: Response<ApiResponse<CommentDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
-      const comment = await commentService.updateComment(id, updateData, userId);
+      const userId = await userService.getUserIdByRequest(req);
+      const comment = await commentService.updateComment(
+        id,
+        updateData,
+        userId
+      );
       const commentDto: CommentDto = mapCommentToDto(comment);
 
       res.status(200).json({
@@ -96,15 +86,7 @@ export const commentController = {
   deleteComment: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
+      const userId = await userService.getUserIdByRequest(req);
       await commentService.deleteComment(id, userId);
 
       res.status(200).json({

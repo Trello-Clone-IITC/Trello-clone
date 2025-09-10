@@ -4,48 +4,33 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import { WorkspaceRole } from "@prisma/client";
 import {
   type BoardDto,
-  type CreateWorkspaceInput,
-  type IdParam,
-  type UpdateWorkspaceInput,
   type WorkspaceDto,
   type WorkspaceMemberDto,
 } from "@ronmordo/types";
-import workspaceService from "./workspaceService.js";
+import { CreateWorkspaceInputSchema } from "@ronmordo/types";
+import workspaceService from "./workspace.service.js";
 import {
   mapWorkspaceDtoToCreateInput,
   mapWorkspaceToDto,
 } from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
-import { getAuth } from "@clerk/express";
+
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { userService } from "../users/user.service.js";
 
 const createWorkspace = async (
-  req: Request<{}, {}, CreateWorkspaceInput>,
+  req: Request<{}, {}, CreateWorkspaceInputSchema>,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {
   try {
-    let { userId: userClerkId } = getAuth(req) || {};
-    if (!userClerkId) {
-      userClerkId = DUMMY_USER_ID; //TODO: remove this after testing; Changed to clerkId
-    }
-
-    if (!userClerkId) {
-      throw new AppError("User not authenticated", 401);
-    }
-
-    const userWithId = await userService.getUserIdByClerkId(userClerkId);
-
-    if (!userWithId) {
+    const userId = await userService.getUserIdByRequest(req);
+    if (!userId) {
       throw new AppError("Missing user in database", 500);
     }
 
-    const workspace = await workspaceService.createWorkspace(
-      req.body,
-      userWithId.id
-    );
+    const workspace = await workspaceService.createWorkspace(req.body, userId);
 
     return res.status(201).json({
       success: true,
@@ -210,13 +195,9 @@ const addWorkspaceMember = async (
   next: NextFunction
 ) => {
   try {
-    console.log("-------------------------1");
     const { id } = req.params;
     const { role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; //TODO: remove this after testing;
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
     if (!userId) {
       throw new AppError("User not authenticated", 401);
@@ -248,10 +229,7 @@ const removeWorkspaceMember = async (
 ) => {
   try {
     const { id } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; //TODO: remove this after testing;
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
     if (!userId) {
       throw new AppError("User not authenticated", 401);
@@ -280,10 +258,7 @@ const updateWorkspaceMemberRole = async (
   try {
     const { id } = req.params;
     const { role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; //TODO: remove this after testing;
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
     if (!userId) {
       throw new AppError("User not authenticated", 401);

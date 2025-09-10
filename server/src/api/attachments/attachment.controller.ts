@@ -4,17 +4,14 @@ import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type { AttachmentDto } from "@ronmordo/types";
 import { mapAttachmentToDto } from "./attachment.mapper.js";
-import { getAuth } from "@clerk/express";
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 export const attachmentController = {
   // Create a new attachment
   createAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
     try {
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -42,10 +39,7 @@ export const attachmentController = {
   getAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -70,10 +64,7 @@ export const attachmentController = {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -99,10 +90,7 @@ export const attachmentController = {
   deleteAttachment: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));

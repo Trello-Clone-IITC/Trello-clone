@@ -36,6 +36,11 @@ const createComment = async (data: CreateCommentData) => {
   }
 
   if (card.list.board.boardMembers.length === 0) {
+    console.log("Access deniedddddddddddddddddddd");
+    console.log("card", card);
+    console.log("card.list", card.list);
+    console.log("card.list.board", card.list.board);
+    console.log("card.list.board.boardMembers", card.list.board.boardMembers);
     throw new AppError("Access denied", 403);
   }
 
@@ -66,9 +71,9 @@ const createComment = async (data: CreateCommentData) => {
       cardId: card.id,
       userId: data.userId,
       action: "Commented",
-      payload: { 
+      payload: {
         commentId: comment.id,
-        text: comment.text.substring(0, 100) // Truncate for activity log
+        text: comment.text.substring(0, 100), // Truncate for activity log
       },
     },
   });
@@ -112,7 +117,6 @@ const getCommentById = async (commentId: string, userId: string) => {
   return comment;
 };
 
-
 // Update a comment
 const updateComment = async (
   commentId: string,
@@ -121,7 +125,7 @@ const updateComment = async (
 ) => {
   // Verify user has access to the comment and is the author
   const existingComment = await prisma.comment.findFirst({
-    where: { 
+    where: {
       id: commentId,
       userId: userId, // Only allow author to update
     },
@@ -178,9 +182,9 @@ const updateComment = async (
       cardId: existingComment.card.id,
       userId: userId,
       action: "Updated",
-      payload: { 
+      payload: {
         commentId: comment.id,
-        text: comment.text.substring(0, 100) // Truncate for activity log
+        text: comment.text.substring(0, 100), // Truncate for activity log
       },
     },
   });
@@ -192,7 +196,7 @@ const updateComment = async (
 const deleteComment = async (commentId: string, userId: string) => {
   // Verify user has access to the comment and is the author
   const existingComment = await prisma.comment.findFirst({
-    where: { 
+    where: {
       id: commentId,
       userId: userId, // Only allow author to delete
     },
@@ -230,10 +234,10 @@ const deleteComment = async (commentId: string, userId: string) => {
       cardId: existingComment.card.id,
       userId: userId,
       action: "Updated", // Using "Updated" since there's no "Deleted" action for comments
-      payload: { 
+      payload: {
         commentId: existingComment.id,
         action: "deleted",
-        text: existingComment.text.substring(0, 100) // Truncate for activity log
+        text: existingComment.text.substring(0, 100), // Truncate for activity log
       },
     },
   });

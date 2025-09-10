@@ -4,8 +4,7 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import boardMembersService from "./board-members.service.js";
 import type { BoardMemberDto } from "@ronmordo/types";
 import { mapBoardMemberToDto } from "./board-members.mapper.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 const addBoardMember = async (
   req: Request,
@@ -15,16 +14,13 @@ const addBoardMember = async (
   try {
     const { id } = req.params;
     const { userId: memberUserId, role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; // TODO: remove this after testing
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-
-    const member = await boardMembersService.addBoardMember(id, memberUserId, role);
+    const member = await boardMembersService.addBoardMember(
+      id,
+      memberUserId,
+      role
+    );
     const memberDto = mapBoardMemberToDto(member);
     res.status(201).json({
       success: true,
@@ -42,16 +38,12 @@ const removeBoardMember = async (
 ) => {
   try {
     const { id, userId: memberUserId } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; // TODO: remove this after testing
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-
-    const removed = await boardMembersService.removeBoardMember(id, memberUserId);
+    const removed = await boardMembersService.removeBoardMember(
+      id,
+      memberUserId
+    );
 
     if (!removed) {
       return next(new AppError("Board member not found", 404));
@@ -74,14 +66,8 @@ const updateBoardMemberRole = async (
   try {
     const { id, userId: memberUserId } = req.params;
     const { role } = req.body;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID; // TODO: remove this after testing
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
     if (memberUserId !== userId) {
       return next(
         new AppError("User not authorized to update this board member", 403)

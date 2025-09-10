@@ -2,23 +2,16 @@ import type { Request, Response, NextFunction } from "express";
 import checklistItemAssigneeService from "./checklist-item-assignee.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import type { ChecklistItemAssigneeDto } from "@ronmordo/types";
 import { mapChecklistItemAssigneeToDto } from "./checklist-item-assignee.mapper.js";
+import { userService } from "../users/user.service.js";
 
 export const checklistItemAssigneeController = {
   // Assign user to checklist item
   assignUserToItem: async (req: Request, res: Response<ApiResponse<ChecklistItemAssigneeDto>>, next: NextFunction) => {
     try {
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+       const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
 
       const { itemId } = req.params;
       const { userId: assigneeId } = req.body;
@@ -38,14 +31,8 @@ export const checklistItemAssigneeController = {
   // Remove user assignment from checklist item
   removeUserFromItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
     try {
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID; // TODO: remove this after testing
-      }
+       const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
 
       const { itemId, userId: assigneeId } = req.params;
       await checklistItemAssigneeService.removeUserFromItem(itemId, assigneeId, userId);

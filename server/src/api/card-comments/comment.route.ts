@@ -1,18 +1,34 @@
 import { Router } from "express";
 import { commentController } from "./comment.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import * as commentValidation from "./comment.validation.js";
+import {
+  CreateCommentRequestSchema,
+  UpdateCommentRequestSchema,
+  GetByIdRequestSchema,
+} from "@ronmordo/types";
 
 const router = Router();
 
 // Card-specific comment routes
-router.post("/:cardId/comments", validateRequest(commentValidation.createCommentSchema), commentController.createComment);
-router.get("/:cardId/comments/:id", validateRequest(commentValidation.getCommentSchema), commentController.getComment);
+router.post(
+  "/:id/comments",
+  validateRequest(CreateCommentRequestSchema),
+  commentController.createComment
+);
+router.get(
+  "/:cardId/comments/:id",
+  validateRequest(GetByIdRequestSchema),
+  commentController.getComment
+);
 router.patch(
   "/:cardId/comments/:id",
-  validateRequest(commentValidation.updateCommentSchema),
+  validateRequest(UpdateCommentRequestSchema),
   commentController.updateComment
 );
-router.delete("/:cardId/comments/:id", validateRequest(commentValidation.deleteCommentSchema), commentController.deleteComment);
+router.delete(
+  "/:cardId/comments/:id",
+  validateRequest(GetByIdRequestSchema),
+  commentController.deleteComment
+);
 
 export default router;
