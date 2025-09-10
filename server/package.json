@@ -19,13 +19,8 @@
     "@clerk/express": "^1.7.24",
     "@faker-js/faker": "^10.0.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
-<<<<<<< Updated upstream
-    "@prisma/client": "^6.15.0",
-    "@ronmordo/types": "^2.0.11",
-=======
     "@prisma/client": "^6.16.0",
-    "@ronmordo/types": "^2.0.10",
->>>>>>> Stashed changes
+    "@ronmordo/types": "^2.0.11",
     "axios": "^1.11.0",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
