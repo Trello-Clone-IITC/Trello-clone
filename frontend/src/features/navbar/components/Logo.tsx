@@ -47,7 +47,13 @@ export default function Logo() {
             className="group-hover:animate-[forward-pulse_0.43s_ease-in-out_infinite_alternate]"
           />
         </svg>
-        <p className="ml-1.5 font-[500] text-sm">Trello</p>
+        <p
+          className={`ml-1.5 font-[500] lg:text-sm md:text-[0px] ${
+            isLight ? "text-[#172b4d]" : "text-white"
+          }`}
+        >
+          Trello
+        </p>
       </div>
     </a>
   );

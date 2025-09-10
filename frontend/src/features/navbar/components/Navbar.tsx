@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Bell, HelpCircle, MessageSquare } from "lucide-react";
+import { Bell, HelpCircle, Megaphone } from "lucide-react";
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
@@ -54,78 +54,64 @@ export default function Navbar() {
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-1 md:gap-2">
+      <div className="flex items-center gap-[0.5px]">
         {/* Feedback Button - Hidden on mobile */}
         <Button
-          variant="ghost"
           size="icon"
-          className="h-8 w-8 hidden sm:flex"
-          style={{
-            backgroundColor: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isLight
-              ? "#dcdfe4"
-              : "#333c43";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className={`h-8 w-8 relative bg-transparent cursor-pointer ${
+            isLight
+              ? "text-[#505258] hover:bg-[#dddedd]"
+              : "text-[#a9abaf] hover:bg-[#37373a]"
+          }`}
         >
-          <MessageSquare
-            className="h-4 w-4"
-            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+          <Megaphone
+            className={`h-4 w-4 ${
+              isLight
+                ? "text-[#505258] hover:bg-[#dddedd]"
+                : "text-[#a9abaf] hover:bg-[#37373a]"
+            }`}
           />
         </Button>
 
         {/* Notifications */}
         <Button
-          variant="ghost"
           size="icon"
-          className="h-8 w-8 relative"
-          style={{
-            backgroundColor: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isLight
-              ? "#dcdfe4"
-              : "#333c43";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className={`h-8 w-8 relative bg-transparent cursor-pointer ${
+            isLight
+              ? "text-[#505258] hover:bg-[#dddedd]"
+              : "text-[#a9abaf] hover:bg-[#37373a]"
+          }`}
         >
           <Bell
-            className="h-4 w-4"
-            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+            className={`h-4 w-4 ${
+              isLight
+                ? "text-[#505258] hover:bg-[#dddedd]"
+                : "text-[#a9abaf] hover:bg-[#37373a]"
+            }`}
           />
           {/* Notification badge could go here */}
         </Button>
 
         {/* Help - Hidden on mobile */}
         <Button
-          variant="ghost"
           size="icon"
-          className="h-8 w-8 hidden sm:flex"
-          style={{
-            backgroundColor: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = isLight
-              ? "#dcdfe4"
-              : "#333c43";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className={`h-8 w-8 bg-transparent relative cursor-pointer ${
+            isLight
+              ? "text-[#505258] hover:bg-[#dddedd]"
+              : "text-[#a9abaf] hover:bg-[#37373a]"
+          }`}
         >
           <HelpCircle
-            className="h-4 w-4"
-            style={{ color: isLight ? "#172b4d" : "#9aa7b6" }}
+            className={`h-4 w-4 ${
+              isLight
+                ? "text-[#505258] hover:bg-[#dddedd]"
+                : "text-[#a9abaf] hover:bg-[#37373a]"
+            }`}
           />
         </Button>
 
         {/* User Menu */}
+
         <UserMenuPopover />
       </div>
     </nav>
