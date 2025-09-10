@@ -83,16 +83,14 @@ const createLabel = async (data: CreateLabelData) => {
   }
 };
 
-const getLabelById = async (labelId: string, userId: string) => {
+const getLabelById = async (boardId: string, labelId: string) => {
   try {
     const label = await prisma.label.findFirst({
-      where: { id: labelId },
+      where: { id: labelId, boardId: boardId },
       include: {
         board: {
           include: {
-            boardMembers: {
-              where: { userId: userId },
-            },
+            boardMembers: true,
           },
         },
       },
@@ -113,41 +111,6 @@ const getLabelById = async (labelId: string, userId: string) => {
       throw error;
     }
     throw new AppError("Failed to get label", 500);
-  }
-};
-
-const getLabelsByBoard = async (boardId: string, userId: string) => {
-  try {
-    // Verify user has access to the board
-    const board = await prisma.board.findFirst({
-      where: { id: boardId },
-      include: {
-        boardMembers: {
-          where: { userId: userId },
-        },
-      },
-    });
-
-    if (!board) {
-      throw new AppError("Board not found", 404);
-    }
-
-    if (board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
-    }
-
-    const labels = await prisma.label.findMany({
-      where: { boardId },
-      orderBy: { name: "asc" },
-    });
-
-    return labels;
-  } catch (error) {
-    console.error("Failed to get board labels:", error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError("Failed to get board labels", 500);
   }
 };
 
@@ -471,10 +434,8 @@ const removeLabelFromCard = async (
 export default {
   createLabel,
   getLabelById,
-  getLabelsByBoard,
   updateLabel,
   deleteLabel,
   addLabelToCard,
   removeLabelFromCard,
 };
-

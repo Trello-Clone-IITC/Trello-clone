@@ -2,14 +2,14 @@ import type { Request, Response, NextFunction } from "express";
 import commentService from "./comment.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { CommentDto } from "@ronmordo/types";
+import type { CommentDto, CreateCommentInput, IdParam } from "@ronmordo/types";
 import { mapCommentToDto } from "./comment.mapper.js";
 import { userService } from "../users/user.service.js";
 
 export const commentController = {
   // Create a new comment
   createComment: async (
-    req: Request,
+    req: Request<IdParam, {}, CreateCommentInput>,
     res: Response<ApiResponse<CommentDto>>,
     next: NextFunction
   ) => {
@@ -35,7 +35,7 @@ export const commentController = {
 
   // Get a single comment by ID
   getComment: async (
-    req: Request,
+    req: Request<IdParam>,
     res: Response<ApiResponse<CommentDto>>,
     next: NextFunction
   ) => {
@@ -57,7 +57,7 @@ export const commentController = {
 
   // Update a comment
   updateComment: async (
-    req: Request,
+    req: Request<IdParam, {}, { text: string }>,
     res: Response<ApiResponse<CommentDto>>,
     next: NextFunction
   ) => {
@@ -83,7 +83,11 @@ export const commentController = {
   },
 
   // Delete a comment
-  deleteComment: async (req: Request, res: Response, next: NextFunction) => {
+  deleteComment: async (
+    req: Request<IdParam>,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);

@@ -40,9 +40,8 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      const label = await labelService.getLabelById(id, userId);
+      const { id, labelId } = req.params;
+      const label = await labelService.getLabelById(id, labelId);
       const labelDto: LabelDto = mapLabelToDto(label);
 
       res.status(200).json({
@@ -52,28 +51,6 @@ export const labelController = {
     } catch (error) {
       console.error("Failed to get label", error);
       next(new AppError("Failed to get label", 500));
-    }
-  },
-
-  // Get all labels for a board
-  getBoardLabels: async (
-    req: Request<{ boardId: string }>,
-    res: Response<ApiResponse<LabelDto[]>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { boardId } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      const labels = await labelService.getLabelsByBoard(boardId, userId);
-      const labelDtos: LabelDto[] = labels.map(mapLabelToDto);
-
-      res.status(200).json({
-        success: true,
-        data: labelDtos,
-      });
-    } catch (error) {
-      console.error("Failed to get board labels", error);
-      next(new AppError("Failed to get board labels", 500));
     }
   },
 

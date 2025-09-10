@@ -203,6 +203,7 @@ const getBoardLabels = async (
       data: labelsDto,
     });
   } catch (error) {
+    console.log("error from get board labels", error);
     next(new AppError("Failed to get board labels", 500));
   }
 };

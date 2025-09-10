@@ -6,20 +6,12 @@ import {
   UpdateLabelRequestSchema,
   GetByIdRequestSchema,
   CreateCardLabelRequestSchema,
-  BoardIdParam,
-  CardIdParam,
-  LabelIdParam,
 } from "@ronmordo/types";
 import { z } from "zod";
 
 const router = Router();
 
 // Custom request schemas for specific routes
-const getBoardLabelsRequestSchema = z.object({
-  params: BoardIdParam,
-  query: z.object({}),
-  body: z.object({}),
-});
 
 const removeLabelFromCardRequestSchema = z.object({
   params: z.object({
@@ -41,12 +33,6 @@ router.get(
   "/:id/labels/:labelId",
   validateRequest(GetByIdRequestSchema),
   labelController.getLabel
-);
-
-router.get(
-  "/:boardId/labels",
-  validateRequest(getBoardLabelsRequestSchema),
-  labelController.getBoardLabels
 );
 
 router.patch(
