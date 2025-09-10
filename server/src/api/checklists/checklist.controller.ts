@@ -2,18 +2,28 @@ import type { Request, Response, NextFunction } from "express";
 import checklistService from "./checklist.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { ChecklistDto, ChecklistItemAssigneeDto, ChecklistItemDto } from "@ronmordo/types";
-import { mapChecklistToDto, mapChecklistItemToDto } from "./checklist.mapper.js";
+import type {
+  ChecklistDto,
+  ChecklistItemAssigneeDto,
+  ChecklistItemDto,
+} from "@ronmordo/types";
+import {
+  mapChecklistToDto,
+  mapChecklistItemToDto,
+} from "./checklist.mapper.js";
 import { mapChecklistItemAssigneeToDto } from "../checklist-item-assignees/checklist-item-assignee.mapper.js";
 import { userService } from "../users/user.service.js";
 
 export const checklistController = {
   // Create a new checklist
-  createChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+  createChecklist: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistDto>>,
+    next: NextFunction
+  ) => {
     try {
       const userId = await userService.getUserIdByRequest(req);
 
-    
       const { cardId } = req.params;
       const checklist = await checklistService.createChecklist({
         cardId,
@@ -28,18 +38,23 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to create checklist", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create checklist", 500));
     }
   },
 
   // Get checklist by ID
-  getChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+  getChecklist: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
 
-
-    
       const checklist = await checklistService.getChecklistById(id, userId);
       const checklistDto: ChecklistDto = mapChecklistToDto(checklist);
 
@@ -49,20 +64,29 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to get checklist", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get checklist", 500));
     }
   },
 
   // Update checklist
-  updateChecklist: async (req: Request, res: Response<ApiResponse<ChecklistDto>>, next: NextFunction) => {
+  updateChecklist: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
       const userId = await userService.getUserIdByRequest(req);
 
-
-    
-      const checklist = await checklistService.updateChecklist(id, updateData, userId);
+      const checklist = await checklistService.updateChecklist(
+        id,
+        updateData,
+        userId
+      );
       const checklistDto: ChecklistDto = mapChecklistToDto(checklist);
 
       res.status(200).json({
@@ -71,12 +95,19 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to update checklist", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update checklist", 500));
     }
   },
 
   // Delete checklist
-  deleteChecklist: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+  deleteChecklist: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
@@ -89,18 +120,27 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to delete checklist", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete checklist", 500));
     }
   },
 
   // Get checklist items
-  getChecklistItems: async (req: Request, res: Response<ApiResponse<ChecklistItemDto[]>>, next: NextFunction) => {
+  getChecklistItems: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto[]>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
 
       const items = await checklistService.getChecklistItems(id, userId);
-      const itemDtos: ChecklistItemDto[] = items.map(item => mapChecklistItemToDto(item));
+      const itemDtos: ChecklistItemDto[] = items.map((item) =>
+        mapChecklistItemToDto(item)
+      );
 
       res.status(200).json({
         success: true,
@@ -108,15 +148,21 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to get checklist items", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get checklist items", 500));
     }
   },
 
   // Create checklist item
-  createChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  createChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const userId = await userService.getUserIdByRequest(req);
-
 
       const { checklistId } = req.params;
       const item = await checklistService.createChecklistItem({
@@ -132,19 +178,29 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to create checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create checklist item", 500));
     }
   },
 
   // Update checklist item
-  updateChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  updateChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
       const userId = await userService.getUserIdByRequest(req);
 
-
-      const item = await checklistService.updateChecklistItem(id, updateData, userId);
+      const item = await checklistService.updateChecklistItem(
+        id,
+        updateData,
+        userId
+      );
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
       res.status(200).json({
@@ -153,16 +209,22 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to update checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update checklist item", 500));
     }
   },
 
   // Delete checklist item
-  deleteChecklistItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+  deleteChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
-
 
       await checklistService.deleteChecklistItem(id, userId);
 
@@ -172,16 +234,22 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to delete checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete checklist item", 500));
     }
   },
 
   // Toggle checklist item completion
-  toggleChecklistItem: async (req: Request, res: Response<ApiResponse<ChecklistItemDto>>, next: NextFunction) => {
+  toggleChecklistItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
-
 
       const item = await checklistService.toggleChecklistItem(id, userId);
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
@@ -192,18 +260,28 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to toggle checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to toggle checklist item", 500));
     }
   },
 
   // Assign user to checklist item
-  assignUserToItem: async (req: Request, res: Response<ApiResponse<ChecklistItemAssigneeDto>>, next: NextFunction) => {
+  assignUserToItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemAssigneeDto>>,
+    next: NextFunction
+  ) => {
     try {
       const userId = await userService.getUserIdByRequest(req);
 
-
       const { itemId, userId: assigneeId } = req.body;
-      const assignment = await checklistService.assignUserToItem(itemId, assigneeId, userId);
+      const assignment = await checklistService.assignUserToItem(
+        itemId,
+        assigneeId,
+        userId
+      );
       const assignmentDto = mapChecklistItemAssigneeToDto(assignment);
       res.status(200).json({
         success: true,
@@ -211,15 +289,22 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to assign user to item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to assign user to item", 500));
     }
   },
 
   // Remove user assignment from checklist item
-  removeUserFromItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+  removeUserFromItem: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
       const userId = await userService.getUserIdByRequest(req);
- 
+
       const { itemId, userId: assigneeId } = req.params;
       await checklistService.removeUserFromItem(itemId, assigneeId, userId);
 
@@ -229,6 +314,9 @@ export const checklistController = {
       });
     } catch (error) {
       console.error("Failed to remove user assignment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to remove user assignment", 500));
     }
   },

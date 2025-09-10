@@ -32,6 +32,9 @@ const addListWatcher = async (
       data: { message: "List watcher added successfully" },
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to add list watcher", 500));
   }
 };
@@ -59,6 +62,9 @@ const removeListWatcher = async (
       data: { message: "List watcher removed successfully" },
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to remove list watcher", 500));
   }
 };

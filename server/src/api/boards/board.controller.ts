@@ -38,6 +38,9 @@ const createBoard = async (
     });
   } catch (error) {
     console.log(error);
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to create board", 500));
   }
 };
@@ -61,6 +64,9 @@ const getBoard = async (
       data: boardDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get board", 500));
   }
 };
@@ -87,6 +93,9 @@ const updateBoard = async (
     });
   } catch (error) {
     console.log("error from update board", error);
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to update board", 500));
   }
 };
@@ -111,6 +120,9 @@ const deleteBoard = async (
     });
   } catch (error) {
     console.log("error from delete board", error);
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to delete board", 500));
   }
 };
@@ -128,6 +140,9 @@ const getAllBoards = async (
       data: boardsDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get boards", 500));
   }
 };
@@ -149,6 +164,9 @@ const getBoardsByUser = async (
       data: boardsDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get boards by user", 500));
   }
 };
@@ -167,6 +185,9 @@ const getBoardMembers = async (
       data: membersDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get board members", 500));
   }
 };
@@ -185,6 +206,9 @@ const getBoardLists = async (
       data: listsDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get board lists", 500));
   }
 };
@@ -204,6 +228,9 @@ const getBoardLabels = async (
     });
   } catch (error) {
     console.log("error from get board labels", error);
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get board labels", 500));
   }
 };
@@ -222,6 +249,9 @@ const getBoardActivityLogs = async (
       data: activityLogsDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get board activity logs", 500));
   }
 };

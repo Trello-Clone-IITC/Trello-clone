@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import cardLabelService from "./card-label.service.js";
-import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import { userService } from "../users/user.service.js";
 import { mapCardLabelToDto } from "./card-label.mapper.js";
 import type { CardLabelDto } from "@ronmordo/types";
+import { AppError } from "../../utils/appError.js";
 
 export const cardLabelController = {
   // Add label to card
@@ -30,8 +30,10 @@ export const cardLabelController = {
         data: cardLabelDto,
       });
     } catch (error) {
-      console.error("Failed to add label to card", error);
-      next(new AppError("Failed to add label to card", 500));
+      if (error instanceof AppError) {
+        return next(error);
+      }
+      return next(new AppError("Failed to add label to card", 500));
     }
   },
 
@@ -51,8 +53,10 @@ export const cardLabelController = {
         message: "Label removed from card successfully",
       });
     } catch (error) {
-      console.error("Failed to remove label from card", error);
-      next(new AppError("Failed to remove label from card", 500));
+      if (error instanceof AppError) {
+        return next(error);
+      }
+      return next(new AppError("Failed to remove label from card", 500));
     }
   },
 };

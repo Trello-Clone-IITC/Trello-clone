@@ -29,6 +29,9 @@ export const labelController = {
       });
     } catch (error) {
       console.error("Failed to create label", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create label", 500));
     }
   },
@@ -50,6 +53,9 @@ export const labelController = {
       });
     } catch (error) {
       console.error("Failed to get label", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get label", 500));
     }
   },
@@ -78,6 +84,9 @@ export const labelController = {
       });
     } catch (error) {
       console.error("Failed to update label", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update label", 500));
     }
   },
@@ -99,6 +108,9 @@ export const labelController = {
       });
     } catch (error) {
       console.error("Failed to delete label", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete label", 500));
     }
   },

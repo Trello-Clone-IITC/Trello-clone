@@ -26,6 +26,9 @@ const createList = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to create list", 500));
   }
 };
@@ -50,6 +53,9 @@ const getList = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get list", 500));
   }
 };
@@ -79,6 +85,9 @@ const updateList = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to update list", 500));
   }
 };
@@ -101,6 +110,9 @@ const deleteList = async (
       data: { message: "List deleted successfully" },
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to delete list", 500));
   }
 };
@@ -126,6 +138,9 @@ const updateListPosition = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to update list position", 500));
   }
 };
@@ -151,6 +166,9 @@ const archiveList = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to archive list", 500));
   }
 };
@@ -176,6 +194,9 @@ const subscribeToList = async (
       data: listDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to update list subscription", 500));
   }
 };
@@ -196,6 +217,9 @@ const getListWatchers = async (
       data: watchersDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to get list watchers", 500));
   }
 };

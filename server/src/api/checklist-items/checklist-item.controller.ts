@@ -31,6 +31,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to create checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create checklist item", 500));
     }
   },
@@ -54,6 +57,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to get checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get checklist item", 500));
     }
   },
@@ -82,6 +88,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to update checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update checklist item", 500));
     }
   },
@@ -104,6 +113,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to delete checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete checklist item", 500));
     }
   },
@@ -127,6 +139,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to toggle checklist item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to toggle checklist item", 500));
     }
   },
@@ -155,6 +170,9 @@ export const checklistItemController = {
       });
     } catch (error) {
       console.error("Failed to get checklist item assignees", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get checklist item assignees", 500));
     }
   },

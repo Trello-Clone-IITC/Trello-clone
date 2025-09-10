@@ -27,6 +27,9 @@ const addBoardMember = async (
       data: memberDto,
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to add board member", 500));
   }
 };
@@ -38,7 +41,6 @@ const removeBoardMember = async (
 ) => {
   try {
     const { id, userId: memberUserId } = req.params;
-    const userId = await userService.getUserIdByRequest(req);
 
     const removed = await boardMembersService.removeBoardMember(
       id,
@@ -54,6 +56,9 @@ const removeBoardMember = async (
       data: { message: "Board member removed successfully" },
     });
   } catch (error) {
+    if (error instanceof AppError) {
+      return next(error);
+    }
     next(new AppError("Failed to remove board member", 500));
   }
 };

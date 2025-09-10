@@ -8,14 +8,21 @@ import { userService } from "../users/user.service.js";
 
 export const checklistItemAssigneeController = {
   // Assign user to checklist item
-  assignUserToItem: async (req: Request, res: Response<ApiResponse<ChecklistItemAssigneeDto>>, next: NextFunction) => {
+  assignUserToItem: async (
+    req: Request,
+    res: Response<ApiResponse<ChecklistItemAssigneeDto>>,
+    next: NextFunction
+  ) => {
     try {
-       const userId = await userService.getUserIdByRequest(req);
-
+      const userId = await userService.getUserIdByRequest(req);
 
       const { itemId } = req.params;
       const { userId: assigneeId } = req.body;
-      const assignment = await checklistItemAssigneeService.assignUserToItem(itemId, assigneeId, userId);
+      const assignment = await checklistItemAssigneeService.assignUserToItem(
+        itemId,
+        assigneeId,
+        userId
+      );
       const assignmentDto = mapChecklistItemAssigneeToDto(assignment);
 
       res.status(200).json({
@@ -24,18 +31,28 @@ export const checklistItemAssigneeController = {
       });
     } catch (error) {
       console.error("Failed to assign user to item", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to assign user to item", 500));
     }
   },
 
   // Remove user assignment from checklist item
-  removeUserFromItem: async (req: Request, res: Response<ApiResponse<{ message: string }>>, next: NextFunction) => {
+  removeUserFromItem: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
-       const userId = await userService.getUserIdByRequest(req);
-
+      const userId = await userService.getUserIdByRequest(req);
 
       const { itemId, userId: assigneeId } = req.params;
-      await checklistItemAssigneeService.removeUserFromItem(itemId, assigneeId, userId);
+      await checklistItemAssigneeService.removeUserFromItem(
+        itemId,
+        assigneeId,
+        userId
+      );
 
       res.status(200).json({
         success: true,
@@ -43,6 +60,9 @@ export const checklistItemAssigneeController = {
       });
     } catch (error) {
       console.error("Failed to remove user assignment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to remove user assignment", 500));
     }
   },
