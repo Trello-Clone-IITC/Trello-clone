@@ -25,6 +25,7 @@ export interface ApiResponse<T = undefined> {
   message?: string;
 }
 
+
 // Custom ENUM types matching the database schema
 export type BoardRole = "admin" | "member" | "observer";
 export type BoardVisibility = "private" | "workspace_members" | "public";
@@ -164,19 +165,3 @@ export interface BoardWithMembers extends Board {
 export interface ListWithWatchers extends List {
   watchers?: ListWatcher[];
 }
-
-/*
- * WHAT HAS BEEN IMPLEMENTED:
- *
- * Updated TypeScript interfaces and types for the Trello clone application:
- * - All types now match the comprehensive database schema exactly
- * - Added custom ENUM types for roles, permissions, and restrictions
- * - Updated User interface with Clerk integration, theme preferences, and notifications
- * - Updated Workspace interface with comprehensive permission controls
- * - Added new interfaces for WorkspaceMember, BoardMember, List, and ListWatcher
- * - Extended interfaces for API responses with related data
- * - Proper typing for all custom ENUM values
- *
- * These types ensure type safety across the entire application and provide
- * consistent data structures that match the database schema exactly.
- */

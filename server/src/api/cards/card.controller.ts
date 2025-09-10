@@ -5,8 +5,8 @@ import type{ ApiResponse } from "../../utils/globalTypes.js";
 import type{ ActivityLogDto, CardDto, ChecklistDto, CommentDto, CardAssigneeDto, LabelDto, CardWatcherDto, AttachmentDto } from "@ronmordo/types";
 import { mapCardToDto, mapChecklistToDto, mapCommentToDto, mapCardAssigneeToDto, mapCardWatcherToDto, mapAttachmentToDto } from "./card.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
-import { getAuth } from "@clerk/express";
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 
 export const cardController = {
@@ -14,11 +14,8 @@ export const cardController = {
   createCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
-
+      const userId = await userService.getUserIdByRequest(req);
+    
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
@@ -40,10 +37,8 @@ export const cardController = {
   getCard: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -95,10 +90,8 @@ export const cardController = {
     try {
       const { id } = req.params;
       // const userId = req.user?.id;
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -122,10 +115,8 @@ export const cardController = {
     try {
       const { id } = req.params;
       const { listId, position } = req.body;
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -154,10 +145,7 @@ export const cardController = {
   toggleArchive: async (req: Request, res: Response<ApiResponse<CardDto>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -179,10 +167,8 @@ export const cardController = {
   searchCards: async (req: Request, res: Response<ApiResponse<CardDto[]>>, next: NextFunction) => {
     try {
       const { query, boardId, listId } = req.query;
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -215,10 +201,8 @@ export const cardController = {
   getCardActivity: async (req: Request, res: Response<ApiResponse<ActivityLogDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -241,10 +225,8 @@ export const cardController = {
     try {
       const { id } = req.params;
       
-      let {userId} = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID//TODO: remove this after testing;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -266,10 +248,8 @@ export const cardController = {
   getCardChecklists: async (req: Request, res: Response<ApiResponse<ChecklistDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -289,10 +269,8 @@ export const cardController = {
   getCardComments: async (req: Request, res: Response<ApiResponse<CommentDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+        
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -305,6 +283,7 @@ export const cardController = {
         data: commentsDto,
       });
     } catch (error) {
+      console.log("Failed to get card comments:---", error);
       next(new AppError("Failed to get card comments", 500));
     }
   },
@@ -312,10 +291,7 @@ export const cardController = {
   getCardAssignees: async (req: Request, res: Response<ApiResponse<CardAssigneeDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -335,10 +311,7 @@ export const cardController = {
   getCardLabels: async (req: Request, res: Response<ApiResponse<LabelDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -357,10 +330,8 @@ export const cardController = {
   getCardWatchers: async (req: Request, res: Response<ApiResponse<CardWatcherDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -380,10 +351,8 @@ export const cardController = {
   getCardAttachments: async (req: Request, res: Response<ApiResponse<AttachmentDto[]>>, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let { userId } = getAuth(req) || {};
-      if (!userId) {
-        userId = DUMMY_USER_ID;
-      }
+      const userId = await userService.getUserIdByRequest(req);
+
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));

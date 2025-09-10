@@ -10,7 +10,7 @@ import listWatchersRouter from "./list-watchers/list-watchers.route.js";
 import checklistRouter from "./checklists/checklist.route.js";
 import checklistItemRouter from "./checklist-items/checklist-item.route.js";
 import checklistItemAssigneeRouter from "./checklist-item-assignees/checklist-item-assignee.route.js";
-// import commentRouter from "./comments/comment.route.js";
+import commentRouter from "./card-comments/comment.route.js";
 import attachmentRouter from "./attachments/attachment.route.js";
 // import labelRouter from "./labels/label.route.js";
 
@@ -27,9 +27,9 @@ router.use("/cards", attachmentRouter);
 router.use("/cards", checklistRouter);
 router.use("/cards", checklistItemRouter);
 router.use("/cards", checklistItemAssigneeRouter);
+router.use("/cards", commentRouter);
 router.use("/lists", listRouter);
 router.use("/lists", listWatchersRouter);
-// router.use("/comments", commentRouter);
 // router.use("/labels", labelRouter);
 
 export default router;

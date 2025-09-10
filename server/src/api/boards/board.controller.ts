@@ -3,14 +3,19 @@ import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import boardService from "./board.service.js";
 import boardMembersService from "../board-members/board-members.service.js";
-import type { BoardDto, BoardMemberDto, ListDto, LabelDto, ActivityLogDto } from "@ronmordo/types";
+import type {
+  BoardDto,
+  BoardMemberDto,
+  ListDto,
+  LabelDto,
+  ActivityLogDto,
+} from "@ronmordo/types";
 import { mapBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
 const createBoard = async (
   req: Request,
@@ -18,14 +23,7 @@ const createBoard = async (
   next: NextFunction
 ) => {
   try {
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
-    }
-
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
     const board = await boardService.createBoard({
       ...req.body,
@@ -33,7 +31,6 @@ const createBoard = async (
     });
     // Transform Date objects to strings for DTO
     const boardDto: BoardDto = mapBoardToDto(board);
-
 
     res.status(201).json({
       success: true,
@@ -75,14 +72,7 @@ const updateBoard = async (
 ) => {
   try {
     const { id } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
-    }
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
     const updateData = { ...req.body };
 
     const board = await boardService.updateBoard(id, updateData);
@@ -108,14 +98,6 @@ const deleteBoard = async (
 ) => {
   try {
     const { id } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
-    }
-
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
 
     const deleted = await boardService.deleteBoard(id);
 
@@ -150,8 +132,6 @@ const getAllBoards = async (
   }
 };
 
-
-
 const getBoardsByUser = async (
   req: Request,
   res: Response<ApiResponse<BoardDto[]>>,
@@ -160,7 +140,6 @@ const getBoardsByUser = async (
   try {
     const { userId: paramUserId } = req.params;
     console.log("paramUserId", paramUserId);
-    
 
     const boards = await boardService.getBoardsByUser(paramUserId);
     console.log("boards", boards);
@@ -245,7 +224,6 @@ const getBoardActivityLogs = async (
     next(new AppError("Failed to get board activity logs", 500));
   }
 };
-
 
 export default {
   createBoard,

@@ -1,59 +1,77 @@
 import { Router } from "express";
 import { labelController } from "./label.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+import {
+  CreateLabelRequestSchema,
+  UpdateLabelRequestSchema,
+  GetByIdRequestSchema,
+  CreateCardLabelRequestSchema,
+  BoardIdParam,
+  CardIdParam,
+  LabelIdParam,
+} from "@ronmordo/types";
 import { z } from "zod";
 
 const router = Router();
 
-// Validation schemas
-const createLabelSchema = z.object({
-  body: z.object({
-    boardId: z.string().uuid(),
-    name: z.string().min(1).max(50),
-    color: z
-      .string()
-      .regex(/^#[0-9A-F]{6}$/i, "Color must be a valid hex color"),
-  }),
+// Custom request schemas for specific routes
+const getBoardLabelsRequestSchema = z.object({
+  params: BoardIdParam,
+  query: z.object({}),
+  body: z.object({}),
 });
 
-const updateLabelSchema = z.object({
-  body: z.object({
-    name: z.string().min(1).max(50).optional(),
-    color: z
-      .string()
-      .regex(/^#[0-9A-F]{6}$/i, "Color must be a valid hex color")
-      .optional(),
+const removeLabelFromCardRequestSchema = z.object({
+  params: z.object({
+    cardId: z.string().uuid("Invalid card ID"),
+    labelId: z.string().uuid("Invalid label ID"),
   }),
-});
-
-const addLabelToCardSchema = z.object({
-  body: z.object({
-    cardId: z.string().uuid(),
-    labelId: z.string().uuid(),
-  }),
+  query: z.object({}),
+  body: z.object({}),
 });
 
 // Label CRUD routes
 router.post(
-  "/",
-  validateRequest(createLabelSchema),
+  "/:id/labels",
+  validateRequest(CreateLabelRequestSchema),
   labelController.createLabel
 );
-router.get("/:id", labelController.getLabel);
-router.get("/board/:boardId", labelController.getBoardLabels);
-router.put(
-  "/:id",
-  validateRequest(updateLabelSchema),
+
+router.get(
+  "/:id/labels/:labelId",
+  validateRequest(GetByIdRequestSchema),
+  labelController.getLabel
+);
+
+router.get(
+  "/:boardId/labels",
+  validateRequest(getBoardLabelsRequestSchema),
+  labelController.getBoardLabels
+);
+
+router.patch(
+  "/:id/labels/:labelId",
+  validateRequest(UpdateLabelRequestSchema),
   labelController.updateLabel
 );
-router.delete("/:id", labelController.deleteLabel);
+
+router.delete(
+  "/:id/labels/:labelId",
+  validateRequest(GetByIdRequestSchema),
+  labelController.deleteLabel
+);
 
 // Label-card relationship routes
 router.post(
-  "/card",
-  validateRequest(addLabelToCardSchema),
+  "/card-labels",
+  validateRequest(CreateCardLabelRequestSchema),
   labelController.addLabelToCard
 );
-router.delete("/card/:cardId/:labelId", labelController.removeLabelFromCard);
+
+router.delete(
+  "/card-labels/:cardId/:labelId",
+  validateRequest(removeLabelFromCardRequestSchema),
+  labelController.removeLabelFromCard
+);
 
 export default router;

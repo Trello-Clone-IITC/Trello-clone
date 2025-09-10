@@ -5,25 +5,18 @@ import listService from "./list.service.js";
 import type { ListDto, ListWatcherDto } from "@ronmordo/types";
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
-import { getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+import { userService } from "../users/user.service.js";
 
- const createList = async (
+const createList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
 ) => {
   try {
     const { boardId } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-const listData = {...req.body, createdBy: userId};
+    const listData = { ...req.body, createdBy: userId };
     const list = await listService.createList(boardId, listData);
 
     const listDto: ListDto = mapListToDto(list);
@@ -37,7 +30,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
- const getList = async (
+const getList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -61,22 +54,16 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
- const updateList = async (
+const updateList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
 ) => {
   try {
     const { listId } = req.params;
-    let { userId } = getAuth(req) || {};
-    if (!userId) {
-      userId = DUMMY_USER_ID//TODO: remove this after testing;
-    }
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      return next(new AppError("User not authenticated", 401));
-    }
-    const updateData = {...req.body};
+    const updateData = { ...req.body };
 
     const list = await listService.updateList(listId, updateData);
     console.log("list", list);
@@ -96,7 +83,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
- const deleteList = async (
+const deleteList = async (
   req: Request,
   res: Response<ApiResponse<{ message: string }>>,
   next: NextFunction
@@ -118,8 +105,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
-
- const updateListPosition = async (
+const updateListPosition = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -144,7 +130,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
- const archiveList = async (
+const archiveList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -169,7 +155,7 @@ const listData = {...req.body, createdBy: userId};
   }
 };
 
- const subscribeToList = async (
+const subscribeToList = async (
   req: Request,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
@@ -195,7 +181,7 @@ const listData = {...req.body, createdBy: userId};
 };
 
 // List Watcher Management
- const getListWatchers = async (
+const getListWatchers = async (
   req: Request,
   res: Response<ApiResponse<ListWatcherDto[]>>,
   next: NextFunction
@@ -213,7 +199,6 @@ const listData = {...req.body, createdBy: userId};
     next(new AppError("Failed to get list watchers", 500));
   }
 };
-
 
 export default {
   createList,
