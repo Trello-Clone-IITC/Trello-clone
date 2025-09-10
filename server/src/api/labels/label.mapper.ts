@@ -13,10 +13,10 @@ export function mapLabelToDto(l: Label): LabelDto {
 }
 
 export function mapLabelDtoToCreateInput(
-  dto: LabelDto
+  dto: Omit<LabelDto, "id"> & { id?: string }
 ): Prisma.LabelCreateInput {
   return {
-    id: dto.id,
+    ...(dto.id && { id: dto.id }),
     board: { connect: { id: dto.boardId } },
     name: dto.name,
     color: dto.color
