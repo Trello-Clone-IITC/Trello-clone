@@ -6,8 +6,10 @@ import {
   type BoardDto,
   type WorkspaceDto,
   type WorkspaceMemberDto,
+  type CreateWorkspaceInput, 
+  type IdParam,
+  type UpdateWorkspaceInput
 } from "@ronmordo/types";
-import { CreateWorkspaceInputSchema } from "@ronmordo/types";
 import workspaceService from "./workspace.service.js";
 import {
   mapWorkspaceDtoToCreateInput,
@@ -15,12 +17,10 @@ import {
 } from "./workspace.mapper.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
-
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { userService } from "../users/user.service.js";
 
 const createWorkspace = async (
-  req: Request<{}, {}, CreateWorkspaceInputSchema>,
+  req: Request<{}, {}, CreateWorkspaceInput>,
   res: Response<ApiResponse<WorkspaceDto>>,
   next: NextFunction
 ) => {

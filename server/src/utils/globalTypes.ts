@@ -25,11 +25,6 @@ export interface ApiResponse<T = undefined> {
   message?: string;
 }
 
-export interface ApiRequest<T = undefined> {
-  params: T;
-  query: T;
-  body: T;
-}
 
 // Custom ENUM types matching the database schema
 export type BoardRole = "admin" | "member" | "observer";
