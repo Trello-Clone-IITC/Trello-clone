@@ -13,7 +13,8 @@ import {
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
-
+import { useCreateWorkspace } from "../hooks/useCreateWorkspace";
+import type { WorkspaceType } from "@ronmordo/types";
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,54 +25,76 @@ export default function CreateWorkspaceModal({
   onClose,
 }: CreateWorkspaceModalProps) {
   const [workspaceName, setWorkspaceName] = useState("");
-  const [workspaceType, setWorkspaceType] = useState("");
+  type WorkspaceWithPlaceholder = WorkspaceType | "";
+  const [workspaceType, setWorkspaceType] =
+    useState<WorkspaceWithPlaceholder>("");
+
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const { theme } = useTheme();
   const isLight = theme === "light";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const createWorkspaceMutation = useCreateWorkspace();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement workspace creation logic
-    console.log("Creating workspace:", {
-      name: workspaceName,
-      type: workspaceType,
-      description: workspaceDescription,
-    });
+    if (!isFormValid) return;
+    try {
+      await createWorkspaceMutation.mutateAsync({
+        name: workspaceName,
+        type: workspaceType,
+        description: workspaceDescription || undefined,
+      });
+    } catch (error) {
+      console.error("Failed to create workspace:", error);
+    }
     onClose();
   };
 
   const isFormValid = workspaceName.trim().length > 0 && workspaceType;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setWorkspaceName("");
+          setWorkspaceType("");
+          setWorkspaceDescription("");
+          onClose();
+        }
+      }}
+    >
       <DialogContent
-        className="flex items-center justify-center my-[48px] p-0 w-fit top-[14px] translate-y-0"
+        className="lg:flex lg:justify-center lg:items-center xl:min-w-[1200px] lg:max-w-[calc(100vw - 48px)] lg:overflow-x-hidden   my-[48px] p-0  md:max-w-[475px]  md:max-h-[90vh]  top-[14px] translate-y-0 md:overflow-y-auto"
         showCloseButton={false}
       >
         <div
-          className={`min-h-[500px] lg:max-h-[637px] lg:mx-0 md:mx-auto xl:min-w-[1200px] lg:min-w-[calc(100vw-48px)] lg:flex-row md:flex-col-reverse md:max-w-[475px] flex items-stretch rounded-[3px] mb-0 p-0 overflow-hidden gap-0 ${
+          className={`min-h-[500px] lg:max-h-[637px] lg:mx-0 md:mx-auto xl:min-w-[1200px] lg:flex-row md:flex-col-reverse  flex items-stretch rounded-[3px] mb-0 p-0 overflow-hidden gap-0 ${
             isLight ? "bg-white text-[#292a2e]" : "bg-[#242528] text-[#bfc1c4]"
           }`}
         >
           {/* Left side - Form */}
           <div className="flex-1 px-6 mt-16 mb-6 flex flex-col z-3 items-center">
             <form
+              autoComplete="off"
               onSubmit={handleSubmit}
-              className="w-[388px] items-stretch gap-0"
+              className="w-[388px] -mt-0.5"
             >
               <h2 className="text-2xl font-semibold mb-3">
                 Let's build a Workspace
               </h2>
-              <p className="text-lg text-wrap font-normal text-[#9ea0a4]">
+              <p className="text-lg/5.5 text-wrap font-normal text-[#9ea0a4] -mt-[3px] mb-7 line-h">
                 Boost your productivity by making it easier for everyone to
                 access boards in one location.
               </p>
 
               {/* Workspace Name */}
-              <div className="space-y-2 text-[#a9abaf]">
+              <div className="text-[#a9abaf]">
                 <Label
                   htmlFor="workspace-name"
-                  className="text-xs font-medium mt-6 "
+                  className={`text-xs font-bold mt-6 mb-1  ${
+                    isLight ? " text-[#292a2e]" : "text-[#bfc1c4]"
+                  }`}
                 >
                   Workspace name
                 </Label>
@@ -82,64 +105,112 @@ export default function CreateWorkspaceModal({
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
                   maxLength={100}
-                  className="lg:w-[388px] h-12 md:w-full py-2 px-3 rounded-[3px] border-1 border-[#7e8188] mb-1.5"
+                  className={`lg:w-[388px] h-12 md:w-full py-2 px-3 rounded-[3px] border-1 mb-1.5 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none   placeholder:font-normal ${
+                    isLight
+                      ? "border-[#8c8f97] text-[#bfc1c4] focus-visible:border-[#4688ec] focus-visible:border-1 "
+                      : "border-[#7e8188] placeholder:text-[#96999e] focus-visible:border-[#85b8ff] focus-visible:border-1 "
+                  }`}
                 />
-                <p className="text-xs font-lighter">
+                <p
+                  className={`text-xs font-lighter ${
+                    isLight ? " text-[#292a2e]" : "text-[#bfc1c4]"
+                  }`}
+                >
                   This is the name of your company, team or organization.
                 </p>
               </div>
 
               {/* Workspace Type */}
-              <div className="space-y-2">
+              <div className="">
                 <Label
                   htmlFor="workspace-type"
-                  className="text-sm font-medium mt-6 mb-1"
+                  className={`text-xs font-bold mt-6 mb-1  ${
+                    isLight ? " text-[#292a2e]" : "text-[#bfc1c4]"
+                  }`}
                 >
                   Workspace type
                 </Label>
-                <Select value={workspaceType} onValueChange={setWorkspaceType}>
-                  <SelectTrigger className="bg-[#242528] flex items-center justify-between min-h-[40px] rounded-[3px] border-1 border-[#7e8188] w-full py-[2px] px-[6px]">
-                    <SelectValue className="mx-[2px]" placeholder="Choose…" />
+                <Select
+                  value={workspaceType}
+                  onValueChange={(value) =>
+                    setWorkspaceType(value as WorkspaceWithPlaceholder)
+                  }
+                >
+                  <SelectTrigger
+                    className={`bg-[#242528] flex items-center justify-between min-h-[40px]  rounded-[3px] border-1  w-full py-[2px] px-[6px] cursor-pointer  ${
+                      isLight
+                        ? "bg-[#fff] placeholder:text-[#292a2e] border-[#8c8f97]"
+                        : "bg-[#242528] placeholder:text-[#bfc1c4] border-[#7e8188]"
+                    }`}
+                  >
+                    <SelectValue
+                      className={` ${
+                        isLight
+                          ? "placeholder:text-[#292a2e]"
+                          : "placeholder:text-[#bfc1c4]"
+                      }`}
+                      placeholder="Choose…"
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="nonprofit">Nonprofit</SelectItem>
+                    <SelectItem value="engineering_it">
+                      Engineering-IT
+                    </SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="human_resources">
+                      Human Resources
+                    </SelectItem>
+                    <SelectItem value="sales_crm">Sales CRM</SelectItem>
+                    <SelectItem value="small_business">
+                      Small Business
+                    </SelectItem>
+                    <SelectItem value="operations">Operations</SelectItem>
                     <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="personal">Personal</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Workspace Description */}
-              <div className="">
-                <Label
-                  htmlFor="workspace-description"
-                  className="text-sm font-bold text-[#bfc1c4] mt-6 mb-1"
-                >
-                  Workspace description
-                  <span className=" text-xs font-light">Optional</span>
-                </Label>
-                <Textarea
-                  id="workspace-description"
-                  placeholder="Our team organizes everything here."
-                  value={workspaceDescription}
-                  onChange={(e) => setWorkspaceDescription(e.target.value)}
-                  rows={6}
-                  className="w-full resize-none"
-                />
-                <p className="text-xs ">
-                  Get your members on board with a few words about your
-                  Workspace.
-                </p>
-              </div>
+              <Label
+                htmlFor="workspace-description"
+                className={`text-xs font-bold  mt-6 mb-1 ${
+                  isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                }`}
+              >
+                Workspace description
+                <span className=" text-xs font-light">Optional</span>
+              </Label>
+              <Textarea
+                id="workspace-description"
+                placeholder="Our team organizes everything here."
+                value={workspaceDescription}
+                onChange={(e) => setWorkspaceDescription(e.target.value)}
+                rows={6}
+                className={`w-full resize-none rounded-[3px] border-1 border-transparent  mb-1.5 text-sm   ${
+                  isLight
+                    ? "border-[#8c8f97] text-[#6b6e76] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#4688ec] focus-visible:border-1"
+                    : "border-[#7e8188] text-[#8c8f93] placeholder:text-[#818488] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1"
+                }`}
+              />
+              <p
+                className={`text-xs mt-3 ${
+                  isLight ? "text-[#505258]" : "text-[#a9abaf]"
+                }`}
+              >
+                Get your members on board with a few words about your Workspace.
+              </p>
 
               {/* Submit Button */}
-              <footer className="w-full mt-4">
+              <footer className="w-full mt-3.5">
                 <Button
                   type="submit"
-                  disabled={!isFormValid}
-                  className={`px-3 py-1.5 h-12 rounded-[3px] w-full text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isLight
+                  className={`px-3 py-1.5 h-12 rounded-[3px] cursor-pointer w-full text-sm disabled:opacity-50 ${
+                    !isFormValid
+                      ? isLight
+                        ? "bg-[#f8f8f8] hover:bg-[#f8f8f8] cursor-not-allowed text-[#b2b4ba]"
+                        : "bg-[#2a2b2d] hover:bg-[#2a2b2d] cursor-not-allowed  text-[#585a60] "
+                      : isLight
                       ? "bg-[#1868db] hover:bg-[#1558bc] text-white"
                       : "bg-[#669df1] hover:bg-[#8fb8f6] text-[#1f1f21]"
                   }`}
@@ -158,13 +229,22 @@ export default function CreateWorkspaceModal({
                 src="https://trello.com/assets/d1f066971350650d3346.svg"
                 alt="Trello"
               />
+              {isFormValid && (
+                <img
+                  src="https://trello.com/assets/1a4590e4c12ebbbd161a.svg"
+                  alt="green face"
+                  className="w-21 h-21 z-3 animate-[slideInFromBottomLeft_0.3s_ease-out_forwards]"
+                />
+              )}
             </div>
           </div>
 
           {/* Close Button */}
           <Button
             size="icon"
-            className="absolute top-7 z-4 right-3 h-8 w-8 text-[#e2e3e4] hover:bg-transparent cursor-pointer bg-transparent shadow-none"
+            className={`absolute top-7 z-4 right-3 h-8 w-8  hover:bg-transparent cursor-pointer bg-transparent shadow-none ${
+              isLight ? "text-[#1e1f21]" : "text-[#e2e3e4]"
+            }`}
             onClick={onClose}
           >
             <X className="size-6" />

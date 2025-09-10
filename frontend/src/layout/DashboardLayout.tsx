@@ -15,7 +15,7 @@ export function DashboardLayout() {
     <div className="h-dvh w-dvw flex flex-col">
       {/* TO DO ------> insert NavBar to Header component and render it here */}
       <Navbar />
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex h-dvh ">
         {/* Sidebar - Hidden on mobile, visible on desktop */}
         <div className="hidden md:block">
           <Sidebar />

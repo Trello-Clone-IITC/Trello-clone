@@ -155,3 +155,14 @@
     height: 55%;
   }
 }
+
+@keyframes slideInFromBottomLeft {
+  from {
+    transform: translate(-500px, 40px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(10px, -95px);
+    opacity: 1;
+  }
+}
