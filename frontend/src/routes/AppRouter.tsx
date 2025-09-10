@@ -15,6 +15,7 @@ import { SsoCallback } from "@/features/auth/components/Sso-callback";
 
 // Dashboard pages
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+import ApiDocs from "@/features/docs/ApiDocs";
 
 export const AppRouter = () => {
   return (
@@ -28,6 +29,7 @@ export const AppRouter = () => {
         <Route path="/check-email" element={<CheckEmailPage />} />
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
+        <Route path="/docs" element={<ApiDocs />} />
       </Route>
 
       {/* Protected dashboard area */}
