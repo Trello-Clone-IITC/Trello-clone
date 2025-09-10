@@ -10,7 +10,7 @@ export const validateRequest = (schema: z.ZodType) => {
     try {
       console.log("req.body", req.body);
       console.log("req.query", req.query);
-      console.log("req.params", req.params.id);
+      console.log("req.params", req.params);
 
       await schema.parseAsync({
         body: req.body,

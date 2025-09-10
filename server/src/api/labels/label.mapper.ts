@@ -1,4 +1,4 @@
-import { Prisma, type Label } from "@prisma/client";
+import { Color, Prisma, type Label } from "@prisma/client";
 import { LabelDtoSchema, type LabelDto } from "@ronmordo/types";
 
 export function mapLabelToDto(l: Label): LabelDto {
@@ -6,17 +6,26 @@ export function mapLabelToDto(l: Label): LabelDto {
     id: l.id,
     boardId: l.boardId,
     name: l.name,
-    color: l.color,
+    color: l.color.replace(/([A-Z])/g, (_, p1, offset) =>
+      offset > 0 ? "_" + p1.toLowerCase() : p1.toLowerCase()
+    ),
   });
 }
 
 export function mapLabelDtoToCreateInput(
-  dto: LabelDto
+  dto: Omit<LabelDto, "id"> & { id?: string }
 ): Prisma.LabelCreateInput {
   return {
-    id: dto.id,
+    ...(dto.id && { id: dto.id }),
     board: { connect: { id: dto.boardId } },
     name: dto.name,
-    color: dto.color,
+    color: dto.color
+      .split("_")
+      .map((s, i) =>
+        i === 0
+          ? s.charAt(0).toUpperCase() + s.slice(1)
+          : s.charAt(0).toUpperCase() + s.slice(1)
+      )
+      .join("") as Color,
   };
 }

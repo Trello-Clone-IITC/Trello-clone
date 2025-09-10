@@ -12,9 +12,9 @@ import checklistItemRouter from "./checklist-items/checklist-item.route.js";
 import checklistItemAssigneeRouter from "./checklist-item-assignees/checklist-item-assignee.route.js";
 import commentRouter from "./card-comments/comment.route.js";
 import attachmentRouter from "./attachments/attachment.route.js";
-// import labelRouter from "./labels/label.route.js";
+import labelRouter from "./labels/label.route.js";
+import cardLabelRouter from "./card-labels/card-label.route.js";
 import docsRouter from "./docs/docs.route.js";
-
 const router = Router();
 
 // Changed resources routing to plural convenstion.
@@ -23,12 +23,14 @@ router.use("/users", userRouter);
 router.use("/workspaces", workspaceRouter);
 router.use("/boards", boardRouter);
 router.use("/boards", boardMembersRouter);
+router.use("/boards", labelRouter);
 router.use("/cards", cardRouter);
 router.use("/cards", attachmentRouter);
 router.use("/cards", checklistRouter);
 router.use("/cards", checklistItemRouter);
 router.use("/cards", checklistItemAssigneeRouter);
 router.use("/cards", commentRouter);
+router.use("/cards", cardLabelRouter);
 router.use("/lists", listRouter);
 router.use("/lists", listWatchersRouter);
 // router.use("/labels", labelRouter);

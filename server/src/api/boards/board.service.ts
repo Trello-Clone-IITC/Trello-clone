@@ -1,5 +1,10 @@
 import { prisma } from "../../lib/prismaClient.js";
-import { type Board, type List, type Label, type ActivityLog } from "@prisma/client";
+import {
+  type Board,
+  type List,
+  type Label,
+  type ActivityLog,
+} from "@prisma/client";
 
 const createBoard = async (
   boardData: Omit<Board, "id" | "createdAt" | "updatedAt">
@@ -35,10 +40,7 @@ const getBoardWithMembers = async (id: string) => {
 const getBoardsByUser = async (userId: string): Promise<Board[]> => {
   const boards = await prisma.board.findMany({
     where: {
-      OR: [
-        { createdBy: userId },
-        { boardMembers: { some: { userId } } }
-      ],
+      OR: [{ createdBy: userId }, { boardMembers: { some: { userId } } }],
     },
     orderBy: { createdAt: "desc" },
   });
@@ -105,13 +107,16 @@ const getBoardLists = async (boardId: string): Promise<List[]> => {
 
 const getBoardLabels = async (boardId: string): Promise<Label[]> => {
   const labels = await prisma.label.findMany({
-    where: { boardId },
+    where: { boardId: boardId },
     orderBy: { name: "asc" },
   });
+  // console.log("labels from service", labels);
   return labels;
 };
 
-const getBoardActivityLogs = async (boardId: string): Promise<ActivityLog[]> => {
+const getBoardActivityLogs = async (
+  boardId: string
+): Promise<ActivityLog[]> => {
   const activityLogs = await prisma.activityLog.findMany({
     where: { boardId },
     orderBy: { createdAt: "desc" },
@@ -149,7 +154,10 @@ const archiveList = async (
   }
 };
 
-const searchBoards = async (searchTerm: string, limit: number = 10): Promise<Board[]> => {
+const searchBoards = async (
+  searchTerm: string,
+  limit: number = 10
+): Promise<Board[]> => {
   const boards = await prisma.board.findMany({
     where: {
       OR: [

@@ -40,9 +40,8 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      const label = await labelService.getLabelById(id, userId);
+      const { id, labelId } = req.params;
+      const label = await labelService.getLabelById(id, labelId);
       const labelDto: LabelDto = mapLabelToDto(label);
 
       res.status(200).json({
@@ -55,28 +54,6 @@ export const labelController = {
     }
   },
 
-  // Get all labels for a board
-  getBoardLabels: async (
-    req: Request<{ boardId: string }>,
-    res: Response<ApiResponse<LabelDto[]>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { boardId } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      const labels = await labelService.getLabelsByBoard(boardId, userId);
-      const labelDtos: LabelDto[] = labels.map(mapLabelToDto);
-
-      res.status(200).json({
-        success: true,
-        data: labelDtos,
-      });
-    } catch (error) {
-      console.error("Failed to get board labels", error);
-      next(new AppError("Failed to get board labels", 500));
-    }
-  },
-
   // Update a label
   updateLabel: async (
     req: Request,
@@ -84,10 +61,15 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
+      const { id, labelId } = req.params;
       const updateData = req.body;
       const userId = await userService.getUserIdByRequest(req);
-      const label = await labelService.updateLabel(id, updateData, userId);
+      const label = await labelService.updateLabel(
+        id,
+        updateData,
+        labelId,
+        userId
+      );
       const labelDto: LabelDto = mapLabelToDto(label);
 
       res.status(200).json({
@@ -101,11 +83,15 @@ export const labelController = {
   },
 
   // Delete a label
-  deleteLabel: async (req: Request, res: Response, next: NextFunction) => {
+  deleteLabel: async (
+    req: Request,
+    res: Response<ApiResponse<{ message: string }>>,
+    next: NextFunction
+  ) => {
     try {
-      const { id } = req.params;
+      const { id, labelId } = req.params;
       const userId = await userService.getUserIdByRequest(req);
-      await labelService.deleteLabel(id, userId);
+      await labelService.deleteLabel(id, labelId, userId);
 
       res.status(200).json({
         success: true,
@@ -114,55 +100,6 @@ export const labelController = {
     } catch (error) {
       console.error("Failed to delete label", error);
       next(new AppError("Failed to delete label", 500));
-    }
-  },
-
-  // Add label to card
-  addLabelToCard: async (
-    req: Request,
-    res: Response<ApiResponse<{ cardId: string; labelId: string }>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { cardId, labelId } = req.body;
-      const userId = await userService.getUserIdByRequest(req);
-      const cardLabel = await labelService.addLabelToCard(
-        cardId,
-        labelId,
-        userId
-      );
-
-      res.status(200).json({
-        success: true,
-        data: {
-          cardId: cardLabel.cardId,
-          labelId: cardLabel.labelId,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to add label to card", error);
-      next(new AppError("Failed to add label to card", 500));
-    }
-  },
-
-  // Remove label from card
-  removeLabelFromCard: async (
-    req: Request<{ cardId: string; labelId: string }>,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const { cardId, labelId } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      await labelService.removeLabelFromCard(cardId, labelId, userId);
-
-      res.status(200).json({
-        success: true,
-        message: "Label removed from card successfully",
-      });
-    } catch (error) {
-      console.error("Failed to remove label from card", error);
-      next(new AppError("Failed to remove label from card", 500));
     }
   },
 };

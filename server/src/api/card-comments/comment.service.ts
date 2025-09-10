@@ -36,11 +36,6 @@ const createComment = async (data: CreateCommentData) => {
   }
 
   if (card.list.board.boardMembers.length === 0) {
-    console.log("Access deniedddddddddddddddddddd");
-    console.log("card", card);
-    console.log("card.list", card.list);
-    console.log("card.list.board", card.list.board);
-    console.log("card.list.board.boardMembers", card.list.board.boardMembers);
     throw new AppError("Access denied", 403);
   }
 
