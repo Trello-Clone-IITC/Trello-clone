@@ -18,5 +18,5 @@ export const RemoveLabelFromCardRequestSchema = z.object({
     labelId: z.string().uuid("Invalid label ID"),
   }),
   query: z.object({}),
-  body: z.object({}),
+  body: z.object({}).optional(),
 });

@@ -29,6 +29,9 @@ export const commentController = {
       });
     } catch (error) {
       console.error("Failed to create comment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create comment", 500));
     }
   },
@@ -51,6 +54,9 @@ export const commentController = {
       });
     } catch (error) {
       console.error("Failed to get comment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get comment", 500));
     }
   },
@@ -78,6 +84,9 @@ export const commentController = {
       });
     } catch (error) {
       console.error("Failed to update comment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update comment", 500));
     }
   },
@@ -99,6 +108,9 @@ export const commentController = {
       });
     } catch (error) {
       console.error("Failed to delete comment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete comment", 500));
     }
   },

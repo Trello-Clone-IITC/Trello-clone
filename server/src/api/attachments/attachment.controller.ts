@@ -4,12 +4,15 @@ import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type { AttachmentDto } from "@ronmordo/types";
 import { mapAttachmentToDto } from "./attachment.mapper.js";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { userService } from "../users/user.service.js";
 
 export const attachmentController = {
   // Create a new attachment
-  createAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+  createAttachment: async (
+    req: Request,
+    res: Response<ApiResponse<AttachmentDto>>,
+    next: NextFunction
+  ) => {
     try {
       const userId = await userService.getUserIdByRequest(req);
 
@@ -31,12 +34,19 @@ export const attachmentController = {
       });
     } catch (error) {
       console.error("Failed to create attachment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to create attachment", 500));
     }
   },
 
   // Get a single attachment by ID
-  getAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+  getAttachment: async (
+    req: Request,
+    res: Response<ApiResponse<AttachmentDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const userId = await userService.getUserIdByRequest(req);
@@ -54,13 +64,19 @@ export const attachmentController = {
       });
     } catch (error) {
       console.error("Failed to get attachment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to get attachment", 500));
     }
   },
 
-
   // Update an attachment
-  updateAttachment: async (req: Request, res: Response<ApiResponse<AttachmentDto>>, next: NextFunction) => {
+  updateAttachment: async (
+    req: Request,
+    res: Response<ApiResponse<AttachmentDto>>,
+    next: NextFunction
+  ) => {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -70,10 +86,14 @@ export const attachmentController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const attachment = await attachmentService.updateAttachment(id, {
-        ...updateData,
-        bytes: updateData.bytes ? BigInt(updateData.bytes) : undefined,
-      }, userId);
+      const attachment = await attachmentService.updateAttachment(
+        id,
+        {
+          ...updateData,
+          bytes: updateData.bytes ? BigInt(updateData.bytes) : undefined,
+        },
+        userId
+      );
       const attachmentDto: AttachmentDto = mapAttachmentToDto(attachment);
 
       res.status(200).json({
@@ -82,6 +102,9 @@ export const attachmentController = {
       });
     } catch (error) {
       console.error("Failed to update attachment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to update attachment", 500));
     }
   },
@@ -104,6 +127,9 @@ export const attachmentController = {
       });
     } catch (error) {
       console.error("Failed to delete attachment", error);
+      if (error instanceof AppError) {
+        return next(error);
+      }
       next(new AppError("Failed to delete attachment", 500));
     }
   },
