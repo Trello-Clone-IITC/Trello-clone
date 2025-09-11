@@ -2,7 +2,7 @@ import { Prisma, type ChecklistItemAssignee } from "@prisma/client";
 import {
   ChecklistItemAssigneeDtoSchema,
   type ChecklistItemAssigneeDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 
 export function mapChecklistItemAssigneeToDto(
   a: ChecklistItemAssignee

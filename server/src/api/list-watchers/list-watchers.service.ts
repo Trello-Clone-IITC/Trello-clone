@@ -1,6 +1,9 @@
 import { prisma } from "../../lib/prismaClient.js";
 
-const addListWatcher = async (listId: string, userId: string): Promise<boolean> => {
+const addListWatcher = async (
+  listId: string,
+  userId: string
+): Promise<boolean> => {
   try {
     await prisma.listWatcher.create({
       data: {
@@ -14,7 +17,10 @@ const addListWatcher = async (listId: string, userId: string): Promise<boolean> 
   }
 };
 
-const removeListWatcher = async (listId: string, userId: string): Promise<boolean> => {
+const removeListWatcher = async (
+  listId: string,
+  userId: string
+): Promise<boolean> => {
   try {
     await prisma.listWatcher.delete({
       where: {
@@ -48,7 +54,10 @@ const getListWatchers = async (listId: string) => {
   return watchers;
 };
 
-const isUserWatchingList = async (listId: string, userId: string): Promise<boolean> => {
+const isUserWatchingList = async (
+  listId: string,
+  userId: string
+): Promise<boolean> => {
   const watcher = await prisma.listWatcher.findUnique({
     where: {
       listId_userId: {

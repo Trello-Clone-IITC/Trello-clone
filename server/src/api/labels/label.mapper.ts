@@ -1,5 +1,5 @@
 import { Color, Prisma, type Label } from "@prisma/client";
-import { LabelDtoSchema, type LabelDto } from "@ronmordo/types";
+import { LabelDtoSchema, type LabelDto } from "@ronmordo/contracts";
 
 export function mapLabelToDto(l: Label): LabelDto {
   return LabelDtoSchema.parse({

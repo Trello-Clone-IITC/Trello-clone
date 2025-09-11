@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
+import { mapLabelToDto } from "../labels/label.mapper.js";
 
 interface CreateCardData {
   listId: string;
@@ -191,9 +192,12 @@ const getCardById = async (cardId: string, userId: string) => {
   return card;
 };
 
-
 // Update a card
-const updateCard = async (cardId: string, updateData: UpdateCardData, userId: string) => {
+const updateCard = async (
+  cardId: string,
+  updateData: UpdateCardData,
+  userId: string
+) => {
   // Verify user has access to the card
   const existingCard = await prisma.card.findFirst({
     where: { id: cardId },
@@ -435,7 +439,11 @@ const moveCard = async (
 };
 
 // Update card position within the same list
-const updateCardPosition = async (cardId: string, position: number, userId: string) => {
+const updateCardPosition = async (
+  cardId: string,
+  position: number,
+  userId: string
+) => {
   const card = await prisma.card.update({
     where: { id: cardId },
     data: {
@@ -570,7 +578,11 @@ const toggleArchive = async (cardId: string, userId: string) => {
 };
 
 // Search cards using full-text search
-const searchCards = async (query: string, filters: SearchFilters, userId: string) => {
+const searchCards = async (
+  query: string,
+  filters: SearchFilters,
+  userId: string
+) => {
   const whereClause: any = {
     searchDoc: {
       search: query,
@@ -794,36 +806,35 @@ const getCardChecklists = async (cardId: string, userId: string) => {
 const getCardComments = async (cardId: string, userId: string) => {
   // Verify user has access to the card
   try {
-  const card = await prisma.card.findFirst({
-    where: { id: cardId },
-    include: {
-      list: {
-        include: {
-          board: {
-            include: {
-              boardMembers: {
-                where: { userId: userId } ,
+    const card = await prisma.card.findFirst({
+      where: { id: cardId },
+      include: {
+        list: {
+          include: {
+            board: {
+              include: {
+                boardMembers: {
+                  where: { userId: userId },
+                },
               },
             },
           },
         },
       },
-    },
-  });
+    });
 
+    if (!card) {
+      throw new AppError("Card not found", 404);
+    }
 
-  if (!card) {
-    throw new AppError("Card not found", 404);
-  }
+    if (card.list.board.boardMembers.length === 0) {
+      throw new AppError("Access denied", 403);
+    }
 
-  if (card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
-  const comments = await prisma.comment.findMany({
-    where: { cardId },
-    orderBy: { createdAt: "desc" },
-  });
+    const comments = await prisma.comment.findMany({
+      where: { cardId },
+      orderBy: { createdAt: "desc" },
+    });
 
     return comments;
   } catch (error) {
@@ -905,7 +916,7 @@ const getCardLabels = async (cardId: string, userId: string) => {
     },
   });
 
-  return cardLabels.map(cl => cl.label);
+  return cardLabels.map((cl) => mapLabelToDto(cl.label));
 };
 
 // Get card watchers

@@ -2,7 +2,11 @@ import type { Request, Response, NextFunction } from "express";
 import commentService from "./comment.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { CommentDto, CreateCommentInput, IdParam } from "@ronmordo/types";
+import type {
+  CommentDto,
+  CreateCommentInput,
+  IdParam,
+} from "@ronmordo/contracts";
 import { mapCommentToDto } from "./comment.mapper.js";
 import { userService } from "../users/user.service.js";
 

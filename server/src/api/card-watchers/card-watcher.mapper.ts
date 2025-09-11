@@ -1,5 +1,5 @@
 import { Prisma, type CardWatcher } from "@prisma/client";
-import { CardWatcherDtoSchema, type CardWatcherDto } from "@ronmordo/types";
+import { CardWatcherDtoSchema, type CardWatcherDto } from "@ronmordo/contracts";
 
 export function mapCardWatcherToDto(w: CardWatcher): CardWatcherDto {
   return CardWatcherDtoSchema.parse({

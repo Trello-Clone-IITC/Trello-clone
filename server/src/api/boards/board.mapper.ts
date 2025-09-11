@@ -3,7 +3,7 @@ import {
   type BoardDto,
   BoardDtoSchema,
   type BoardFullDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
@@ -80,6 +80,9 @@ export function mapBoardDtoToCreateBoardInput(
     lastActivityAt: dto.lastActivityAt
       ? new Date(dto.lastActivityAt)
       : undefined,
+
+    workspace: { connect: { id: dto.workspaceId } },
+    creator: { connect: { id: dto.createdBy } },
 
     visibility: mapBoardVisibilityDtoToPrisma(dto.visibility),
     memberManage: mapMemberManageDtoToPrisma(dto.memberManage),

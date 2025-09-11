@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import labelService from "./label.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { LabelDto } from "@ronmordo/types";
+import type { LabelDto } from "@ronmordo/contracts";
 import { mapLabelToDto } from "./label.mapper.js";
 import { userService } from "../users/user.service.js";
 

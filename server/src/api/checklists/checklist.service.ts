@@ -601,7 +601,11 @@ const toggleChecklistItem = async (itemId: string, userId: string) => {
 };
 
 // Assign user to checklist item
-const assignUserToItem = async (itemId: string, assigneeId: string, userId: string) => {
+const assignUserToItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },
@@ -695,7 +699,11 @@ const assignUserToItem = async (itemId: string, assigneeId: string, userId: stri
 };
 
 // Remove user assignment from checklist item
-const removeUserFromItem = async (itemId: string, assigneeId: string, userId: string) => {
+const removeUserFromItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },

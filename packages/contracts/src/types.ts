@@ -1,5 +1,5 @@
 import z from "zod";
-import * as schemas from "./schemas";
+import * as schemas from "./schemas.js";
 
 // ==========================
 // DTO TYPES FROM SCHEMAS
@@ -53,6 +53,15 @@ export type CreateOnBoardingInput = z.infer<
   typeof schemas.CreateOnBoardingInputSchema
 >;
 export type CreateUserInput = z.infer<typeof schemas.CreateUserInputSchema>;
+export type CreateAttachmentInput = z.infer<
+  typeof schemas.CreateAttachmentInputSchema
+>;
+export type CreateBoardMemberInput = z.infer<
+  typeof schemas.CreateBoardMemberInputSchema
+>;
+export type CreateWorkspaceMemberInput = z.infer<
+  typeof schemas.CreateWorkspaceMemberInputSchema
+>;
 
 // ==========================
 // UPDATE INPUT TYPES FROM SCHEMAS
@@ -72,6 +81,15 @@ export type UpdateChecklistItemInput = z.infer<
 >;
 export type UpdateUserInput = z.infer<typeof schemas.UpdateUserSchema>;
 export type UpdateCommentInput = z.infer<typeof schemas.UpdateCommentSchema>;
+export type UpdateAttachmentInput = z.infer<
+  typeof schemas.UpdateAttachmentSchema
+>;
+export type UpdateBoardMemberInput = z.infer<
+  typeof schemas.UpdateBoardMemberSchema
+>;
+export type UpdateWorkspaceMemberInput = z.infer<
+  typeof schemas.UpdateWorkspaceMemberSchema
+>;
 
 // ==========================
 // PARAM & QUERY TYPES FROM SCHEMAS

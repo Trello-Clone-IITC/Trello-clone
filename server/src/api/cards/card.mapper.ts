@@ -14,7 +14,7 @@ import {
   type CardAssigneeDto,
   type CardWatcherDto,
   type AttachmentDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import { Prisma } from "@prisma/client";
 
 export function mapCardToDto(card: Card): CardDto {
@@ -46,7 +46,7 @@ export function mapCardDtoToCreateInput(dto: CardDto): Prisma.CardCreateInput {
     startDate: dto.startDate ? new Date(dto.startDate) : undefined,
     position: new Prisma.Decimal(dto.position),
     isArchived: dto.isArchived,
-    creator: dto.createdBy ? { connect: { id: dto.createdBy } } : undefined,
+    creator: { connect: { id: dto.createdBy } },
     coverImageUrl: dto.coverImageUrl ?? undefined,
     subscribed: dto.subscribed,
     createdAt: new Date(dto.createdAt),

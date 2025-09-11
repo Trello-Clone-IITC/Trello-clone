@@ -184,7 +184,7 @@ model Attachment {
   cardId    String   @map("card_id") @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   url       String
-  filename  String?
+  filename  String
   bytes     BigInt?
   meta      Json?
   createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)

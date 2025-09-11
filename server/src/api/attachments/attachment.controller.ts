@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import attachmentService from "./attachment.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { AttachmentDto } from "@ronmordo/types";
+import type { AttachmentDto } from "@ronmordo/contracts";
 import { mapAttachmentToDto } from "./attachment.mapper.js";
 import { userService } from "../users/user.service.js";
 
@@ -21,11 +21,11 @@ export const attachmentController = {
       }
 
       const { cardId } = req.params;
-      const attachment = await attachmentService.createAttachment({
+      const attachment = await attachmentService.createAttachment(
+        req.body,
         cardId,
-        ...req.body,
-        userId,
-      });
+        userId
+      );
       const attachmentDto: AttachmentDto = mapAttachmentToDto(attachment);
 
       res.status(201).json({

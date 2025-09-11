@@ -2,7 +2,7 @@ import { Prisma, type WorkspaceMember, $Enums } from "@prisma/client";
 import {
   WorkspaceMemberDtoSchema,
   type WorkspaceMemberDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 
 export function mapWorkspaceMemberToDto(
   m: WorkspaceMember
@@ -16,7 +16,9 @@ export function mapWorkspaceMemberToDto(
   return WorkspaceMemberDtoSchema.parse(dto);
 }
 
-function mapWorkspaceRole(r: $Enums.WorkspaceRole): WorkspaceMemberDto["role"] {
+export function mapWorkspaceRole(
+  r: $Enums.WorkspaceRole
+): WorkspaceMemberDto["role"] {
   return r.toLowerCase() as WorkspaceMemberDto["role"];
 }
 
@@ -31,7 +33,7 @@ export function mapWorkspaceMemberDtoToCreateInput(
   };
 }
 
-function mapWorkspaceRoleDto(
+export function mapWorkspaceRoleDto(
   v: WorkspaceMemberDto["role"]
 ): $Enums.WorkspaceRole {
   switch (v) {

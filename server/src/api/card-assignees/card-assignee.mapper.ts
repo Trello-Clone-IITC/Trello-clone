@@ -1,5 +1,8 @@
 import { Prisma, type CardAssignee } from "@prisma/client";
-import { CardAssigneeDtoSchema, type CardAssigneeDto } from "@ronmordo/types";
+import {
+  CardAssigneeDtoSchema,
+  type CardAssigneeDto,
+} from "@ronmordo/contracts";
 
 export function mapCardAssigneeToDto(a: CardAssignee): CardAssigneeDto {
   return CardAssigneeDtoSchema.parse({

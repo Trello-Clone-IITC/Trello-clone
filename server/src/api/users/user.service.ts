@@ -56,17 +56,28 @@ const getUserIdByClerkId = async (clerkId: string) => {
       id: true,
     },
   });
-  return user?.id;
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+  return user.id;
 };
 
 const getUserIdByRequest = async (req: Request) => {
-  let { userId:clerkId } = getAuth(req);
-  if (!clerkId) clerkId = DUMMY_USER_ID //TODO: remove this on production
-  const userId = await getUserIdByClerkId(clerkId)
+  let { userId: clerkId } = getAuth(req);
+  if (!clerkId) clerkId = DUMMY_USER_ID; //TODO: remove this on production
+
+  const userId = await getUserIdByClerkId(clerkId);
+
   if (!userId) {
     throw new AppError("User not authenticated", 401);
   }
+
   return userId;
 };
 
-export const userService = { getMe, getUserByEmail, getUserIdByClerkId, getUserIdByRequest };
+export const userService = {
+  getMe,
+  getUserByEmail,
+  getUserIdByClerkId,
+  getUserIdByRequest,
+};

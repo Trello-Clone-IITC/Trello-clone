@@ -1,30 +1,35 @@
 import { Router } from "express";
 import boardMembersController from "./board-members.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+// import {
+//   addBoardMemberSchema,
+//   updateBoardMemberSchema,
+//   removeBoardMemberSchema,
+// } from "./board-members.validation.js";
 import {
-  addBoardMemberSchema,
-  updateBoardMemberSchema,
-  removeBoardMemberSchema,
-} from "./board-members.validation.js";
+  CreateBoardMemberInputSchema,
+  UpdateBoardMemberSchema,
+  UserIdParamSchema,
+} from "@ronmordo/contracts";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Board member management
 router.post(
-  "/:id/members",
-  validateRequest(addBoardMemberSchema),
+  "/",
+  validateRequest({ body: CreateBoardMemberInputSchema }),
   boardMembersController.addBoardMember
 );
 
 router.patch(
-  "/:id/members/:userId",
-  validateRequest(updateBoardMemberSchema),
+  "/:userId",
+  validateRequest({ params: UserIdParamSchema, body: UpdateBoardMemberSchema }),
   boardMembersController.updateBoardMemberRole
 );
 
 router.delete(
-  "/:id/members/:userId",
-  validateRequest(removeBoardMemberSchema),
+  "/:userId",
+  validateRequest({ params: UserIdParamSchema }),
   boardMembersController.removeBoardMember
 );
 

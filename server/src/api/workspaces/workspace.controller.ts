@@ -6,16 +6,13 @@ import {
   type BoardDto,
   type WorkspaceDto,
   type WorkspaceMemberDto,
-  type CreateWorkspaceInput, 
+  type CreateWorkspaceInput,
   type IdParam,
-  type UpdateWorkspaceInput
-} from "@ronmordo/types";
+  type UpdateWorkspaceInput,
+  type CreateWorkspaceMemberInput,
+} from "@ronmordo/contracts";
 import workspaceService from "./workspace.service.js";
-import {
-  mapWorkspaceDtoToCreateInput,
-  mapWorkspaceToDto,
-} from "./workspace.mapper.js";
-import { mapBoardToDto } from "../boards/board.mapper.js";
+import { mapWorkspaceToDto } from "./workspace.mapper.js";
 import { mapWorkspaceMemberToDto } from "../workspace-members/workspace-members.mapper.js";
 import { userService } from "../users/user.service.js";
 
@@ -128,25 +125,6 @@ const getAllWorkspaces = async (
   }
 };
 
-const getWorkspacesByUser = async (
-  req: Request,
-  res: Response<ApiResponse<WorkspaceDto[]>>,
-  next: NextFunction
-) => {
-  try {
-    const { userId } = req.params;
-    const workspaces = await workspaceService.getWorkspacesByUser(userId);
-    console.log("workspaces", workspaces);
-    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    return res.status(200).json({
-      success: true,
-      data: workspacesDto,
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
 const getWorkspacesByCreator = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
@@ -190,24 +168,25 @@ const getWorkspaceMembers = async (
 };
 
 const addWorkspaceMember = async (
-  req: Request,
+  req: Request<IdParam, {}, CreateWorkspaceMemberInput>,
   res: Response<ApiResponse<WorkspaceMemberDto>>,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role, userId: newMemberId } = req.body;
     const userId = await userService.getUserIdByRequest(req);
 
     if (!userId) {
       throw new AppError("User not authenticated", 401);
     }
+
     console.log("-------------------------");
 
     const member = await workspaceService.addWorkspaceMember(
       id,
-      userId,
-      role || WorkspaceRole.Member
+      newMemberId,
+      role
     );
 
     // Transform Prisma workspace member to DTO format
@@ -228,18 +207,11 @@ const removeWorkspaceMember = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const { id, userId: userIdToDelete } = req.params;
+
     const userId = await userService.getUserIdByRequest(req);
 
-    if (!userId) {
-      throw new AppError("User not authenticated", 401);
-    }
-
-    const removed = await workspaceService.removeWorkspaceMember(id, userId);
-
-    if (!removed) {
-      return next(new AppError("Workspace member not found", 404));
-    }
+    await workspaceService.removeWorkspaceMember(id, userId, userIdToDelete);
 
     return res.status(200).json({
       success: true,
@@ -316,7 +288,6 @@ export default {
   deleteWorkspace,
   getWorkspaceBoards,
   getAllWorkspaces,
-  getWorkspacesByUser,
   getWorkspacesByCreator,
   getWorkspaceMembers,
   addWorkspaceMember,

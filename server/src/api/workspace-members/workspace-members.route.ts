@@ -1,29 +1,41 @@
 import { Router } from "express";
 import { validateRequest } from "../../middlewares/validation.js";
 import workspaceController from "../workspaces/workspace.controller.js";
+// import {
+//   addWorkspaceMemberSchema,
+//   removeWorkspaceMemberSchema,
+//   updateWorkspaceMemberSchema,
+// } from "./workspace-members.validation.js";
 import {
-  addWorkspaceMemberSchema,
-  removeWorkspaceMemberSchema,
-  updateWorkspaceMemberSchema,
-} from "./workspace-members.validation.js";
+  CreateWorkspaceMemberInputSchema,
+  UpdateWorkspaceMemberSchema,
+  UserIdParamSchema,
+} from "@ronmordo/contracts";
 
-const router = Router();
+const router = Router({ mergeParams: true });
+
+router.get("/", workspaceController.getWorkspaceMembers);
 
 router.post(
-  "/:id/members",
-  validateRequest(addWorkspaceMemberSchema),
+  "/",
+  validateRequest({ body: CreateWorkspaceMemberInputSchema }),
   workspaceController.addWorkspaceMember
 );
 
 router.delete(
-  "/:id/members/:userId",
-  validateRequest(removeWorkspaceMemberSchema),
+  "/:userId",
+  validateRequest({
+    params: UserIdParamSchema,
+  }),
   workspaceController.removeWorkspaceMember
 );
 
 router.patch(
-  "/:id/members/:userId",
-  validateRequest(updateWorkspaceMemberSchema),
+  "/:userId",
+  validateRequest({
+    params: UserIdParamSchema,
+    body: UpdateWorkspaceMemberSchema,
+  }),
   workspaceController.updateWorkspaceMemberRole
 );
 

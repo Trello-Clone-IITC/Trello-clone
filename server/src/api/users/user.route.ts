@@ -10,7 +10,7 @@ router.use(validateAuthenticatedUser);
 
 // Protected Routes
 router.get("/me", usersController.getMe);
-// router.get("/me/workspaces" /*usersController.getAllWorkspaces*/);
+router.get("/me/workspaces", usersController.getAllWorkspaces);
 // router.get("/me/boards" /*usersController.getAllBoards*/);
 // router.patch("/me" /*userController.patchUser*/);
 // router.delete("/me" /*userController.deleteUser*/);

@@ -115,9 +115,9 @@ export const ActivityLogDtoSchema = z.object({
 export const AttachmentDtoSchema = z.object({
   id: z.uuid(),
   cardId: z.uuid(),
-  userId: z.uuid().nullable().optional(),
+  userId: z.uuid(),
   url: z.string(),
-  filename: z.string().nullable().optional(),
+  filename: z.string(),
   bytes: z.number().nullable().optional(),
   meta: z.unknown().optional(),
   createdAt: z.iso.datetime(),
@@ -132,11 +132,11 @@ export const BoardMemberDtoSchema = z.object({
 
 export const BoardDtoSchema = z.object({
   id: z.uuid(),
-  workspaceId: z.uuid().nullable().optional(),
+  workspaceId: z.uuid(),
   name: z.string(),
   description: z.string().nullable().optional(),
   background: z.string(),
-  createdBy: z.uuid().nullable().optional(),
+  createdBy: z.uuid(),
   allowCovers: z.boolean(),
   showComplete: z.boolean(),
   createdAt: z.iso.datetime(),
@@ -172,7 +172,7 @@ export const CardDtoSchema = z.object({
   startDate: z.iso.datetime().nullable().optional(),
   position: z.number(),
   isArchived: z.boolean(),
-  createdBy: z.uuid().nullable().optional(),
+  createdBy: z.uuid(),
   coverImageUrl: z.string().nullable().optional(),
   subscribed: z.boolean(),
   createdAt: z.iso.datetime(),
@@ -574,6 +574,23 @@ export const CreateCommentInputSchema = CommentDtoSchema.pick({
   text: true,
 });
 
+export const CreateWorkspaceMemberInputSchema = WorkspaceMemberDtoSchema.pick({
+  role: true,
+  userId: true,
+});
+
+export const CreateBoardMemberInputSchema = BoardMemberDtoSchema.pick({
+  role: true,
+  userId: true,
+});
+
+export const CreateAttachmentInputSchema = AttachmentDtoSchema.pick({
+  url: true,
+  filename: true,
+  bytes: true,
+  meta: true,
+});
+
 // ==========================
 //  Update Input Schemas
 // ==========================
@@ -586,6 +603,15 @@ export const UpdateChecklistSchema = ChecklistDtoSchema.partial();
 export const UpdateChecklistItemSchema = ChecklistItemDtoSchema.partial();
 export const UpdateUserSchema = UserDtoSchema.partial();
 export const UpdateCommentSchema = CommentDtoSchema.partial();
+export const UpdateWorkspaceMemberSchema = WorkspaceMemberDtoSchema.pick({
+  role: true,
+}).partial();
+export const UpdateBoardMemberSchema = BoardMemberDtoSchema.pick({
+  role: true,
+}).partial();
+export const UpdateAttachmentSchema = AttachmentDtoSchema.pick({
+  filename: true,
+}).partial();
 
 // ==========================
 // BASE PARAM & QUERY SCHEMAS

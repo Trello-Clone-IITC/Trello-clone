@@ -2,63 +2,74 @@ import { Router } from "express";
 import listController from "./list.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
-  createListSchema,
-  updateListSchema,
-  listIdSchema,
-  updateListPositionSchema,
-  archiveListSchema,
-  subscribeToListSchema,
-  getListWatchersSchema,
-  getCardsByListSchema,
-} from "./list.validation.js";
+  BoardIdParamSchema,
+  CreateListInputSchema,
+  // ListDtoSchema,
+  ListIdParamSchema,
+  UpdateListSchema,
+} from "@ronmordo/contracts";
 
 const router = Router();
 
 // List CRUD operations
 router.post(
   "/board/:boardId",
-  validateRequest(createListSchema),
+  validateRequest({ params: BoardIdParamSchema, body: CreateListInputSchema }),
   listController.createList
 );
-router.get("/:listId", validateRequest(listIdSchema), listController.getList);
+router.get(
+  "/:listId",
+  validateRequest({ params: ListIdParamSchema }),
+  listController.getList
+);
 router.patch(
   "/:listId",
-  validateRequest(updateListSchema),
+  validateRequest({ params: ListIdParamSchema, body: UpdateListSchema }),
   listController.updateList
 );
 router.delete(
   "/:listId",
-  validateRequest(listIdSchema),
+  validateRequest({ params: ListIdParamSchema }),
   listController.deleteList
 );
 
 // List specific operations
-router.patch(
-  "/:listId/position",
-  validateRequest(updateListPositionSchema),
-  listController.updateListPosition
-);
-router.patch(
-  "/:listId/archive",
-  validateRequest(archiveListSchema),
-  listController.archiveList
-);
-router.patch(
-  "/:listId/subscribe",
-  validateRequest(subscribeToListSchema),
-  listController.subscribeToList
-);
+// -------------------------REDUNDANT- We cover this in update route-------------------------
+// router.patch(
+//   "/:listId/position",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: CreateListInputSchema.shape.position,
+//   }),
+//   listController.updateListPosition
+// );
+// router.patch(
+//   "/:listId/archive",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: ListDtoSchema.shape.isArchived,
+//   }),
+//   listController.archiveList
+// );
+// router.patch(
+//   "/:listId/subscribe",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: ListDtoSchema.shape.subscribed,
+//   }),
+//   listController.subscribeToList
+// );
 
 // -------------------------nested routes-------------------------
 router.get(
   "/:listId/watchers",
-  validateRequest(getListWatchersSchema),
+  validateRequest({ params: ListIdParamSchema }),
   listController.getListWatchers
 );
 
 router.get(
   "/:listId/cards",
-  validateRequest(getCardsByListSchema),
+  validateRequest({ params: ListIdParamSchema }),
   listController.getCardsByList
 );
 

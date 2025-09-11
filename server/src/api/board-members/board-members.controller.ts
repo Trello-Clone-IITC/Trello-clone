@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import boardMembersService from "./board-members.service.js";
-import type { BoardMemberDto } from "@ronmordo/types";
+import type { BoardMemberDto } from "@ronmordo/contracts";
 import { mapBoardMemberToDto } from "./board-members.mapper.js";
 import { userService } from "../users/user.service.js";
 

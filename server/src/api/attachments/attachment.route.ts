@@ -1,18 +1,38 @@
 import { Router } from "express";
 import { attachmentController } from "./attachment.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import * as attachmentValidation from "./attachment.validation.js";
+// import * as attachmentValidation from "./attachment.validation.js";
+import {
+  CreateAttachmentInputSchema,
+  IdParamSchema,
+  UpdateAttachmentSchema,
+} from "@ronmordo/contracts";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Card-specific attachment routes
-router.post("/:cardId/attachments", validateRequest(attachmentValidation.createAttachmentSchema), attachmentController.createAttachment);
-router.get("/:cardId/attachments/:id", validateRequest(attachmentValidation.getAttachmentSchema), attachmentController.getAttachment);
+router.post(
+  "/",
+  validateRequest({ body: CreateAttachmentInputSchema }),
+  attachmentController.createAttachment
+);
+
+router.get(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  attachmentController.getAttachment
+);
+
 router.patch(
-  "/:cardId/attachments/:id",
-  validateRequest(attachmentValidation.updateAttachmentSchema),
+  "/:id",
+  validateRequest({ params: IdParamSchema, body: UpdateAttachmentSchema }),
   attachmentController.updateAttachment
 );
-router.delete("/:cardId/attachments/:id", validateRequest(attachmentValidation.deleteAttachmentSchema), attachmentController.deleteAttachment);
+
+router.delete(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  attachmentController.deleteAttachment
+);
 
 export default router;

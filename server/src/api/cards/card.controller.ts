@@ -11,7 +11,7 @@ import type {
   LabelDto,
   CardWatcherDto,
   AttachmentDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import {
   mapCardToDto,
   mapChecklistToDto,

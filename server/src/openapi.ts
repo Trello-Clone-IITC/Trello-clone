@@ -1,4 +1,4 @@
-import * as schemas from "@ronmordo/types";
+import * as schemas from "@ronmordo/contracts";
 import { createDocument } from "zod-openapi";
 import { z, ZodType } from "zod";
 

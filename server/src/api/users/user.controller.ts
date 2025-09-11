@@ -1,8 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { UserDto } from "@ronmordo/types";
+import type { UserDto, WorkspaceDto } from "@ronmordo/contracts";
 import { userService } from "./user.service.js";
+import workspaceService from "../workspaces/workspace.service.js";
 
 const getMe = async (
   req: Request,
@@ -11,7 +12,6 @@ const getMe = async (
 ) => {
   try {
     const { userId } = getAuth(req);
-    // const userId = "user_32NBmRKkpRhHjJYCl8ev7hQV8PW"; // Uncomment to test.
 
     // Since we are protected by validation middleware we can assume safely that userId does exists on req object.
     const user = await userService.getMe(userId!);
@@ -22,4 +22,21 @@ const getMe = async (
   }
 };
 
-export const usersController = { getMe };
+const getAllWorkspaces = async (
+  req: Request,
+  res: Response<ApiResponse<WorkspaceDto[]>>,
+  next: NextFunction
+) => {
+  try {
+    const userId = await userService.getUserIdByRequest(req);
+    const workspaces = await workspaceService.getWorkspacesByUser(userId);
+    return res.status(200).json({
+      success: true,
+      data: workspaces,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const usersController = { getMe, getAllWorkspaces };

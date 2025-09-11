@@ -1,5 +1,9 @@
 import { Prisma, type Checklist, type ChecklistItem } from "@prisma/client";
-import { ChecklistDtoSchema, type ChecklistDto, type ChecklistItemDto } from "@ronmordo/types";
+import {
+  ChecklistDtoSchema,
+  type ChecklistDto,
+  type ChecklistItemDto,
+} from "@ronmordo/contracts";
 
 export function mapChecklistToDto(cl: Checklist): ChecklistDto {
   return ChecklistDtoSchema.parse({

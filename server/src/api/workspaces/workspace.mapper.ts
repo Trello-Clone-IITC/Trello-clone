@@ -13,7 +13,7 @@ import {
   type CreateWorkspaceInput,
   type WorkspaceDto,
   WorkspaceDtoSchema,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 
 export function mapWorkspaceToDto(ws: Workspace): WorkspaceDto {
   const dto: WorkspaceDto = {

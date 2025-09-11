@@ -15,6 +15,8 @@ import { SsoCallback } from "@/features/auth/components/Sso-callback";
 
 // Dashboard pages
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+
+// Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
 
 ///Aiman pages

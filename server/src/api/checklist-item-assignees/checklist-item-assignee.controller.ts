@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import checklistItemAssigneeService from "./checklist-item-assignee.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { ChecklistItemAssigneeDto } from "@ronmordo/types";
+import type { ChecklistItemAssigneeDto } from "@ronmordo/contracts";
 import { mapChecklistItemAssigneeToDto } from "./checklist-item-assignee.mapper.js";
 import { userService } from "../users/user.service.js";
 

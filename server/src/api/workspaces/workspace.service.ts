@@ -3,7 +3,8 @@ import type {
   CreateWorkspaceInput,
   UpdateWorkspaceInput,
   WorkspaceDto,
-} from "@ronmordo/types";
+  WorkspaceMemberDto,
+} from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import {
   type Workspace,
@@ -17,6 +18,7 @@ import {
 } from "./workspace.mapper.js";
 import { AppError } from "../../utils/appError.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
+import { mapWorkspaceRoleDto } from "../workspace-members/workspace-members.mapper.js";
 
 const createWorkspace = async (
   workspaceDto: CreateWorkspaceInput,
@@ -28,10 +30,14 @@ const createWorkspace = async (
     data: {
       ...workspaceData,
       creator: { connect: { id: creatorId } },
+      workspaceMembers: {
+        create: {
+          userId: creatorId,
+          role: "Admin",
+        },
+      },
     },
   });
-
-  await addWorkspaceMember(workspace.id, workspace.createdBy, "Admin");
 
   return mapWorkspaceToDto(workspace);
 };
@@ -70,7 +76,7 @@ const getWorkspaceWithMembers = async (
   };
 };
 
-const getWorkspacesByUser = async (userId: string): Promise<Workspace[]> => {
+const getWorkspacesByUser = async (userId: string): Promise<WorkspaceDto[]> => {
   const workspaces = await prisma.workspace.findMany({
     where: {
       workspaceMembers: {
@@ -84,7 +90,7 @@ const getWorkspacesByUser = async (userId: string): Promise<Workspace[]> => {
     },
   });
 
-  return workspaces;
+  return workspaces.map(mapWorkspaceToDto);
 };
 
 const getWorkspacesByCreator = async (
@@ -133,14 +139,14 @@ const getAllWorkspaces = async (): Promise<Workspace[]> => {
 // Workspace Member Management
 const addWorkspaceMember = async (
   workspaceId: string,
-  userId: string,
-  role: WorkspaceRole = WorkspaceRole.Member
+  newMemberId: string,
+  role: WorkspaceMemberDto["role"]
 ): Promise<WorkspaceMember> => {
   const member = await prisma.workspaceMember.create({
     data: {
       workspaceId,
-      userId,
-      role,
+      userId: newMemberId,
+      role: mapWorkspaceRoleDto(role),
     },
   });
   console.log("member from service", member);
@@ -149,21 +155,34 @@ const addWorkspaceMember = async (
 
 const removeWorkspaceMember = async (
   workspaceId: string,
-  userId: string
-): Promise<boolean> => {
-  try {
-    await prisma.workspaceMember.delete({
+  authUserId: string,
+  memberIdToDelete: string
+) => {
+  const authMember = await prisma.workspaceMember.findUnique({
+    where: {
+      workspaceId_userId: {
+        workspaceId,
+        userId: authUserId,
+      },
+    },
+  });
+
+  if (!authMember) {
+    throw new AppError("You are not member of this workspace", 403);
+  }
+
+  if (memberIdToDelete === authUserId || authMember.role === "Admin") {
+    return prisma.workspaceMember.delete({
       where: {
         workspaceId_userId: {
           workspaceId,
-          userId,
+          userId: memberIdToDelete,
         },
       },
     });
-    return true;
-  } catch (error) {
-    return false;
   }
+
+  throw new AppError("You are not authorized to remove this member", 403);
 };
 
 const updateWorkspaceMemberRole = async (

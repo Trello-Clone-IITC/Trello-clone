@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listService from "./list.service.js";
-import type { CardDto, ListDto, ListWatcherDto } from "@ronmordo/types";
+import type { CardDto, ListDto, ListWatcherDto } from "@ronmordo/contracts";
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { userService } from "../users/user.service.js";

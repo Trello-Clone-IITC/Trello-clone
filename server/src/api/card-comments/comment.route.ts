@@ -2,32 +2,32 @@ import { Router } from "express";
 import { commentController } from "./comment.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
-  CreateCommentRequestSchema,
-  UpdateCommentRequestSchema,
-  GetByIdRequestSchema,
-} from "@ronmordo/types";
+  CreateCommentInputSchema,
+  IdParamSchema,
+  UpdateCommentSchema,
+} from "@ronmordo/contracts";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Card-specific comment routes
 router.post(
-  "/:id/comments",
-  validateRequest(CreateCommentRequestSchema),
+  "/",
+  validateRequest({ body: CreateCommentInputSchema }),
   commentController.createComment
 );
 router.get(
-  "/:cardId/comments/:id",
-  validateRequest(GetByIdRequestSchema),
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
   commentController.getComment
 );
 router.patch(
-  "/:cardId/comments/:id",
-  validateRequest(UpdateCommentRequestSchema),
+  "/:id",
+  validateRequest({ params: IdParamSchema, body: UpdateCommentSchema }),
   commentController.updateComment
 );
 router.delete(
-  "/:cardId/comments/:id",
-  validateRequest(GetByIdRequestSchema),
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
   commentController.deleteComment
 );
 

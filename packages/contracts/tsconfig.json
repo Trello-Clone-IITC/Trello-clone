@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "declaration": true,
     "outDir": "dist",
-    "skipLibCheck": true,
-    "strict": true
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "module": "esnext",
+    "target": "esnext",
+    "strict": true,
+    "skipLibCheck": true
   },
   "include": ["src"]
 }

@@ -10,7 +10,7 @@ import type {
   LabelDto,
   ActivityLogDto,
   BoardFullDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import { mapBoardToDto, mapFullBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";

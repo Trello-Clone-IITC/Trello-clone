@@ -1,31 +1,49 @@
 import { Router } from "express";
 import boardController from "./board.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+// import {
+//   createBoardSchema,
+//   updateBoardSchema,
+//   boardIdSchema,
+// } from "./board.validation.js";
 import {
-  createBoardSchema,
-  updateBoardSchema,
-  boardIdSchema,
-} from "./board.validation.js";
+  CreateBoardInputSchema,
+  IdParamSchema,
+  UpdateBoardSchema,
+} from "@ronmordo/contracts";
+import workspaceController from "../workspaces/workspace.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Board CRUD operations
+
+router.get("/", workspaceController.getWorkspaceBoards);
+
 router.post(
   "/",
-  validateRequest(createBoardSchema),
+  validateRequest({ body: CreateBoardInputSchema }),
   boardController.createBoard
 );
-router.get("/", boardController.getAllBoards); //for aiman dev only
+
+// router.get("/", boardController.getAllBoards); //for aiman dev only
+
 router.get("/user/:userId", boardController.getBoardsByUser); //here untill ron add it to user controller
-router.get("/:id", validateRequest(boardIdSchema), boardController.getBoard);
+
+router.get(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  boardController.getBoard
+);
+
 router.patch(
   "/:id",
-  validateRequest(updateBoardSchema),
+  validateRequest({ params: IdParamSchema, body: UpdateBoardSchema }),
   boardController.updateBoard
 );
+
 router.delete(
   "/:id",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.deleteBoard
 );
 
@@ -34,35 +52,35 @@ router.delete(
 // Board member management
 router.get(
   "/:id/members",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.getBoardMembers
 );
 
 // Board lists management
 router.get(
   "/:id/lists",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.getBoardLists
 );
 
 // Board labels management
 router.get(
   "/:id/labels",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.getBoardLabels
 );
 
 // Board activity logs management
 router.get(
   "/:id/activity-logs",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.getBoardActivityLogs
 );
 
 // Full board view with all nested data
 router.get(
   "/:id/full",
-  validateRequest(boardIdSchema),
+  validateRequest({ params: IdParamSchema }),
   boardController.getFullBoard
 );
 

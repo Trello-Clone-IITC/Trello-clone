@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { AppError } from "../../utils/appError.js";
-import type { CreateLabelInput, UpdateLabelInput } from "@ronmordo/types";
+import type { CreateLabelInput, UpdateLabelInput } from "@ronmordo/contracts";
 import { mapLabelDtoToCreateInput } from "./label.mapper.js";
 
 const prisma = new PrismaClient();

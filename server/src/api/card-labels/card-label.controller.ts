@@ -3,7 +3,7 @@ import cardLabelService from "./card-label.service.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import { userService } from "../users/user.service.js";
 import { mapCardLabelToDto } from "./card-label.mapper.js";
-import type { CardLabelDto } from "@ronmordo/types";
+import type { CardLabelDto } from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
 
 export const cardLabelController = {

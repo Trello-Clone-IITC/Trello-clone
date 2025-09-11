@@ -1,5 +1,5 @@
 import { Prisma, type Attachment } from "@prisma/client";
-import { AttachmentDtoSchema, type AttachmentDto } from "@ronmordo/types";
+import { AttachmentDtoSchema, type AttachmentDto } from "@ronmordo/contracts";
 
 export function mapAttachmentToDto(att: Attachment): AttachmentDto {
   const dto: AttachmentDto = {
@@ -21,7 +21,7 @@ export function mapAttachmentDtoToCreateInput(
   return {
     id: dto.id,
     card: { connect: { id: dto.cardId } },
-    user: dto.userId ? { connect: { id: dto.userId } } : undefined,
+    user: { connect: { id: dto.userId } },
     url: dto.url,
     filename: dto.filename ?? undefined,
     bytes: dto.bytes ? BigInt(dto.bytes) : undefined,

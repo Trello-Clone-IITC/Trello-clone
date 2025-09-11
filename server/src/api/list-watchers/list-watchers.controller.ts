@@ -2,10 +2,11 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listWatchersService from "./list-watchers.service.js";
-import type { ListWatcherDto } from "@ronmordo/types";
+import type { ListWatcherDto } from "@ronmordo/contracts";
 import { mapListWatcherToDto } from "./list-watcher.mapper.js";
 import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { userService } from "../users/user.service.js";
+import { getAuth } from "@clerk/express";
 
 const addListWatcher = async (
   req: Request,
@@ -14,10 +15,9 @@ const addListWatcher = async (
 ) => {
   try {
     const { listId } = req.params;
-    const { userId } = req.body;
-    const authUserId = await userService.getUserIdByRequest(req);
+    const userId = await userService.getUserIdByRequest(req);
 
-    if (!authUserId) {
+    if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
 

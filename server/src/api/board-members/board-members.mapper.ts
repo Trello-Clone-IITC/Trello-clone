@@ -1,5 +1,5 @@
 import { Prisma, type BoardMember, $Enums } from "@prisma/client";
-import { BoardMemberDtoSchema, type BoardMemberDto } from "@ronmordo/types";
+import { BoardMemberDtoSchema, type BoardMemberDto } from "@ronmordo/contracts";
 
 export function mapBoardMemberToDto(member: BoardMember): BoardMemberDto {
   const dto: BoardMemberDto = {

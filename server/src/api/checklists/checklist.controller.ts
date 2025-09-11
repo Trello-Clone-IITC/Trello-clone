@@ -6,7 +6,7 @@ import type {
   ChecklistDto,
   ChecklistItemAssigneeDto,
   ChecklistItemDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import {
   mapChecklistToDto,
   mapChecklistItemToDto,
