@@ -14,7 +14,7 @@ import { X } from "lucide-react";
 import React, { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCreateWorkspace } from "../hooks/useCreateWorkspace";
-import type { WorkspaceType } from "@ronmordo/types";
+import { WorkspaceTypeSchema, type WorkspaceType } from "@ronmordo/types";
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,9 +25,9 @@ export default function CreateWorkspaceModal({
   onClose,
 }: CreateWorkspaceModalProps) {
   const [workspaceName, setWorkspaceName] = useState("");
-  type WorkspaceWithPlaceholder = WorkspaceType | "";
-  const [workspaceType, setWorkspaceType] =
-    useState<WorkspaceWithPlaceholder>("");
+
+  // type WorkspaceWithPlaceholder = WorkspaceType | "";
+  const [workspaceType, setWorkspaceType] = useState<WorkspaceType>();
 
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const { theme } = useTheme();
@@ -58,7 +58,7 @@ export default function CreateWorkspaceModal({
       onOpenChange={(open) => {
         if (!open) {
           setWorkspaceName("");
-          setWorkspaceType("");
+          setWorkspaceType(undefined);
           setWorkspaceDescription("");
           onClose();
         }
@@ -132,8 +132,8 @@ export default function CreateWorkspaceModal({
                 </Label>
                 <Select
                   value={workspaceType}
-                  onValueChange={(value) =>
-                    setWorkspaceType(value as WorkspaceWithPlaceholder)
+                  onValueChange={(value: WorkspaceType) =>
+                    setWorkspaceType(value)
                   }
                 >
                   <SelectTrigger
@@ -153,20 +153,32 @@ export default function CreateWorkspaceModal({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="engineering_it">
+                    <SelectItem value={WorkspaceTypeSchema.enum.engineering_it}>
                       Engineering-IT
                     </SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="human_resources">
+                    <SelectItem value={WorkspaceTypeSchema.enum.marketing}>
+                      Marketing
+                    </SelectItem>
+                    <SelectItem
+                      value={WorkspaceTypeSchema.enum.human_resources}
+                    >
                       Human Resources
                     </SelectItem>
-                    <SelectItem value="sales_crm">Sales CRM</SelectItem>
-                    <SelectItem value="small_business">
+                    <SelectItem value={WorkspaceTypeSchema.enum.sales_crm}>
+                      Sales CRM
+                    </SelectItem>
+                    <SelectItem value={WorkspaceTypeSchema.enum.small_business}>
                       Small Business
                     </SelectItem>
-                    <SelectItem value="operations">Operations</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value={WorkspaceTypeSchema.enum.operations}>
+                      Operations
+                    </SelectItem>
+                    <SelectItem value={WorkspaceTypeSchema.enum.education}>
+                      Education
+                    </SelectItem>
+                    <SelectItem value={WorkspaceTypeSchema.enum.other}>
+                      Other
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

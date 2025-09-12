@@ -58,7 +58,7 @@ export default function Navbar() {
         {/* Feedback Button - Hidden on mobile */}
         <Button
           size="icon"
-          className={`h-8 w-8 relative bg-transparent cursor-pointer ${
+          className={`h-8 w-8 relative bg-transparent shadow-none cursor-pointer ${
             isLight
               ? "text-[#505258] hover:bg-[#dddedd]"
               : "text-[#a9abaf] hover:bg-[#37373a]"
@@ -76,7 +76,7 @@ export default function Navbar() {
         {/* Notifications */}
         <Button
           size="icon"
-          className={`h-8 w-8 relative bg-transparent cursor-pointer ${
+          className={`h-8 w-8 relative bg-transparent shadow-none cursor-pointer ${
             isLight
               ? "text-[#505258] hover:bg-[#dddedd]"
               : "text-[#a9abaf] hover:bg-[#37373a]"
@@ -95,7 +95,7 @@ export default function Navbar() {
         {/* Help - Hidden on mobile */}
         <Button
           size="icon"
-          className={`h-8 w-8 bg-transparent relative cursor-pointer ${
+          className={`h-8 w-8 bg-transparent relative shadow-none cursor-pointer ${
             isLight
               ? "text-[#505258] hover:bg-[#dddedd]"
               : "text-[#a9abaf] hover:bg-[#37373a]"
