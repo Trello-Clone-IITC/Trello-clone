@@ -30,13 +30,15 @@ export default function CreateButton() {
         }`}
       >
         <ul className="p-3">
-          <li>
+          <li className="min-w-full -mx-4 rounded-none">
             <DropdownMenuItem
-              className={`flex flex-col items-start  p-2 rounded cursor-pointer ${
-                isLight ? "hover:bg-[#f0f1f2]" : "hover:bg-[#37383b]"
+              className={`flex flex-col w-full items-start  p-2 rounded-none cursor-pointer ${
+                isLight
+                  ? "hover:bg-[#f0f1f2] focus-visible:bg-[#f0f1f2]"
+                  : "hover:bg-[#37383b] focus-visible:bg-[#37383b]"
               }`}
             >
-              <span className="flex items-center justify-start  w-full">
+              <span className={"flex items-center justify-start  w-full "}>
                 <span className="px-1">
                   <svg width="16" height="16" viewBox="0 0 24 24" className="">
                     <path
@@ -57,10 +59,12 @@ export default function CreateButton() {
               </div>
             </DropdownMenuItem>
           </li>
-          <li>
+          <li className="min-w-full -mx-4 ">
             <DropdownMenuItem
-              className={`flex flex-col items-start  p-2 rounded cursor-pointer ${
-                isLight ? "hover:bg-[#f0f1f2]" : "hover:bg-[#37383b]"
+              className={`flex flex-col items-start  p-2 rounded-none cursor-pointer ${
+                isLight
+                  ? "hover:bg-[#f0f1f2] focus-visible:bg-[#f0f1f2]"
+                  : "hover:bg-[#37383b] focus-visible:bg-[#37383b]"
               }`}
             >
               <span className="flex items-start justify-start w-full">

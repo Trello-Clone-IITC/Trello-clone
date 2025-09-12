@@ -48,7 +48,7 @@ export default function Logo() {
           />
         </svg>
         <p
-          className={`ml-1.5 font-[500] lg:text-sm md:text-[0px] ${
+          className={`ml-1.5 font-[500] xl:text-sm text-[0px] ${
             isLight ? "text-[#172b4d]" : "text-white"
           }`}
         >

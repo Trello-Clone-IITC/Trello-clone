@@ -131,7 +131,7 @@
   overflow-y: auto !important;
 }
 
-.scrollbar {
+.dark .scrollbar {
   scrollbar-width: 15px;
   scrollbar-color: #484d64 #252835;
 }

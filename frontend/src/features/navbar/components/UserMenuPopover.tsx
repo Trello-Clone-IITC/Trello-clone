@@ -50,7 +50,7 @@ import { useUpdateUserTheme } from "@/features/auth/hooks/useUpdateUserTheme";
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import CreateWorkspaceModal from "@/features/dashboard/components/CreateWorkspaceModal";
-
+import type { Theme } from "@ronmordo/types";
 export default function UserMenuPopover() {
   const signOut = useSignOut();
   const { data: user } = useMe();
@@ -60,7 +60,7 @@ export default function UserMenuPopover() {
   const [isCreateWorkspaceModalOpen, setIsCreateWorkspaceModalOpen] =
     useState(false);
 
-  const handleThemeChange = async (newTheme: "light" | "dark" | "system") => {
+  const handleThemeChange = async (newTheme: Theme) => {
     setTheme(newTheme);
     try {
       await updateUserTheme(newTheme);
