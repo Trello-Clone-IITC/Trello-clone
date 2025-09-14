@@ -2,10 +2,11 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listService from "./list.service.js";
-import type { ListDto, ListWatcherDto } from "@ronmordo/types";
+import type { CardDto, ListDto, ListWatcherDto } from "@ronmordo/types";
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { userService } from "../users/user.service.js";
+import { mapCardToDto } from "../cards/card.mapper.js";
 
 const createList = async (
   req: Request,
@@ -29,7 +30,7 @@ const createList = async (
     if (error instanceof AppError) {
       return next(error);
     }
-    next(new AppError("Failed to create list", 500));
+    next(error);
   }
 };
 
@@ -223,6 +224,34 @@ const getListWatchers = async (
     next(new AppError("Failed to get list watchers", 500));
   }
 };
+// Get all cards for a list
+const getCardsByList = async (
+  req: Request,
+  res: Response<ApiResponse<CardDto[]>>,
+  next: NextFunction
+) => {
+  try {
+    const { listId } = req.params;
+    // const userId = req.user?.id;
+    const userId = req.body.userId;
+
+    if (!userId) {
+      return next(new AppError("User not authenticated", 401));
+    }
+
+    const cards = await listService.getCardsByList(listId, userId);
+    const cardsDtoArr: CardDto[] = cards.map((card) => mapCardToDto(card));
+
+    res.status(200).json({
+      success: true,
+      data: cardsDtoArr,
+    });
+  } catch (error) {
+    console.log("Failed to get cards by list", error);
+
+    next(new AppError("Failed to get cards by list", 500));
+  }
+};
 
 export default {
   createList,
@@ -233,4 +262,5 @@ export default {
   archiveList,
   subscribeToList,
   getListWatchers,
+  getCardsByList,
 };

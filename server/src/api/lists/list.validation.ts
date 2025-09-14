@@ -38,7 +38,6 @@ export const listIdSchema = z.object({
   }),
 });
 
-
 export const updateListPositionSchema = z.object({
   params: z.object({
     listId: z.string().uuid("Invalid list ID"),
@@ -66,10 +65,15 @@ export const subscribeToListSchema = z.object({
   }),
 });
 
-
 export const getListWatchersSchema = z.object({
   params: z.object({
     listId: z.string().uuid("Invalid list ID"),
   }),
 });
 
+// Get cards by list validation schema
+export const getCardsByListSchema = z.object({
+  params: z.object({
+    listId: z.string().uuid("Invalid list ID"),
+  }),
+});

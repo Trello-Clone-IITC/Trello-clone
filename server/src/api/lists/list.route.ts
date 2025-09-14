@@ -9,17 +9,28 @@ import {
   archiveListSchema,
   subscribeToListSchema,
   getListWatchersSchema,
+  getCardsByListSchema,
 } from "./list.validation.js";
 
 const router = Router();
 
 // List CRUD operations
-router.post("/board/:boardId", validateRequest(createListSchema), listController.createList);
+router.post(
+  "/board/:boardId",
+  validateRequest(createListSchema),
+  listController.createList
+);
 router.get("/:listId", validateRequest(listIdSchema), listController.getList);
-router.patch("/:listId", validateRequest(updateListSchema), listController.updateList);
-router.delete("/:listId", validateRequest(listIdSchema), listController.deleteList);
-
-
+router.patch(
+  "/:listId",
+  validateRequest(updateListSchema),
+  listController.updateList
+);
+router.delete(
+  "/:listId",
+  validateRequest(listIdSchema),
+  listController.deleteList
+);
 
 // List specific operations
 router.patch(
@@ -27,7 +38,11 @@ router.patch(
   validateRequest(updateListPositionSchema),
   listController.updateListPosition
 );
-router.patch("/:listId/archive", validateRequest(archiveListSchema), listController.archiveList);
+router.patch(
+  "/:listId/archive",
+  validateRequest(archiveListSchema),
+  listController.archiveList
+);
 router.patch(
   "/:listId/subscribe",
   validateRequest(subscribeToListSchema),
@@ -39,6 +54,12 @@ router.get(
   "/:listId/watchers",
   validateRequest(getListWatchersSchema),
   listController.getListWatchers
+);
+
+router.get(
+  "/:listId/cards",
+  validateRequest(getCardsByListSchema),
+  listController.getCardsByList
 );
 
 export default router;

@@ -9,8 +9,9 @@ import type {
   ListDto,
   LabelDto,
   ActivityLogDto,
+  BoardFullDto,
 } from "@ronmordo/types";
-import { mapBoardToDto } from "./board.mapper.js";
+import { mapBoardToDto, mapFullBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
@@ -256,6 +257,35 @@ const getBoardActivityLogs = async (
   }
 };
 
+const getFullBoard = async (
+  req: Request,
+  res: Response<ApiResponse<BoardFullDto>>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const fullBoard = await boardService.getFullBoard(id);
+
+    if (!fullBoard) {
+      return next(new AppError("Board not found", 404));
+    }
+
+    const fullBoardDto: BoardFullDto = mapFullBoardToDto(fullBoard);
+
+    res.status(200).json({
+      success: true,
+      data: fullBoardDto,
+    });
+  } catch (error) {
+    console.error("Error in getFullBoard controller:", error);
+    if (error instanceof AppError) {
+      return next(error);
+    }
+    next(new AppError("Failed to get full board data", 500));
+  }
+};
+
 export default {
   createBoard,
   getBoard,
@@ -267,4 +297,5 @@ export default {
   getBoardLists,
   getBoardLabels,
   getBoardActivityLogs,
+  getFullBoard,
 };

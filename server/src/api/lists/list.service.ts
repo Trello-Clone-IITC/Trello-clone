@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prismaClient.js";
 import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import { AppError } from "../../utils/appError.js";
 
 const createList = async (
   boardId: string,
@@ -12,20 +13,20 @@ const createList = async (
   }
 ): Promise<List> => {
   // Get the next position if not provided
-  let position = listData.position;
-  if (position === undefined) {
-    const lastList = await prisma.list.findFirst({
-      where: { boardId },
-      orderBy: { position: "desc" },
-    });
-    position = lastList ? Number(lastList.position) + 1000 : 1000;
-  }
+  // let position = listData.position;
+  const lastList = await prisma.list.findFirst({
+    where: { boardId },
+    orderBy: { position: "desc" },
+  });
+  const newPosition = lastList
+    ? lastList.position.toNumber() + 1
+    : listData.position ?? 1;
 
   const list = await prisma.list.create({
     data: {
       boardId,
       name: listData.name,
-      position: new Decimal(position),
+      position: new Decimal(newPosition),
       isArchived: listData.isArchived ?? false,
       subscribed: listData.subscribed ?? false,
     },
@@ -50,7 +51,6 @@ const getListById = async (id: string): Promise<List | null> => {
   });
   return list;
 };
-
 
 const getAllListsByBoard = async (boardId: string): Promise<List[]> => {
   const lists = await prisma.list.findMany({
@@ -222,7 +222,6 @@ const searchLists = async (
 
 // List Watcher Management
 
-
 const getListWatchers = async (listId: string) => {
   const watchers = await prisma.listWatcher.findMany({
     where: { listId },
@@ -239,11 +238,14 @@ const getListWatchers = async (listId: string) => {
     orderBy: { createdAt: "asc" },
   });
   console.log("watchers", watchers);
-  
+
   return watchers;
 };
 
-const isUserWatchingList = async (listId: string, userId: string): Promise<boolean> => {
+const isUserWatchingList = async (
+  listId: string,
+  userId: string
+): Promise<boolean> => {
   const watcher = await prisma.listWatcher.findUnique({
     where: {
       listId_userId: {
@@ -253,6 +255,61 @@ const isUserWatchingList = async (listId: string, userId: string): Promise<boole
     },
   });
   return !!watcher;
+};
+
+const getCardsByList = async (listId: string, userId: string) => {
+  // Verify user has access to the list
+  const list = await prisma.list.findFirst({
+    where: { id: listId },
+    include: {
+      board: {
+        include: {
+          boardMembers: {
+            where: { userId: userId },
+          },
+        },
+      },
+    },
+  });
+
+  if (!list) {
+    throw new AppError("List not found", 404);
+  }
+
+  if (list.board.boardMembers.length === 0) {
+    throw new AppError("Access denied", 403);
+  }
+
+  const cards = await prisma.card.findMany({
+    where: {
+      listId: listId,
+      isArchived: false,
+    },
+    include: {
+      assignees: {
+        include: {
+          user: true,
+        },
+      },
+      cardLabels: {
+        include: {
+          label: true,
+        },
+      },
+      checklists: {
+        include: {
+          items: {
+            where: { isCompleted: true },
+          },
+        },
+      },
+      comments: true,
+      attachments: true,
+    },
+    orderBy: { position: "asc" },
+  });
+
+  return cards;
 };
 
 export default {
@@ -269,4 +326,5 @@ export default {
   searchLists,
   getListWatchers,
   isUserWatchingList,
+  getCardsByList,
 };
