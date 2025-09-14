@@ -23,10 +23,12 @@ export function DashboardLayout() {
 
         {/* Main content area */}
         <main
-          className="flex-1 overflow-y-auto px-12 pb-14 scrollbar"
-          style={{ backgroundColor: getMainBackgroundColor() }}
+          className="overflow-y-auto scrollbar pt-0 px-12 pb-14 flex-1 basis-[calc(-320px + 100vw)]"
+          style={{
+            backgroundColor: getMainBackgroundColor(),
+          }}
         >
-          <div className="p-0 h-full mt-[40px] mx-[49.5px] mb-0">
+          <div className="max-w-[914px] p-0 h-full mt-[2.5rem] mx-auto mb-0">
             {<Outlet />}
           </div>
         </main>
