@@ -1,5 +1,20 @@
-import type { Card, Checklist, Comment, CardAssignee, CardWatcher, Attachment } from "@prisma/client";
-import { type CardDto, CardDtoSchema, type ChecklistDto, type CommentDto, type CardAssigneeDto, type CardWatcherDto, type AttachmentDto } from "@ronmordo/types";
+import type {
+  Card,
+  Checklist,
+  Comment,
+  CardAssignee,
+  CardWatcher,
+  Attachment,
+} from "@prisma/client";
+import {
+  type CardDto,
+  CardDtoSchema,
+  type ChecklistDto,
+  type CommentDto,
+  type CardAssigneeDto,
+  type CardWatcherDto,
+  type AttachmentDto,
+} from "@ronmordo/types";
 import { Prisma } from "@prisma/client";
 
 export function mapCardToDto(card: Card): CardDto {
@@ -58,14 +73,18 @@ export function mapCommentToDto(comment: Comment): CommentDto {
   };
 }
 
-export function mapCardAssigneeToDto(assignee: CardAssignee & { user?: any }): CardAssigneeDto {
+export function mapCardAssigneeToDto(
+  assignee: CardAssignee & { user?: any }
+): CardAssigneeDto {
   return {
     cardId: assignee.cardId,
     userId: assignee.userId,
   };
 }
 
-export function mapCardWatcherToDto(watcher: CardWatcher & { user?: any }): CardWatcherDto {
+export function mapCardWatcherToDto(
+  watcher: CardWatcher & { user?: any }
+): CardWatcherDto {
   return {
     cardId: watcher.cardId,
     userId: watcher.userId,

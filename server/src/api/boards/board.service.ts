@@ -171,6 +171,99 @@ const searchBoards = async (
   return boards;
 };
 
+const getFullBoard = async (boardId: string) => {
+  try {
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+      include: {
+        // Board creator
+        creator: {
+          select: {
+            id: true,
+            clerkId: true,
+            email: true,
+            username: true,
+            fullName: true,
+            avatarUrl: true,
+            theme: true,
+            emailNotification: true,
+            pushNotification: true,
+            createdAt: true,
+            bio: true,
+          },
+        },
+        // Workspace details
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            visibility: true,
+            premium: true,
+            createdAt: true,
+            updatedAt: true,
+            type: true,
+            createdBy: true,
+            workspaceMembershipRestrictions: true,
+            publicBoardCreation: true,
+            workspaceBoardCreation: true,
+            privateBoardCreation: true,
+            publicBoardDeletion: true,
+            workspaceBoardDeletion: true,
+            privateBoardDeletion: true,
+            allowGuestSharing: true,
+            allowSlackIntegration: true,
+          },
+        },
+        // Board labels
+        labels: {
+          orderBy: { name: "asc" },
+        },
+        // Board members with user details
+        boardMembers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                clerkId: true,
+                email: true,
+                username: true,
+                fullName: true,
+                avatarUrl: true,
+                theme: true,
+                emailNotification: true,
+                pushNotification: true,
+                createdAt: true,
+                bio: true,
+              },
+            },
+          },
+        },
+        // Lists with watchers and cards
+        lists: {
+          where: { isArchived: false },
+          orderBy: { position: "asc" },
+          include: {
+            // List watchers
+            watchers: {
+              orderBy: { createdAt: "asc" },
+            },
+            // Cards (basic data only)
+            cards: {
+              where: { isArchived: false },
+              orderBy: { position: "asc" },
+            },
+          },
+        },
+      },
+    });
+    return board;
+  } catch (error) {
+    console.error("Error in getFullBoard service:", error);
+    throw error;
+  }
+};
+
 export default {
   createBoard,
   getBoardById,
@@ -186,4 +279,5 @@ export default {
   updateListPosition,
   archiveList,
   searchBoards,
+  getFullBoard,
 };

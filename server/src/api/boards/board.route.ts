@@ -15,8 +15,8 @@ router.post(
   validateRequest(createBoardSchema),
   boardController.createBoard
 );
-router.get("/", boardController.getAllBoards);//for aiman dev only
-router.get("/user/:userId", boardController.getBoardsByUser);//here untill ron add it to user controller
+router.get("/", boardController.getAllBoards); //for aiman dev only
+router.get("/user/:userId", boardController.getBoardsByUser); //here untill ron add it to user controller
 router.get("/:id", validateRequest(boardIdSchema), boardController.getBoard);
 router.patch(
   "/:id",
@@ -59,7 +59,11 @@ router.get(
   boardController.getBoardActivityLogs
 );
 
-
-
+// Full board view with all nested data
+router.get(
+  "/:id/full",
+  validateRequest(boardIdSchema),
+  boardController.getFullBoard
+);
 
 export default router;

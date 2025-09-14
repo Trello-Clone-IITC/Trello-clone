@@ -17,6 +17,11 @@ import { SsoCallback } from "@/features/auth/components/Sso-callback";
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import ApiDocs from "@/features/docs/ApiDocs";
 
+///Aiman pages
+import { AimanPlayground } from "@/features/auth/pages/AimanPlayground";
+import Board from "@/features/board/components/Board";
+import { BoardExample } from "@/features/board/components/BoardExample";
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -30,6 +35,8 @@ export const AppRouter = () => {
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/docs" element={<ApiDocs />} />
+        <Route path="/board-example" element={<BoardExample />} />
+        <Route path="/board" element={<Board />} />
       </Route>
 
       {/* Protected dashboard area */}
@@ -37,6 +44,9 @@ export const AppRouter = () => {
         <Route path="on-boarding" element={<OnBoardingPage />} />
         <Route element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
+          {/* Aiman playing */}
+          <Route path="aiman" element={<AimanPlayground />} />
+          <Route path="board" element={<Board />} />
           {/* add more nested dashboard routes here */}
         </Route>
       </Route>
