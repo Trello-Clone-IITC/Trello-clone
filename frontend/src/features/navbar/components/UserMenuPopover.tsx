@@ -212,7 +212,7 @@ export default function UserMenuPopover() {
                   className={`flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3 bg-transparent ${
                     isLight
                       ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                      : "text-[#abadb0] hover:bg-[#323940]"
+                      : "text-[#abadb0] hover:bg-[#37383b]"
                   }`}
                 >
                   <span className="text-sm font-normal w-full">
@@ -223,7 +223,7 @@ export default function UserMenuPopover() {
                   className={`flex items-center justify-between px-5 py-1.5 cursor-pointer -mx-3 bg-transparent ${
                     isLight
                       ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                      : "text-[#abadb0] hover:bg-[#323940]"
+                      : "text-[#abadb0] hover:bg-[#37383b]"
                   }`}
                 >
                   <span className="text-sm font-normal">Manage account</span>
@@ -260,7 +260,7 @@ export default function UserMenuPopover() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isLight
                     ? "#dcdfe4"
-                    : "#323940";
+                    : "#37383b";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
@@ -281,7 +281,7 @@ export default function UserMenuPopover() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isLight
                     ? "#dcdfe4"
-                    : "#323940";
+                    : "#37383b";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
@@ -300,7 +300,7 @@ export default function UserMenuPopover() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isLight
                     ? "#dcdfe4"
-                    : "#323940";
+                    : "#37383b";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
@@ -319,7 +319,7 @@ export default function UserMenuPopover() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isLight
                     ? "#dcdfe4"
-                    : "#323940";
+                    : "#37383b";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
@@ -357,7 +357,7 @@ export default function UserMenuPopover() {
                         if (!isThemeOpen) {
                           e.currentTarget.style.backgroundColor = isLight
                             ? "#dcdfe4"
-                            : "#323940";
+                            : "#37383b";
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -539,7 +539,7 @@ export default function UserMenuPopover() {
               className={`w-[calc(100% + 24px)] px-5 py-1.5 cursor-pointer flex items-center gap-2 -mx-3 ${
                 isLight
                   ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                  : "text-[#abadb0] hover:bg-[#323940]"
+                  : "text-[#abadb0] hover:bg-[#37383b]"
               }  `}
               onClick={() => setIsCreateWorkspaceModalOpen(true)}
             >
@@ -564,7 +564,7 @@ export default function UserMenuPopover() {
                 className={`w-[calc(100% + 24px)] px-5 py-1.5 ${
                   isLight
                     ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                    : "text-[#abadb0] hover:bg-[#323940]"
+                    : "text-[#abadb0] hover:bg-[#37383b]"
                 } cursor-pointer`}
               >
                 <span className="text-sm font-normal">Help</span>
@@ -573,7 +573,7 @@ export default function UserMenuPopover() {
                 className={`w-[calc(100% + 24px)] px-5 py-1.5 ${
                   isLight
                     ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                    : "text-[#abadb0] hover:bg-[#323940]"
+                    : "text-[#abadb0] hover:bg-[#37383b]"
                 } cursor-pointer`}
               >
                 <span className="text-sm font-normal">Shortcuts</span>
@@ -594,7 +594,7 @@ export default function UserMenuPopover() {
               className={`w-[calc(100% + 24px)] -mx-3 px-5 py-1.5 ${
                 isLight
                   ? "text-[#172b4d] hover:bg-[#dcdfe4]"
-                  : "text-[#abadb0] hover:bg-[#323940]"
+                  : "text-[#abadb0] hover:bg-[#37383b]"
               } cursor-pointer`}
             >
               <span className="text-sm font-normal">Log Out</span>
