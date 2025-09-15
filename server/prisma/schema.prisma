@@ -231,7 +231,7 @@ model Board {
   activityLogs   ActivityLog[]
   boardMembers   BoardMember[]
   creator        User                     @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
-  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onUpdate: NoAction)
+  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onUpdate: NoAction, onDelete: Cascade)
   labels         Label[]
   lists          List[]
 

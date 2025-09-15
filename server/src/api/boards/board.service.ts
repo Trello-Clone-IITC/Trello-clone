@@ -1,3 +1,4 @@
+import type { CreateBoardInput, UpdateBoardInput } from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import {
   type Board,
@@ -5,12 +6,22 @@ import {
   type Label,
   type ActivityLog,
 } from "@prisma/client";
+import {
+  mapBoardDtoToCreateBoardInput,
+  mapBoardDtoToUpdateBoardInput,
+} from "./board.mapper.js";
 
 const createBoard = async (
-  boardData: Omit<Board, "id" | "createdAt" | "updatedAt">
+  boardData: CreateBoardInput,
+  userId: string
 ): Promise<Board> => {
   const board = await prisma.board.create({
-    data: boardData,
+    data: {
+      ...mapBoardDtoToCreateBoardInput(boardData),
+      creator: {
+        connect: { id: userId },
+      },
+    },
   });
   return board;
 };
@@ -49,24 +60,11 @@ const getBoardsByUser = async (userId: string): Promise<Board[]> => {
 
 const updateBoard = async (
   id: string,
-  updates: Partial<
-    Pick<
-      Board,
-      | "name"
-      | "description"
-      | "background"
-      | "allowCovers"
-      | "showComplete"
-      | "visibility"
-      | "memberManage"
-      | "commenting"
-      | "lastActivityAt"
-    >
-  >
+  updates: UpdateBoardInput
 ): Promise<Board | null> => {
   const board = await prisma.board.update({
     where: { id },
-    data: updates,
+    data: mapBoardDtoToUpdateBoardInput(updates),
   });
   return board;
 };
@@ -102,6 +100,8 @@ const getBoardLists = async (boardId: string): Promise<List[]> => {
     where: { boardId },
     orderBy: { position: "asc" },
   });
+  console.log(lists);
+
   return lists;
 };
 

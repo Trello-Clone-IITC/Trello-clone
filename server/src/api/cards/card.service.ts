@@ -2,17 +2,18 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
+import type { CreateCardInput } from "@ronmordo/contracts";
 
-interface CreateCardData {
-  listId: string;
-  title: string;
-  description?: string;
-  dueDate?: Date;
-  startDate?: Date;
-  position: number;
-  coverImageUrl?: string;
-  createdBy: string;
-}
+// interface CreateCardData {
+//   listId: string;
+//   title: string;
+//   description?: string;
+//   dueDate?: Date;
+//   startDate?: Date;
+//   position: number;
+//   coverImageUrl?: string;
+//   createdBy: string;
+// }
 
 interface UpdateCardData {
   title?: string;
@@ -28,18 +29,28 @@ interface SearchFilters {
 }
 
 // Create a new card
-const createCard = async (data: CreateCardData) => {
+const createCard = async (
+  data: CreateCardInput,
+  listId: string,
+  userId: string
+) => {
   // Verify list exists and user has access
   const list = await prisma.list.findFirst({
-    where: { id: data.listId },
-    include: {
+    where: {
+      id: listId,
       board: {
-        include: {
-          boardMembers: {
-            where: { userId: data.createdBy },
+        boardMembers: {
+          some: {
+            userId,
           },
         },
       },
+    },
+    include: {
+      cards: {
+        orderBy: { position: "asc" },
+      },
+      board: true,
     },
   });
 
@@ -47,15 +58,8 @@ const createCard = async (data: CreateCardData) => {
     throw new AppError("List not found", 404);
   }
 
-  if (list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
   // Get the highest position in the list and add 1000
-  const lastCard = await prisma.card.findFirst({
-    where: { listId: data.listId },
-    orderBy: { position: "desc" },
-  });
+  const lastCard = list.cards.pop();
 
   const newPosition = lastCard
     ? lastCard.position.toNumber() + 1000
@@ -63,14 +67,10 @@ const createCard = async (data: CreateCardData) => {
 
   const card = await prisma.card.create({
     data: {
-      listId: data.listId,
+      listId,
       title: data.title,
-      description: data.description,
-      dueDate: data.dueDate,
-      startDate: data.startDate,
       position: new Decimal(newPosition),
-      coverImageUrl: data.coverImageUrl,
-      createdBy: data.createdBy,
+      createdBy: userId,
     },
     include: {
       list: {
@@ -110,7 +110,7 @@ const createCard = async (data: CreateCardData) => {
     data: {
       boardId: list.board.id,
       cardId: card.id,
-      userId: data.createdBy,
+      userId,
       action: "Created",
       payload: { title: card.title },
     },
@@ -770,18 +770,19 @@ const toggleSubscription = async (cardId: string, userId: string) => {
 const getCardChecklists = async (cardId: string, userId: string) => {
   // Verify user has access to the card
   const card = await prisma.card.findFirst({
-    where: { id: cardId },
-    include: {
+    where: {
+      id: cardId,
       list: {
-        include: {
-          board: {
-            include: {
-              boardMembers: {
-                where: { userId: userId },
-              },
-            },
+        board: {
+          boardMembers: {
+            some: { userId },
           },
         },
+      },
+    },
+    include: {
+      checklists: {
+        orderBy: { position: "asc" },
       },
     },
   });
@@ -790,16 +791,7 @@ const getCardChecklists = async (cardId: string, userId: string) => {
     throw new AppError("Card not found", 404);
   }
 
-  if (card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
-  const checklists = await prisma.checklist.findMany({
-    where: { cardId },
-    orderBy: { position: "asc" },
-  });
-
-  return checklists;
+  return card.checklists;
 };
 
 // Get card comments
@@ -960,19 +952,24 @@ const getCardWatchers = async (cardId: string, userId: string) => {
 // Get card attachments
 const getCardAttachments = async (cardId: string, userId: string) => {
   // Verify user has access to the card
+  console.log(userId);
+
   const card = await prisma.card.findFirst({
-    where: { id: cardId },
-    include: {
+    where: {
+      id: cardId,
       list: {
-        include: {
-          board: {
-            include: {
-              boardMembers: {
-                where: { userId: userId },
-              },
+        board: {
+          boardMembers: {
+            some: {
+              userId,
             },
           },
         },
+      },
+    },
+    include: {
+      attachments: {
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -981,14 +978,7 @@ const getCardAttachments = async (cardId: string, userId: string) => {
     throw new AppError("Card not found", 404);
   }
 
-  if (card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
-  const attachments = await prisma.attachment.findMany({
-    where: { cardId },
-    orderBy: { createdAt: "desc" },
-  });
+  const attachments = card.attachments;
 
   return attachments;
 };

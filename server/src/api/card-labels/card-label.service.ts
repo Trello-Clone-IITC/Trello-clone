@@ -62,43 +62,35 @@ const removeLabelFromCard = async (
   labelId: string,
   userId: string
 ) => {
-  try {
-    // Verify user has access to the card's board
-    const card = await verifyCardAccess(cardId, userId);
+  // Verify user has access to the card's board
+  const card = await verifyCardAccess(cardId, userId);
 
-    // Check if label is assigned to the card first
-    const cardLabel = await checkLabelAssignedToCard(cardId, labelId);
+  // Check if label is assigned to the card first
+  const cardLabel = await checkLabelAssignedToCard(cardId, labelId);
 
-    if (!cardLabel) {
-      throw new AppError("Label is not assigned to this card", 404);
-    }
-
-    // Get label details for activity logging (optional)
-    const label = await verifyLabelExists(labelId);
-
-    // Remove the label from the card
-    await deleteCardLabel(cardId, labelId);
-
-    // Log activity
-    await logActivity(
-      card.list.boardId,
-      cardId,
-      userId,
-      ActivityAction.Unlabeled,
-      {
-        type: "card_label",
-        labelId: labelId,
-        labelName: label.name,
-        labelColor: label.color,
-      }
-    );
-  } catch (error) {
-    console.error("Failed to remove label from card:", error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError("Failed to remove label from card", 500);
+  if (!cardLabel) {
+    throw new AppError("Label is not assigned to this card", 404);
   }
+
+  // Get label details for activity logging (optional)
+  const label = await verifyLabelExists(labelId);
+
+  // Remove the label from the card
+  await deleteCardLabel(cardId, labelId);
+
+  // Log activity
+  await logActivity(
+    card.list.boardId,
+    cardId,
+    userId,
+    ActivityAction.Unlabeled,
+    {
+      type: "card_label",
+      labelId: labelId,
+      labelName: label.name,
+      labelColor: label.color,
+    }
+  );
 };
 
 //-----------------------------------helper functions-----------------------------------
@@ -193,18 +185,14 @@ const createCardLabel = async (cardId: string, labelId: string) => {
 
 // Helper function to delete card label
 const deleteCardLabel = async (cardId: string, labelId: string) => {
-  try {
-    await prisma.cardLabel.delete({
-      where: {
-        cardId_labelId: {
-          cardId: cardId,
-          labelId: labelId,
-        },
+  await prisma.cardLabel.delete({
+    where: {
+      cardId_labelId: {
+        cardId: cardId,
+        labelId: labelId,
       },
-    });
-  } catch (error) {
-    throw new AppError("Failed to delete card label", 500);
-  }
+    },
+  });
 };
 
 // Helper function to log activity

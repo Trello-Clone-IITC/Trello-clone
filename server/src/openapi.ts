@@ -106,6 +106,26 @@ export const openApiDoc = createDocument({
         },
       },
     },
+    "/users/me/workspaces": {
+      get: {
+        tags: ["Users"],
+        summary: "Get all workspaces for current user",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "User workspaces",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.WorkspaceDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
 
     // ==========================
     // WORKSPACE ENDPOINTS
@@ -114,6 +134,7 @@ export const openApiDoc = createDocument({
       get: {
         tags: ["Workspaces"],
         summary: "Get all workspaces",
+        security: [{ bearerAuth: [] }],
         responses: {
           "200": {
             description: "List of workspaces",
@@ -131,6 +152,7 @@ export const openApiDoc = createDocument({
       post: {
         tags: ["Workspaces"],
         summary: "Create a new workspace",
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -155,17 +177,13 @@ export const openApiDoc = createDocument({
       get: {
         tags: ["Workspaces"],
         summary: "Search workspaces",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "q",
             in: "query",
             required: true,
             schema: { type: "string" },
-          },
-          {
-            name: "limit",
-            in: "query",
-            schema: { type: "integer", minimum: 1, maximum: 100 },
           },
         ],
         responses: {
@@ -183,64 +201,11 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/workspaces/user/{userId}": {
-      get: {
-        tags: ["Workspaces"],
-        summary: "Get workspaces by user",
-        parameters: [
-          {
-            name: "userId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "User workspaces",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.WorkspaceDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/workspaces/creator/{userId}": {
-      get: {
-        tags: ["Workspaces"],
-        summary: "Get workspaces created by user",
-        parameters: [
-          {
-            name: "userId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Created workspaces",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.WorkspaceDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
     "/workspaces/{id}": {
       get: {
         tags: ["Workspaces"],
         summary: "Get workspace by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -263,6 +228,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Workspaces"],
         summary: "Update workspace",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -275,7 +241,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.WorkspaceDtoSchema as any,
+              schema: zodSchemas.UpdateWorkspaceSchema as any,
             },
           },
         },
@@ -293,6 +259,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Workspaces"],
         summary: "Delete workspace",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -310,6 +277,7 @@ export const openApiDoc = createDocument({
       get: {
         tags: ["Workspaces"],
         summary: "Get workspace boards",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -332,11 +300,43 @@ export const openApiDoc = createDocument({
           },
         },
       },
+      post: {
+        tags: ["Workspaces"],
+        summary: "Create a new board in workspace",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: zodSchemas.CreateBoardInputSchema as any,
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Board created",
+            content: {
+              "application/json": {
+                schema: zodSchemas.BoardDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
     },
     "/workspaces/{id}/members": {
       get: {
         tags: ["Workspaces"],
         summary: "Get workspace members",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -362,6 +362,7 @@ export const openApiDoc = createDocument({
       post: {
         tags: ["Workspaces"],
         summary: "Add workspace member",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -374,14 +375,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  userId: { type: "string", format: "uuid" },
-                  role: zodSchemas.WorkspaceRoleSchema as any,
-                },
-                required: ["userId", "role"],
-              },
+              schema: zodSchemas.CreateWorkspaceMemberInputSchema as any,
             },
           },
         },
@@ -401,6 +395,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Workspaces"],
         summary: "Update workspace member role",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -419,13 +414,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  role: zodSchemas.WorkspaceRoleSchema as any,
-                },
-                required: ["role"],
-              },
+              schema: zodSchemas.UpdateWorkspaceMemberSchema as any,
             },
           },
         },
@@ -443,6 +432,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Workspaces"],
         summary: "Remove workspace member",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -466,78 +456,11 @@ export const openApiDoc = createDocument({
     // ==========================
     // BOARD ENDPOINTS
     // ==========================
-    "/boards": {
-      get: {
-        tags: ["Boards"],
-        summary: "Get all boards",
-        responses: {
-          "200": {
-            description: "List of boards",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.BoardDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-      post: {
-        tags: ["Boards"],
-        summary: "Create a new board",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: zodSchemas.CreateBoardInputSchema as any,
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "Board created",
-            content: {
-              "application/json": {
-                schema: zodSchemas.BoardDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/boards/user/{userId}": {
-      get: {
-        tags: ["Boards"],
-        summary: "Get boards by user",
-        parameters: [
-          {
-            name: "userId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "User boards",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.BoardDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
     "/boards/{id}": {
       get: {
         tags: ["Boards"],
         summary: "Get board by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -551,7 +474,7 @@ export const openApiDoc = createDocument({
             description: "Board details",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardFullDtoSchema as any,
+                schema: zodSchemas.BoardDtoSchema as any,
               },
             },
           },
@@ -560,6 +483,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Boards"],
         summary: "Update board",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -572,7 +496,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.BoardDtoSchema as any,
+              schema: zodSchemas.UpdateBoardSchema as any,
             },
           },
         },
@@ -590,6 +514,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Boards"],
         summary: "Delete board",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -603,10 +528,36 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/boards/{id}/members": {
+    "/boards/{id}/full": {
+      get: {
+        tags: ["Boards"],
+        summary: "Get full board with all nested data",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Full board details",
+            content: {
+              "application/json": {
+                schema: zodSchemas.BoardFullDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
+    },
+    "/boards/{id}/boardMembers": {
       get: {
         tags: ["Boards"],
         summary: "Get board members",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -632,6 +583,7 @@ export const openApiDoc = createDocument({
       post: {
         tags: ["Boards"],
         summary: "Add board member",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -644,14 +596,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  userId: { type: "string", format: "uuid" },
-                  role: zodSchemas.BoardRoleSchema as any,
-                },
-                required: ["userId", "role"],
-              },
+              schema: zodSchemas.CreateBoardMemberInputSchema as any,
             },
           },
         },
@@ -667,10 +612,11 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/boards/{id}/members/{userId}": {
+    "/boards/{id}/boardMembers/{userId}": {
       patch: {
         tags: ["Boards"],
         summary: "Update board member role",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -689,13 +635,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  role: zodSchemas.BoardRoleSchema as any,
-                },
-                required: ["role"],
-              },
+              schema: zodSchemas.UpdateBoardMemberSchema as any,
             },
           },
         },
@@ -713,6 +653,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Boards"],
         summary: "Remove board member",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -736,6 +677,7 @@ export const openApiDoc = createDocument({
       get: {
         tags: ["Boards"],
         summary: "Get board lists",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -758,72 +700,13 @@ export const openApiDoc = createDocument({
           },
         },
       },
-    },
-    "/boards/{id}/labels": {
-      get: {
-        tags: ["Boards"],
-        summary: "Get board labels",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Board labels",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.LabelDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/boards/{id}/activity-logs": {
-      get: {
-        tags: ["Boards"],
-        summary: "Get board activity logs",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Board activity logs",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.ActivityLogDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-
-    // ==========================
-    // LIST ENDPOINTS
-    // ==========================
-    "/lists/board/{boardId}": {
       post: {
-        tags: ["Lists"],
-        summary: "Create a new list",
+        tags: ["Boards"],
+        summary: "Create a new list in board",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: "boardId",
+            name: "id",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -849,10 +732,74 @@ export const openApiDoc = createDocument({
         },
       },
     },
+    "/boards/{id}/labels": {
+      get: {
+        tags: ["Boards"],
+        summary: "Get board labels",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Board labels",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.LabelDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Boards"],
+        summary: "Create a new label in board",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: zodSchemas.CreateLabelInputSchema as any,
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Label created",
+            content: {
+              "application/json": {
+                schema: zodSchemas.LabelDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
+    },
+
+    // ==========================
+    // LIST ENDPOINTS
+    // ==========================
     "/lists/{listId}": {
       get: {
         tags: ["Lists"],
         summary: "Get list by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -875,6 +822,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Lists"],
         summary: "Update list",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -887,7 +835,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.ListDtoSchema as any,
+              schema: zodSchemas.UpdateListSchema as any,
             },
           },
         },
@@ -905,6 +853,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Lists"],
         summary: "Delete list",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -918,124 +867,11 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/lists/{listId}/position": {
-      patch: {
-        tags: ["Lists"],
-        summary: "Update list position",
-        parameters: [
-          {
-            name: "listId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  position: { type: "number", minimum: 0 },
-                },
-                required: ["position"],
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "List position updated",
-            content: {
-              "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/lists/{listId}/archive": {
-      patch: {
-        tags: ["Lists"],
-        summary: "Archive/unarchive list",
-        parameters: [
-          {
-            name: "listId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  isArchived: { type: "boolean" },
-                },
-                required: ["isArchived"],
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "List archive status updated",
-            content: {
-              "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/lists/{listId}/subscribe": {
-      patch: {
-        tags: ["Lists"],
-        summary: "Subscribe/unsubscribe to list",
-        parameters: [
-          {
-            name: "listId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  subscribed: { type: "boolean" },
-                },
-                required: ["subscribed"],
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "List subscription updated",
-            content: {
-              "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
     "/lists/{listId}/watchers": {
       get: {
         tags: ["Lists"],
         summary: "Get list watchers",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -1061,6 +897,7 @@ export const openApiDoc = createDocument({
       post: {
         tags: ["Lists"],
         summary: "Add list watcher",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -1069,20 +906,6 @@ export const openApiDoc = createDocument({
             schema: { type: "string", format: "uuid" },
           },
         ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  userId: { type: "string", format: "uuid" },
-                },
-                required: ["userId"],
-              },
-            },
-          },
-        },
         responses: {
           "201": {
             description: "Watcher added",
@@ -1099,6 +922,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Lists"],
         summary: "Remove list watcher",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "listId",
@@ -1118,14 +942,45 @@ export const openApiDoc = createDocument({
         },
       },
     },
-
-    // ==========================
-    // CARD ENDPOINTS
-    // ==========================
-    "/cards": {
+    "/lists/{listId}/cards": {
+      get: {
+        tags: ["Lists"],
+        summary: "Get cards in list",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "listId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "List cards",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.CardDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
       post: {
-        tags: ["Cards"],
-        summary: "Create a new card",
+        tags: ["Lists"],
+        summary: "Create a new card in list",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "listId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
         requestBody: {
           required: true,
           content: {
@@ -1146,47 +1001,15 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/search": {
-      get: {
-        tags: ["Cards"],
-        summary: "Search cards",
-        parameters: [
-          {
-            name: "query",
-            in: "query",
-            required: true,
-            schema: { type: "string" },
-          },
-          {
-            name: "boardId",
-            in: "query",
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "listId",
-            in: "query",
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Search results",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CardDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+
+    // ==========================
+    // CARD ENDPOINTS
+    // ==========================
     "/cards/{id}": {
       get: {
         tags: ["Cards"],
         summary: "Get card by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -1200,7 +1023,7 @@ export const openApiDoc = createDocument({
             description: "Card details",
             content: {
               "application/json": {
-                schema: zodSchemas.CardFullDtoSchema as any,
+                schema: zodSchemas.CardDtoSchema as any,
               },
             },
           },
@@ -1209,6 +1032,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Cards"],
         summary: "Update card",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -1221,7 +1045,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CardDtoSchema as any,
+              schema: zodSchemas.UpdateCardSchema as any,
             },
           },
         },
@@ -1239,6 +1063,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Cards"],
         summary: "Delete card",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -1252,154 +1077,14 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{id}/move": {
-      patch: {
-        tags: ["Cards"],
-        summary: "Move card to different list",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  listId: { type: "string", format: "uuid" },
-                  position: { type: "number", minimum: 0 },
-                },
-                required: ["listId", "position"],
-              },
-            },
-          },
-        },
-        responses: {
-          "200": {
-            description: "Card moved",
-            content: {
-              "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/archive": {
-      patch: {
-        tags: ["Cards"],
-        summary: "Archive/unarchive card",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card archive status updated",
-            content: {
-              "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/subscribe": {
-      patch: {
-        tags: ["Cards"],
-        summary: "Subscribe/unsubscribe to card",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card subscription updated",
-            content: {
-              "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/activity": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card activity logs",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card activity logs",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.ActivityLogDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/attachments": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card attachments",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card attachments",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.AttachmentDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/checklists": {
+    "/cards/{cardId}/checklists": {
       get: {
         tags: ["Cards"],
         summary: "Get card checklists",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: "id",
+            name: "cardId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -1419,123 +1104,10 @@ export const openApiDoc = createDocument({
           },
         },
       },
-    },
-    "/cards/{id}/comments": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card comments",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card comments",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CommentDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/assignees": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card assignees",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card assignees",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CardAssigneeDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/labels": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card labels",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card labels",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CardLabelDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{id}/watchers": {
-      get: {
-        tags: ["Cards"],
-        summary: "Get card watchers",
-        parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card watchers",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CardWatcherDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-
-    // ==========================
-    // CHECKLIST ENDPOINTS
-    // ==========================
-    "/cards/{cardId}/checklists": {
       post: {
-        tags: ["Checklists"],
-        summary: "Create a new checklist",
+        tags: ["Cards"],
+        summary: "Create a new checklist in card",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1564,10 +1136,216 @@ export const openApiDoc = createDocument({
         },
       },
     },
+    "/cards/{cardId}/labels": {
+      get: {
+        tags: ["Cards"],
+        summary: "Get card labels",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "cardId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Card labels",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.CardLabelDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Cards"],
+        summary: "Add label to card",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "cardId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: zodSchemas.CreateCardLabelInputSchema as any,
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Label added to card",
+            content: {
+              "application/json": {
+                schema: zodSchemas.CardLabelDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
+    },
+    "/cards/{cardId}/labels/{labelId}": {
+      delete: {
+        tags: ["Cards"],
+        summary: "Remove label from card",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "cardId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "labelId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "204": { description: "Label removed from card" },
+        },
+      },
+    },
+    "/cards/{id}/comments": {
+      get: {
+        tags: ["Cards"],
+        summary: "Get card comments",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Card comments",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.CommentDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Cards"],
+        summary: "Create a new comment on card",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: zodSchemas.CreateCommentInputSchema as any,
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Comment created",
+            content: {
+              "application/json": {
+                schema: zodSchemas.CommentDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
+    },
+    "/cards/{cardId}/attachments": {
+      get: {
+        tags: ["Cards"],
+        summary: "Get card attachments",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "cardId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Card attachments",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: zodSchemas.AttachmentDtoSchema as any,
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Cards"],
+        summary: "Create a new attachment on card",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "cardId",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: zodSchemas.CreateAttachmentInputSchema as any,
+            },
+          },
+        },
+        responses: {
+          "201": {
+            description: "Attachment created",
+            content: {
+              "application/json": {
+                schema: zodSchemas.AttachmentDtoSchema as any,
+              },
+            },
+          },
+        },
+      },
+    },
+
+    // ==========================
+    // CHECKLIST ENDPOINTS
+    // ==========================
     "/cards/{cardId}/checklists/{id}": {
       get: {
         tags: ["Checklists"],
         summary: "Get checklist by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1596,6 +1374,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Checklists"],
         summary: "Update checklist",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1614,7 +1393,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.ChecklistDtoSchema as any,
+              schema: zodSchemas.UpdateChecklistSchema as any,
             },
           },
         },
@@ -1632,6 +1411,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Checklists"],
         summary: "Delete checklist",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1651,10 +1431,11 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{cardId}/checklists/{id}/items": {
+    "/cards/{cardId}/checklists/{checklistId}/checklistItems": {
       get: {
         tags: ["Checklists"],
         summary: "Get checklist items",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1663,7 +1444,7 @@ export const openApiDoc = createDocument({
             schema: { type: "string", format: "uuid" },
           },
           {
-            name: "id",
+            name: "checklistId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -1683,15 +1464,10 @@ export const openApiDoc = createDocument({
           },
         },
       },
-    },
-
-    // ==========================
-    // CHECKLIST ITEM ENDPOINTS
-    // ==========================
-    "/cards/{cardId}/checklists/{checklistId}/items": {
       post: {
-        tags: ["Checklist Items"],
+        tags: ["Checklists"],
         summary: "Create a new checklist item",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1726,10 +1502,15 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{cardId}/checklists/{checklistId}/items/{id}": {
+
+    // ==========================
+    // CHECKLIST ITEM ENDPOINTS
+    // ==========================
+    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{id}": {
       get: {
         tags: ["Checklist Items"],
         summary: "Get checklist item by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1764,6 +1545,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Checklist Items"],
         summary: "Update checklist item",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1788,7 +1570,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.ChecklistItemDtoSchema as any,
+              schema: zodSchemas.UpdateChecklistItemSchema as any,
             },
           },
         },
@@ -1806,6 +1588,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Checklist Items"],
         summary: "Delete checklist item",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -1831,140 +1614,102 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{cardId}/checklists/{checklistId}/items/{id}/toggle": {
-      patch: {
-        tags: ["Checklist Items"],
-        summary: "Toggle checklist item completion",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "checklistId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Checklist item toggled",
-            content: {
-              "application/json": {
-                schema: zodSchemas.ChecklistItemDtoSchema as any,
+    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees":
+      {
+        get: {
+          tags: ["Checklist Item Assignees"],
+          summary: "Get checklist item assignees",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: "cardId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+            {
+              name: "checklistId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+            {
+              name: "itemId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Checklist item assignees",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
+                  },
+                },
               },
             },
           },
         },
-      },
-    },
-    "/cards/{cardId}/checklists/{checklistId}/items/{id}/assignees": {
-      get: {
-        tags: ["Checklist Items"],
-        summary: "Get checklist item assignees",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
+        post: {
+          tags: ["Checklist Item Assignees"],
+          summary: "Assign user to checklist item",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: "cardId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+            {
+              name: "checklistId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+            {
+              name: "itemId",
+              in: "path",
+              required: true,
+              schema: { type: "string", format: "uuid" },
+            },
+          ],
+          requestBody: {
             required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "checklistId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Checklist item assignees",
             content: {
               "application/json": {
                 schema: {
-                  type: "array",
-                  items: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
+                  type: "object",
+                  properties: {
+                    userId: { type: "string", format: "uuid" },
+                  },
+                  required: ["userId"],
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "User assigned to item",
+              content: {
+                "application/json": {
+                  schema: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
                 },
               },
             },
           },
         },
       },
-    },
-
-    // ==========================
-    // CHECKLIST ITEM ASSIGNEE ENDPOINTS
-    // ==========================
-    "/cards/{cardId}/checklists/{checklistId}/items/{itemId}/assignees": {
-      post: {
-        tags: ["Checklist Item Assignees"],
-        summary: "Assign user to checklist item",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "checklistId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
-            name: "itemId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  userId: { type: "string", format: "uuid" },
-                },
-                required: ["userId"],
-              },
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "User assigned to item",
-            content: {
-              "application/json": {
-                schema: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/cards/{cardId}/checklists/{checklistId}/items/{itemId}/assignees/{userId}":
+    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees/{userId}":
       {
         delete: {
           tags: ["Checklist Item Assignees"],
           summary: "Remove user from checklist item",
+          security: [{ bearerAuth: [] }],
           parameters: [
             {
               name: "cardId",
@@ -1997,54 +1742,11 @@ export const openApiDoc = createDocument({
         },
       },
 
-    // ==========================
-    // ATTACHMENT ENDPOINTS
-    // ==========================
-    "/cards/{cardId}/attachments": {
-      post: {
-        tags: ["Attachments"],
-        summary: "Create a new attachment",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  url: { type: "string", format: "uri" },
-                  filename: { type: "string", maxLength: 255 },
-                  bytes: { type: "number", minimum: 0 },
-                  meta: { type: "object" },
-                },
-                required: ["url"],
-              },
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "Attachment created",
-            content: {
-              "application/json": {
-                schema: zodSchemas.AttachmentDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
     "/cards/{cardId}/attachments/{id}": {
       get: {
         tags: ["Attachments"],
         summary: "Get attachment by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -2073,6 +1775,7 @@ export const openApiDoc = createDocument({
       patch: {
         tags: ["Attachments"],
         summary: "Update attachment",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -2091,15 +1794,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  url: { type: "string", format: "uri" },
-                  filename: { type: "string", maxLength: 255 },
-                  bytes: { type: "number", minimum: 0 },
-                  meta: { type: "object" },
-                },
-              },
+              schema: zodSchemas.UpdateAttachmentSchema as any,
             },
           },
         },
@@ -2117,6 +1812,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Attachments"],
         summary: "Delete attachment",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "cardId",
@@ -2140,41 +1836,11 @@ export const openApiDoc = createDocument({
     // ==========================
     // COMMENT ENDPOINTS
     // ==========================
-    "/comments": {
-      post: {
-        tags: ["Comments"],
-        summary: "Create a new comment",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  cardId: { type: "string", format: "uuid" },
-                  text: { type: "string", minLength: 1, maxLength: 1000 },
-                },
-                required: ["cardId", "text"],
-              },
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "Comment created",
-            content: {
-              "application/json": {
-                schema: zodSchemas.CommentDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
     "/comments/{id}": {
       get: {
         tags: ["Comments"],
         summary: "Get comment by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -2194,9 +1860,10 @@ export const openApiDoc = createDocument({
           },
         },
       },
-      put: {
+      patch: {
         tags: ["Comments"],
         summary: "Update comment",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -2209,13 +1876,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  text: { type: "string", minLength: 1, maxLength: 1000 },
-                },
-                required: ["text"],
-              },
+              schema: zodSchemas.UpdateCommentSchema as any,
             },
           },
         },
@@ -2233,6 +1894,7 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Comments"],
         summary: "Delete comment",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
@@ -2246,76 +1908,18 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/comments/card/{cardId}": {
-      get: {
-        tags: ["Comments"],
-        summary: "Get comments for a card",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Card comments",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.CommentDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
 
     // ==========================
     // LABEL ENDPOINTS
     // ==========================
-    "/labels": {
-      post: {
-        tags: ["Labels"],
-        summary: "Create a new label",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  boardId: { type: "string", format: "uuid" },
-                  name: { type: "string", minLength: 1, maxLength: 50 },
-                  color: { type: "string", pattern: "^#[0-9A-F]{6}$" },
-                },
-                required: ["boardId", "name", "color"],
-              },
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "Label created",
-            content: {
-              "application/json": {
-                schema: zodSchemas.LabelDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/labels/{id}": {
+    "/labels/{labelId}": {
       get: {
         tags: ["Labels"],
         summary: "Get label by ID",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: "id",
+            name: "labelId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -2332,12 +1936,13 @@ export const openApiDoc = createDocument({
           },
         },
       },
-      put: {
+      patch: {
         tags: ["Labels"],
         summary: "Update label",
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: "id",
+            name: "labelId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -2347,13 +1952,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  name: { type: "string", minLength: 1, maxLength: 50 },
-                  color: { type: "string", pattern: "^#[0-9A-F]{6}$" },
-                },
-              },
+              schema: zodSchemas.UpdateLabelSchema as any,
             },
           },
         },
@@ -2371,88 +1970,8 @@ export const openApiDoc = createDocument({
       delete: {
         tags: ["Labels"],
         summary: "Delete label",
+        security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "204": { description: "Label deleted" },
-        },
-      },
-    },
-    "/labels/board/{boardId}": {
-      get: {
-        tags: ["Labels"],
-        summary: "Get labels for a board",
-        parameters: [
-          {
-            name: "boardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Board labels",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "array",
-                  items: zodSchemas.LabelDtoSchema as any,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/labels/card": {
-      post: {
-        tags: ["Labels"],
-        summary: "Add label to card",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  cardId: { type: "string", format: "uuid" },
-                  labelId: { type: "string", format: "uuid" },
-                },
-                required: ["cardId", "labelId"],
-              },
-            },
-          },
-        },
-        responses: {
-          "201": {
-            description: "Label added to card",
-            content: {
-              "application/json": {
-                schema: zodSchemas.CardLabelDtoSchema as any,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/labels/card/{cardId}/{labelId}": {
-      delete: {
-        tags: ["Labels"],
-        summary: "Remove label from card",
-        parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "labelId",
             in: "path",
@@ -2461,7 +1980,7 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Label removed from card" },
+          "204": { description: "Label deleted" },
         },
       },
     },

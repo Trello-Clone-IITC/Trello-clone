@@ -2,19 +2,23 @@ import { Router } from "express";
 import listController from "./list.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
-  BoardIdParamSchema,
   CreateListInputSchema,
   // ListDtoSchema,
   ListIdParamSchema,
   UpdateListSchema,
 } from "@ronmordo/contracts";
+import watchersRouter from "../list-watchers/list-watchers.route.js";
+import cardsRouter from "../cards/card.route.js";
+import boardController from "../boards/board.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // List CRUD operations
+router.get("/", boardController.getBoardLists);
+
 router.post(
-  "/board/:boardId",
-  validateRequest({ params: BoardIdParamSchema, body: CreateListInputSchema }),
+  "/",
+  validateRequest({ body: CreateListInputSchema }),
   listController.createList
 );
 router.get(
@@ -61,16 +65,17 @@ router.delete(
 // );
 
 // -------------------------nested routes-------------------------
-router.get(
+
+router.use(
   "/:listId/watchers",
   validateRequest({ params: ListIdParamSchema }),
-  listController.getListWatchers
+  watchersRouter
 );
 
-router.get(
+router.use(
   "/:listId/cards",
   validateRequest({ params: ListIdParamSchema }),
-  listController.getCardsByList
+  cardsRouter
 );
 
 export default router;

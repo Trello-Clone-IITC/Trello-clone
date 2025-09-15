@@ -1,22 +1,28 @@
 import { prisma } from "../../lib/prismaClient.js";
-import { type BoardMember, BoardRole } from "@prisma/client";
+import type { BoardMember } from "@prisma/client";
+import type { BoardRole } from "@ronmordo/contracts";
+import {
+  mapBoardMemberDtoToCreateInput,
+  mapBoardRoleDto,
+} from "./board-members.mapper.js";
 
 const addBoardMember = async (
   boardId: string,
   userId: string,
-  role: BoardRole = "Member"
+  role: BoardRole = "member"
 ): Promise<BoardMember> => {
   const member = await prisma.boardMember.create({
     data: {
-      boardId,
-      userId,
-      role,
+      ...mapBoardMemberDtoToCreateInput({ userId, role }, boardId),
     },
   });
   return member;
 };
 
-const removeBoardMember = async (boardId: string, userId: string): Promise<boolean> => {
+const removeBoardMember = async (
+  boardId: string,
+  userId: string
+): Promise<boolean> => {
   try {
     await prisma.boardMember.delete({
       where: {
@@ -45,7 +51,7 @@ const updateBoardMemberRole = async (
           userId,
         },
       },
-      data: { role: newRole },
+      data: { role: mapBoardRoleDto(newRole) },
     });
     return member;
   } catch {

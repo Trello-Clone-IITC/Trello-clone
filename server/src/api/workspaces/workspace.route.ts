@@ -8,7 +8,6 @@ import {
   CreateWorkspaceInputSchema,
   IdParamSchema,
   UpdateWorkspaceSchema,
-  UserIdParamSchema,
 } from "@ronmordo/contracts";
 
 const router = Router();

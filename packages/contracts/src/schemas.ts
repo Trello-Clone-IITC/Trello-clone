@@ -526,6 +526,7 @@ export const CreateBoardInputSchema = BoardDtoSchema.pick({
   name: true,
   background: true,
   visibility: true,
+  workspaceId: true,
 });
 
 export const CreateListInputSchema = ListDtoSchema.pick({

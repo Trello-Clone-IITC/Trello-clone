@@ -1,5 +1,9 @@
 import { Prisma, type BoardMember, $Enums } from "@prisma/client";
-import { BoardMemberDtoSchema, type BoardMemberDto } from "@ronmordo/contracts";
+import {
+  BoardMemberDtoSchema,
+  type BoardMemberDto,
+  type CreateBoardMemberInput,
+} from "@ronmordo/contracts";
 
 export function mapBoardMemberToDto(member: BoardMember): BoardMemberDto {
   const dto: BoardMemberDto = {
@@ -16,17 +20,17 @@ function mapBoardRole(r: $Enums.BoardRole): BoardMemberDto["role"] {
 }
 
 export function mapBoardMemberDtoToCreateInput(
-  dto: BoardMemberDto
+  dto: CreateBoardMemberInput,
+  boardId: string
 ): Prisma.BoardMemberCreateInput {
   return {
-    board: { connect: { id: dto.boardId } },
+    board: { connect: { id: boardId } },
     user: { connect: { id: dto.userId } },
     role: mapBoardRoleDto(dto.role),
-    joinedAt: new Date(dto.joinedAt),
   };
 }
 
-function mapBoardRoleDto(v: BoardMemberDto["role"]): $Enums.BoardRole {
+export function mapBoardRoleDto(v: BoardMemberDto["role"]): $Enums.BoardRole {
   switch (v) {
     case "admin":
       return "Admin";

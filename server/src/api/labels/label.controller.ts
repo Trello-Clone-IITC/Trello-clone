@@ -14,13 +14,11 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
       const { id: boardId } = req.params;
-      const label = await labelService.createLabel({
-        boardId,
-        ...req.body,
-        userId,
-      });
+      const label = await labelService.createLabel(req.body, boardId, userId);
       const labelDto: LabelDto = mapLabelToDto(label);
 
       res.status(201).json({
@@ -67,15 +65,12 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const { id, labelId } = req.params;
+      const { labelId } = req.params;
       const updateData = req.body;
-      const userId = await userService.getUserIdByRequest(req);
-      const label = await labelService.updateLabel(
-        id,
-        updateData,
-        labelId,
-        userId
-      );
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
+      const label = await labelService.updateLabel(updateData, labelId, userId);
       const labelDto: LabelDto = mapLabelToDto(label);
 
       res.status(200).json({
@@ -98,9 +93,11 @@ export const labelController = {
     next: NextFunction
   ) => {
     try {
-      const { id, labelId } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
-      await labelService.deleteLabel(id, labelId, userId);
+      const { labelId } = req.params;
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
+      await labelService.deleteLabel(labelId, userId);
 
       res.status(200).json({
         success: true,

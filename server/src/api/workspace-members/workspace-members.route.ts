@@ -22,14 +22,6 @@ router.post(
   workspaceController.addWorkspaceMember
 );
 
-router.delete(
-  "/:userId",
-  validateRequest({
-    params: UserIdParamSchema,
-  }),
-  workspaceController.removeWorkspaceMember
-);
-
 router.patch(
   "/:userId",
   validateRequest({
@@ -37,6 +29,14 @@ router.patch(
     body: UpdateWorkspaceMemberSchema,
   }),
   workspaceController.updateWorkspaceMemberRole
+);
+
+router.delete(
+  "/:userId",
+  validateRequest({
+    params: UserIdParamSchema,
+  }),
+  workspaceController.removeWorkspaceMember
 );
 
 export default router;

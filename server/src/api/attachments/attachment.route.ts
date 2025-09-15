@@ -7,20 +7,23 @@ import {
   IdParamSchema,
   UpdateAttachmentSchema,
 } from "@ronmordo/contracts";
+import { cardController } from "../cards/card.controller.js";
 
 const router = Router({ mergeParams: true });
 
 // Card-specific attachment routes
-router.post(
-  "/",
-  validateRequest({ body: CreateAttachmentInputSchema }),
-  attachmentController.createAttachment
-);
+router.get("/", cardController.getCardAttachments);
 
 router.get(
   "/:id",
   validateRequest({ params: IdParamSchema }),
   attachmentController.getAttachment
+);
+
+router.post(
+  "/",
+  validateRequest({ body: CreateAttachmentInputSchema }),
+  attachmentController.createAttachment
 );
 
 router.patch(

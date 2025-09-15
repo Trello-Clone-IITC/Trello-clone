@@ -64,7 +64,8 @@ const getUserIdByClerkId = async (clerkId: string) => {
 
 const getUserIdByRequest = async (req: Request) => {
   let { userId: clerkId } = getAuth(req);
-  if (!clerkId) clerkId = DUMMY_USER_ID; //TODO: remove this on production
+
+  if (!clerkId) return null; // For testing
 
   const userId = await getUserIdByClerkId(clerkId);
 

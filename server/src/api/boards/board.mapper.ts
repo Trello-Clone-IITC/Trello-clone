@@ -3,6 +3,8 @@ import {
   type BoardDto,
   BoardDtoSchema,
   type BoardFullDto,
+  type CreateBoardInput,
+  type UpdateBoardInput,
 } from "@ronmordo/contracts";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
@@ -66,35 +68,53 @@ function mapCommenting(
 
 // --- DTO → Prisma Input ---
 export function mapBoardDtoToCreateBoardInput(
-  dto: BoardDto
+  dto: CreateBoardInput
 ): Prisma.BoardCreateInput {
   const input: any = {
-    id: dto.id,
     name: dto.name,
-    description: dto.description ?? undefined,
     background: dto.background,
-    allowCovers: dto.allowCovers,
-    showComplete: dto.showComplete,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-    lastActivityAt: dto.lastActivityAt
-      ? new Date(dto.lastActivityAt)
-      : undefined,
-
-    workspace: { connect: { id: dto.workspaceId } },
-    creator: { connect: { id: dto.createdBy } },
-
     visibility: mapBoardVisibilityDtoToPrisma(dto.visibility),
-    memberManage: mapMemberManageDtoToPrisma(dto.memberManage),
-    commenting: mapCommentingDtoToPrisma(dto.commenting),
+    workspace: { connect: { id: dto.workspaceId } },
   };
+  return input;
+}
 
-  if (dto.workspaceId) {
+// --- DTO → Prisma Update ---
+export function mapBoardDtoToUpdateBoardInput(
+  dto: Partial<UpdateBoardInput>
+): Prisma.BoardUpdateInput {
+  const input: Prisma.BoardUpdateInput = {};
+
+  if (dto.name !== undefined) {
+    input.name = dto.name;
+  }
+
+  if (dto.background !== undefined) {
+    input.background = dto.background;
+  }
+
+  if (dto.visibility !== undefined) {
+    input.visibility = mapBoardVisibilityDtoToPrisma(dto.visibility);
+  }
+
+  if (dto.workspaceId !== undefined) {
     input.workspace = { connect: { id: dto.workspaceId } };
   }
 
-  if (dto.createdBy) {
+  if (dto.createdBy !== undefined) {
     input.creator = { connect: { id: dto.createdBy } };
+  }
+
+  if (dto.description !== undefined) {
+    input.description = dto.description;
+  }
+
+  if (dto.memberManage !== undefined) {
+    input.memberManage = mapMemberManageDtoToPrisma(dto.memberManage);
+  }
+
+  if (dto.commenting !== undefined) {
+    input.commenting = mapCommentingDtoToPrisma(dto.commenting);
   }
 
   return input;

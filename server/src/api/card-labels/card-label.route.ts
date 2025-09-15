@@ -5,11 +5,16 @@ import { validateRequest } from "../../middlewares/validation.js";
 //   AddLabelToCardRequestSchema,
 //   RemoveLabelFromCardRequestSchema,
 // } from "./card-label.validation.js";
-import { CreateCardLabelInputSchema, IdParamSchema } from "@ronmordo/contracts";
+import {
+  CreateCardLabelInputSchema,
+  LabelIdParamSchema,
+} from "@ronmordo/contracts";
+import { cardController } from "../cards/card.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-// Card-label relationship routes
+router.get("/", cardController.getCardLabels);
+
 router.post(
   "/",
   validateRequest({ body: CreateCardLabelInputSchema }),
@@ -17,8 +22,8 @@ router.post(
 );
 
 router.delete(
-  "/:id",
-  validateRequest({ params: IdParamSchema }),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   cardLabelController.removeLabelFromCard
 );
 

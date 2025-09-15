@@ -5,9 +5,10 @@ import { validateRequest } from "../../middlewares/validation.js";
 //   addListWatcherSchema,
 //   removeListWatcherSchema,
 // } from "./list-watchers.validation.js";
-import { ListIdParamSchema, UserIdParamSchema } from "@ronmordo/contracts";
+import { UserIdParamSchema } from "@ronmordo/contracts";
+import listController from "../lists/list.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // List watcher management
 // Only authenticated users can add themeselves as watchers to a list, no need to pass userId in body since we can get it from the auth token.
@@ -17,16 +18,14 @@ const router = Router();
 //   listWatchersController.addListWatcher
 // );
 
-router.post(
-  "/:listId/watchers",
-  validateRequest({ params: ListIdParamSchema }),
-  listWatchersController.addListWatcher
-);
+router.get("/", listController.getListWatchers);
+
+router.post("/", listWatchersController.addListWatcher);
 
 router.delete(
-  "/:listId/watchers/:userId",
+  "/:userId",
   validateRequest({
-    params: ListIdParamSchema.extend(UserIdParamSchema.shape),
+    params: UserIdParamSchema,
   }),
   listWatchersController.removeListWatcher
 );

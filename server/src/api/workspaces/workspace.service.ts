@@ -6,11 +6,7 @@ import type {
   WorkspaceMemberDto,
 } from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
-import {
-  type Workspace,
-  type WorkspaceMember,
-  WorkspaceRole,
-} from "@prisma/client";
+import { type Workspace, type WorkspaceMember } from "@prisma/client";
 import {
   mapWorkspaceDtoToCreateInput,
   mapWorkspaceDtoToUpdateInput,
@@ -188,24 +184,21 @@ const removeWorkspaceMember = async (
 const updateWorkspaceMemberRole = async (
   workspaceId: string,
   userId: string,
-  newRole: WorkspaceRole
+  newRole: WorkspaceMemberDto["role"]
 ): Promise<WorkspaceMember | null> => {
-  try {
-    const member = await prisma.workspaceMember.update({
-      where: {
-        workspaceId_userId: {
-          workspaceId,
-          userId,
-        },
+  const member = await prisma.workspaceMember.update({
+    where: {
+      workspaceId_userId: {
+        workspaceId,
+        userId,
       },
-      data: {
-        role: newRole,
-      },
-    });
-    return member;
-  } catch (error) {
-    return null;
-  }
+    },
+    data: {
+      role: mapWorkspaceRoleDto(newRole),
+    },
+  });
+
+  return member;
 };
 
 const getWorkspaceMembers = async (

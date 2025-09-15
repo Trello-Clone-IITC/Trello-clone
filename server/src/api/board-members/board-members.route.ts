@@ -11,10 +11,13 @@ import {
   UpdateBoardMemberSchema,
   UserIdParamSchema,
 } from "@ronmordo/contracts";
+import boardController from "../boards/board.controller.js";
 
 const router = Router({ mergeParams: true });
 
 // Board member management
+router.get("/", boardController.getBoardMembers);
+
 router.post(
   "/",
   validateRequest({ body: CreateBoardMemberInputSchema }),

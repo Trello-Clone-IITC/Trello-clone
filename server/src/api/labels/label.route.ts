@@ -9,38 +9,40 @@ import { validateRequest } from "../../middlewares/validation.js";
 // } from "./label.validation.js";
 import {
   CreateLabelInputSchema,
-  IdParamSchema,
   LabelIdParamSchema,
   UpdateLabelSchema,
 } from "@ronmordo/contracts";
+import boardController from "../boards/board.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Label CRUD routes
+router.get("/", boardController.getBoardLabels);
+
 router.post(
-  "/:id/labels",
-  validateRequest({ params: IdParamSchema, body: CreateLabelInputSchema }),
+  "/",
+  validateRequest({ body: CreateLabelInputSchema }),
   labelController.createLabel
 );
 
 router.get(
-  "/:id/labels/:labelId",
-  validateRequest({ params: IdParamSchema.extend(LabelIdParamSchema.shape) }),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   labelController.getLabel
 );
 
 router.patch(
-  "/:id/labels/:labelId",
+  "/:labelId",
   validateRequest({
-    params: IdParamSchema.extend(LabelIdParamSchema.shape),
+    params: LabelIdParamSchema,
     body: UpdateLabelSchema,
   }),
   labelController.updateLabel
 );
 
 router.delete(
-  "/:id/labels/:labelId",
-  validateRequest({ params: IdParamSchema.extend(LabelIdParamSchema.shape) }),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   labelController.deleteLabel
 );
 

@@ -5,23 +5,27 @@ import { mapLabelDtoToCreateInput } from "./label.mapper.js";
 
 const prisma = new PrismaClient();
 
-interface CreateLabelData extends CreateLabelInput {
-  boardId: string;
-  userId: string;
-}
+// interface CreateLabelData extends CreateLabelInput {
+//   boardId: string;
+//   userId: string;
+// }
 
-interface UpdateLabelData extends Partial<UpdateLabelInput> {
-  userId: string;
-}
+// interface UpdateLabelData extends Partial<UpdateLabelInput> {
+//   userId: string;
+// }
 
-const createLabel = async (data: CreateLabelData) => {
+const createLabel = async (
+  data: CreateLabelInput,
+  boardId: string,
+  userId: string
+) => {
   try {
     // Verify user has access to the board
     const board = await prisma.board.findFirst({
-      where: { id: data.boardId },
-      include: {
+      where: {
+        id: boardId,
         boardMembers: {
-          where: { userId: data.userId },
+          some: { userId },
         },
       },
     });
@@ -30,15 +34,11 @@ const createLabel = async (data: CreateLabelData) => {
       throw new AppError("Board not found", 404);
     }
 
-    if (board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
-    }
-
     // Check if label with same name already exists on this board
     if (data.name) {
       const existingLabel = await prisma.label.findFirst({
         where: {
-          boardId: data.boardId,
+          boardId,
           name: data.name,
         },
       });
@@ -53,7 +53,7 @@ const createLabel = async (data: CreateLabelData) => {
 
     const label = await prisma.label.create({
       data: mapLabelDtoToCreateInput({
-        boardId: data.boardId,
+        boardId,
         name: data.name,
         color: data.color,
       }),
@@ -62,8 +62,8 @@ const createLabel = async (data: CreateLabelData) => {
     // Log activity
     await prisma.activityLog.create({
       data: {
-        boardId: data.boardId,
-        userId: data.userId,
+        boardId,
+        userId,
         action: "Created",
         payload: {
           type: "label",
@@ -116,19 +116,18 @@ const getLabelById = async (boardId: string, labelId: string) => {
 };
 
 const updateLabel = async (
-  boardId: string,
-  updateData: UpdateLabelData,
+  updateData: UpdateLabelInput,
   labelId: string,
   userId: string
 ) => {
   try {
     // Verify user has access to the label's board
     const label = await prisma.label.findFirst({
-      where: { id: labelId, boardId },
-      include: {
+      where: {
+        id: labelId,
         board: {
-          include: {
-            boardMembers: true,
+          boardMembers: {
+            some: { userId },
           },
         },
       },
@@ -136,10 +135,6 @@ const updateLabel = async (
 
     if (!label) {
       throw new AppError("Label not found", 404);
-    }
-
-    if (label.board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
     }
 
     // Check if new name conflicts with existing labels on the same board
@@ -206,19 +201,15 @@ const updateLabel = async (
   }
 };
 
-const deleteLabel = async (
-  boardId: string,
-  labelId: string,
-  userId: string
-) => {
+const deleteLabel = async (labelId: string, userId: string) => {
   try {
     // Verify user has access to the label's board
     const label = await prisma.label.findFirst({
-      where: { id: labelId, boardId },
-      include: {
+      where: {
+        id: labelId,
         board: {
-          include: {
-            boardMembers: true,
+          boardMembers: {
+            some: { userId },
           },
         },
       },
@@ -226,10 +217,6 @@ const deleteLabel = async (
 
     if (!label) {
       throw new AppError("Label not found", 404);
-    }
-
-    if (label.board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
     }
 
     // Delete the label (this will cascade delete all card labels)
