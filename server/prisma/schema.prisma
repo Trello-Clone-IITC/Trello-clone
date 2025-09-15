@@ -184,7 +184,7 @@ model Attachment {
   cardId    String   @map("card_id") @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   url       String
-  filename  String?
+  filename  String
   bytes     BigInt?
   meta      Json?
   createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz(6)
@@ -231,7 +231,7 @@ model Board {
   activityLogs   ActivityLog[]
   boardMembers   BoardMember[]
   creator        User                     @relation(fields: [createdBy], references: [id], onUpdate: NoAction)
-  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onUpdate: NoAction)
+  workspace      Workspace                @relation(fields: [workspaceId], references: [id], onUpdate: NoAction, onDelete: Cascade)
   labels         Label[]
   lists          List[]
 

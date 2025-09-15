@@ -50,7 +50,7 @@ import { useUpdateUserTheme } from "@/features/auth/hooks/useUpdateUserTheme";
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import CreateWorkspaceModal from "@/features/dashboard/components/CreateWorkspaceModal";
-import type { Theme } from "@ronmordo/types";
+import type { Theme } from "@ronmordo/contracts";
 export default function UserMenuPopover() {
   const signOut = useSignOut();
   const { data: user } = useMe();

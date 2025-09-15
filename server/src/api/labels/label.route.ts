@@ -1,37 +1,48 @@
 import { Router } from "express";
 import { labelController } from "./label.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+// import {
+//   CreateLabelRequestSchema,
+//   UpdateLabelRequestSchema,
+//   GetLabelByIdRequestSchema,
+//   DeleteLabelRequestSchema,
+// } from "./label.validation.js";
 import {
-  CreateLabelRequestSchema,
-  UpdateLabelRequestSchema,
-  GetLabelByIdRequestSchema,
-  DeleteLabelRequestSchema,
-} from "./label.validation.js";
+  CreateLabelInputSchema,
+  LabelIdParamSchema,
+  UpdateLabelSchema,
+} from "@ronmordo/contracts";
+import boardController from "../boards/board.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Label CRUD routes
+router.get("/", boardController.getBoardLabels);
+
 router.post(
-  "/:id/labels",
-  validateRequest(CreateLabelRequestSchema),
+  "/",
+  validateRequest({ body: CreateLabelInputSchema }),
   labelController.createLabel
 );
 
 router.get(
-  "/:id/labels/:labelId",
-  validateRequest(GetLabelByIdRequestSchema),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   labelController.getLabel
 );
 
 router.patch(
-  "/:id/labels/:labelId",
-  validateRequest(UpdateLabelRequestSchema),
+  "/:labelId",
+  validateRequest({
+    params: LabelIdParamSchema,
+    body: UpdateLabelSchema,
+  }),
   labelController.updateLabel
 );
 
 router.delete(
-  "/:id/labels/:labelId",
-  validateRequest(DeleteLabelRequestSchema),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   labelController.deleteLabel
 );
 

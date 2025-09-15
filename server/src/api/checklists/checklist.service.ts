@@ -1,3 +1,4 @@
+import type { CreateChecklistInput } from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
@@ -30,20 +31,32 @@ interface UpdateChecklistItemData {
 }
 
 // Create a new checklist
-const createChecklist = async (data: CreateChecklistData) => {
+const createChecklist = async (
+  data: CreateChecklistInput,
+  cardId: string,
+  userId: string
+) => {
   // Verify card exists and user has access
   const card = await prisma.card.findFirst({
-    where: { id: data.cardId },
-    include: {
+    where: {
+      id: cardId,
       list: {
-        include: {
-          board: {
-            include: {
-              boardMembers: {
-                where: { userId: data.userId },
-              },
+        board: {
+          boardMembers: {
+            some: {
+              userId,
             },
           },
+        },
+      },
+    },
+    include: {
+      checklists: {
+        orderBy: { position: "asc" },
+      },
+      list: {
+        include: {
+          board: true,
         },
       },
     },
@@ -53,15 +66,8 @@ const createChecklist = async (data: CreateChecklistData) => {
     throw new AppError("Card not found", 404);
   }
 
-  if (card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
   // Get the highest position in the card and add 1000
-  const lastChecklist = await prisma.checklist.findFirst({
-    where: { cardId: data.cardId },
-    orderBy: { position: "desc" },
-  });
+  const lastChecklist = card.checklists.pop();
 
   const newPosition = lastChecklist
     ? lastChecklist.position.toNumber() + 1000
@@ -69,7 +75,7 @@ const createChecklist = async (data: CreateChecklistData) => {
 
   const checklist = await prisma.checklist.create({
     data: {
-      cardId: data.cardId,
+      cardId,
       title: data.title,
       position: new Decimal(newPosition),
     },
@@ -93,8 +99,8 @@ const createChecklist = async (data: CreateChecklistData) => {
   await prisma.activityLog.create({
     data: {
       boardId: card.list.board.id,
-      cardId: data.cardId,
-      userId: data.userId,
+      cardId,
+      userId,
       action: "Updated",
       payload: {
         action: "checklist_created",
@@ -109,23 +115,19 @@ const createChecklist = async (data: CreateChecklistData) => {
 // Get checklist by ID
 const getChecklistById = async (checklistId: string, userId: string) => {
   const checklist = await prisma.checklist.findFirst({
-    where: { id: checklistId },
-    include: {
+    where: {
+      id: checklistId,
       card: {
-        include: {
-          list: {
-            include: {
-              board: {
-                include: {
-                  boardMembers: {
-                    where: { userId: userId },
-                  },
-                },
-              },
+        list: {
+          board: {
+            boardMembers: {
+              some: { userId },
             },
           },
         },
       },
+    },
+    include: {
       items: {
         include: {
           assignees: {
@@ -141,11 +143,6 @@ const getChecklistById = async (checklistId: string, userId: string) => {
 
   if (!checklist) {
     throw new AppError("Checklist not found", 404);
-  }
-
-  // Check if user has access to the board
-  if (checklist.card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
   }
 
   return checklist;
@@ -601,7 +598,11 @@ const toggleChecklistItem = async (itemId: string, userId: string) => {
 };
 
 // Assign user to checklist item
-const assignUserToItem = async (itemId: string, assigneeId: string, userId: string) => {
+const assignUserToItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },
@@ -695,7 +696,11 @@ const assignUserToItem = async (itemId: string, assigneeId: string, userId: stri
 };
 
 // Remove user assignment from checklist item
-const removeUserFromItem = async (itemId: string, assigneeId: string, userId: string) => {
+const removeUserFromItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },

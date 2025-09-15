@@ -1,5 +1,5 @@
 import { Prisma, type CardLabel } from "@prisma/client";
-import { CardLabelDtoSchema, type CardLabelDto } from "@ronmordo/types";
+import { CardLabelDtoSchema, type CardLabelDto } from "@ronmordo/contracts";
 
 export function mapCardLabelToDto(cl: CardLabel): CardLabelDto {
   return CardLabelDtoSchema.parse({

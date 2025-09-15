@@ -1,23 +1,29 @@
 import { Router } from "express";
 import { cardLabelController } from "./card-label.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+// import {
+//   AddLabelToCardRequestSchema,
+//   RemoveLabelFromCardRequestSchema,
+// } from "./card-label.validation.js";
 import {
-  AddLabelToCardRequestSchema,
-  RemoveLabelFromCardRequestSchema,
-} from "./card-label.validation.js";
+  CreateCardLabelInputSchema,
+  LabelIdParamSchema,
+} from "@ronmordo/contracts";
+import { cardController } from "../cards/card.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
-// Card-label relationship routes
+router.get("/", cardController.getCardLabels);
+
 router.post(
-  "/:cardId/labels",
-  validateRequest(AddLabelToCardRequestSchema),
+  "/",
+  validateRequest({ body: CreateCardLabelInputSchema }),
   cardLabelController.addLabelToCard
 );
 
 router.delete(
-  "/:cardId/labels/:labelId",
-  validateRequest(RemoveLabelFromCardRequestSchema),
+  "/:labelId",
+  validateRequest({ params: LabelIdParamSchema }),
   cardLabelController.removeLabelFromCard
 );
 

@@ -8,7 +8,10 @@ export const createChecklistSchema = z.object({
     cardId: z.string().uuid("Invalid card ID"),
   }),
   body: z.object({
-    title: z.string().min(1, "Checklist title is required").max(255, "Checklist title too long"),
+    title: z
+      .string()
+      .min(1, "Checklist title is required")
+      .max(255, "Checklist title too long"),
     position: z.number().min(0, "Position must be non-negative").optional(),
   }),
 });
@@ -28,7 +31,11 @@ export const updateChecklistSchema = z.object({
     id: z.string().uuid("Invalid checklist ID"),
   }),
   body: z.object({
-    title: z.string().min(1, "Checklist title is required").max(255, "Checklist title too long").optional(),
+    title: z
+      .string()
+      .min(1, "Checklist title is required")
+      .max(255, "Checklist title too long")
+      .optional(),
     position: z.number().min(0, "Position must be non-negative").optional(),
   }),
 });
@@ -56,7 +63,10 @@ export const createChecklistItemSchema = z.object({
     checklistId: z.string().uuid("Invalid checklist ID"),
   }),
   body: z.object({
-    text: z.string().min(1, "Item text is required").max(500, "Item text too long"),
+    text: z
+      .string()
+      .min(1, "Item text is required")
+      .max(500, "Item text too long"),
     dueDate: z.string().datetime("Invalid due date format").optional(),
     position: z.number().min(0, "Position must be non-negative").optional(),
   }),
@@ -70,7 +80,11 @@ export const updateChecklistItemSchema = z.object({
     id: z.string().uuid("Invalid item ID"),
   }),
   body: z.object({
-    text: z.string().min(1, "Item text is required").max(500, "Item text too long").optional(),
+    text: z
+      .string()
+      .min(1, "Item text is required")
+      .max(500, "Item text too long")
+      .optional(),
     isCompleted: z.boolean().optional(),
     dueDate: z.string().datetime("Invalid due date format").optional(),
     position: z.number().min(0, "Position must be non-negative").optional(),

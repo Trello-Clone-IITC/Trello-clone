@@ -1,7 +1,6 @@
 import { api } from "@/lib/axiosInstance";
-import type { WorkspaceDto } from "@ronmordo/types";
+import type { WorkspaceDto, CreateWorkspaceInput } from "@ronmordo/contracts";
 import type { ApiResponse } from "@/shared/types/apiResponse";
-import type { CreateWorkspaceInput } from "@ronmordo/types";
 
 export const getUserWorkspaces = async (userId: string) => {
   const { data } = await api.get<ApiResponse<WorkspaceDto[]>>(

@@ -2,9 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listWatchersService from "./list-watchers.service.js";
-import type { ListWatcherDto } from "@ronmordo/types";
-import { mapListWatcherToDto } from "./list-watcher.mapper.js";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+// import type { ListWatcherDto } from "@ronmordo/contracts";
+// import { mapListWatcherToDto } from "./list-watcher.mapper.js";
+// import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
+// import { getAuth } from "@clerk/express";
 import { userService } from "../users/user.service.js";
 
 const addListWatcher = async (
@@ -14,10 +15,11 @@ const addListWatcher = async (
 ) => {
   try {
     const { listId } = req.params;
-    const { userId } = req.body;
-    const authUserId = await userService.getUserIdByRequest(req);
+    const userId =
+      (await userService.getUserIdByRequest(req)) ||
+      "9d2287bd-c250-4f9f-87ce-cfb33fdb9d14";
 
-    if (!authUserId) {
+    if (!userId) {
       return next(new AppError("User not authenticated", 401));
     }
 
@@ -32,10 +34,7 @@ const addListWatcher = async (
       data: { message: "List watcher added successfully" },
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to add list watcher", 500));
+    next(error);
   }
 };
 

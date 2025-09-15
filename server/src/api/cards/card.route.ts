@@ -1,55 +1,135 @@
 import { Router } from "express";
 import { cardController } from "./card.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import * as cardValidation from "./card.validation.js";
+// import * as cardValidation from "./card.validation.js";
+import {
+  CardIdParamSchema,
+  CreateCardInputSchema,
+  IdParamSchema,
+  UpdateCardSchema,
+} from "@ronmordo/contracts";
+import checklistsRouter from "../checklists/checklist.route.js";
+import listController from "../lists/list.controller.js";
+import cardLabelsRouter from "../card-labels/card-label.route.js";
+import commentsRouter from "../card-comments/comment.route.js";
+import attachmentsRouter from "../attachments/attachment.route.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // Card CRUD routes
-router.post("/", validateRequest(cardValidation.createCardSchema), cardController.createCard);
-router.get("/:id", validateRequest(cardValidation.getCardSchema), cardController.getCard);
+router.get("/", listController.getCardsByList);
+
+router.get(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  cardController.getCard
+);
+
+router.post(
+  "/",
+  validateRequest({ body: CreateCardInputSchema }),
+  cardController.createCard
+);
+
 router.patch(
   "/:id",
-  validateRequest(cardValidation.updateCardSchema),
+  validateRequest({ params: IdParamSchema, body: UpdateCardSchema }),
   cardController.updateCard
 );
-router.delete("/:id", validateRequest(cardValidation.deleteCardSchema), cardController.deleteCard);
+
+router.delete(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  cardController.deleteCard
+);
 
 // Card operations
-router.patch(
-  "/:id/move",
-  validateRequest(cardValidation.moveCardSchema),
-  cardController.moveCard
-);
-router.patch("/:id/archive", validateRequest(cardValidation.toggleArchiveSchema), cardController.toggleArchive);
-router.patch("/:id/subscribe", validateRequest(cardValidation.toggleSubscriptionSchema), cardController.toggleSubscription);
+// router.patch(
+//   "/:id/move",
+//   validateRequest(cardValidation.moveCardSchema),
+//   cardController.moveCard
+// );
+// router.patch("/:id/archive", validateRequest(cardValidation.toggleArchiveSchema), cardController.toggleArchive);
+// router.patch("/:id/subscribe", validateRequest(cardValidation.toggleSubscriptionSchema), cardController.toggleSubscription);
 
-// Card search and activity
-router.get(
-  "/search",
-  validateRequest(cardValidation.searchCardsSchema),
-  cardController.searchCards
-);
+// Card search and activity ------> TODO implement search schema
+// router.get(
+//   "/search",
+//   validateRequest(cardValidation.searchCardsSchema),
+//   cardController.searchCards
+// );
 // --------------------------nested routes--------------------------
-// Card activity
-router.get("/:id/activity", validateRequest(cardValidation.getCardActivitySchema), cardController.getCardActivity);
-// Card attachments
-router.get("/:id/attachments", validateRequest(cardValidation.getCardAttachmentsSchema), cardController.getCardAttachments);
+// Card activity -------> move to activity module
+// router.get(
+//   "/:id/activity",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardActivity
+// );
 
-// Card checklists
-router.get("/:id/checklists", validateRequest(cardValidation.getCardChecklistsSchema), cardController.getCardChecklists);
+// Card attachments -----> moved to attachments module
+// router.get(
+//   "/:id/attachments",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardAttachments
+// );
 
-// Card comments  
-router.get("/:id/comments", validateRequest(cardValidation.getCardCommentsSchema), cardController.getCardComments);
+// Card checklists -------> moved to checklists module
+// router.get(
+//   "/:id/checklists",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardChecklists
+// );
 
-// Card assignees
-router.get("/:id/assignees", validateRequest(cardValidation.getCardAssigneesSchema), cardController.getCardAssignees);
+// Card comments -------> moved to card comments module
+// router.get(
+//   "/:id/comments",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardComments
+// );
 
-// Card labels
-router.get("/:id/labels", validateRequest(cardValidation.getCardLabelsSchema), cardController.getCardLabels);
+// Card assignees -------> move to card assignees module
+// router.get(
+//   "/:id/assignees",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardAssignees
+// );
 
-// Card watchers
-router.get("/:id/watchers", validateRequest(cardValidation.getCardWatchersSchema), cardController.getCardWatchers);
+// Card labels -------> moved to cardLabels module
+// router.get(
+//   "/:id/labels",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardLabels
+// );
 
+// Card watchers -------> add to card watchers module
+// router.get(
+//   "/:id/watchers",
+//   validateRequest({ params: IdParamSchema }),
+//   cardController.getCardWatchers
+// );
+
+router.use(
+  "/:cardId/checklists",
+  validateRequest({ params: CardIdParamSchema }),
+  checklistsRouter
+);
+
+router.use(
+  "/:cardId/labels",
+  validateRequest({ params: CardIdParamSchema }),
+  cardLabelsRouter
+);
+
+router.use(
+  "/:id/comments",
+  validateRequest({ params: IdParamSchema }),
+  commentsRouter
+);
+
+router.use(
+  "/:cardId/attachments",
+  validateRequest({ params: CardIdParamSchema }),
+  attachmentsRouter
+);
 
 export default router;

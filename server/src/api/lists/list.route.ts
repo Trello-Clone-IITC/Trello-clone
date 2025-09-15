@@ -2,64 +2,80 @@ import { Router } from "express";
 import listController from "./list.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
-  createListSchema,
-  updateListSchema,
-  listIdSchema,
-  updateListPositionSchema,
-  archiveListSchema,
-  subscribeToListSchema,
-  getListWatchersSchema,
-  getCardsByListSchema,
-} from "./list.validation.js";
+  CreateListInputSchema,
+  // ListDtoSchema,
+  ListIdParamSchema,
+  UpdateListSchema,
+} from "@ronmordo/contracts";
+import watchersRouter from "../list-watchers/list-watchers.route.js";
+import cardsRouter from "../cards/card.route.js";
+import boardController from "../boards/board.controller.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // List CRUD operations
+router.get("/", boardController.getBoardLists);
+
 router.post(
-  "/board/:boardId",
-  validateRequest(createListSchema),
+  "/",
+  validateRequest({ body: CreateListInputSchema }),
   listController.createList
 );
-router.get("/:listId", validateRequest(listIdSchema), listController.getList);
+router.get(
+  "/:listId",
+  validateRequest({ params: ListIdParamSchema }),
+  listController.getList
+);
 router.patch(
   "/:listId",
-  validateRequest(updateListSchema),
+  validateRequest({ params: ListIdParamSchema, body: UpdateListSchema }),
   listController.updateList
 );
 router.delete(
   "/:listId",
-  validateRequest(listIdSchema),
+  validateRequest({ params: ListIdParamSchema }),
   listController.deleteList
 );
 
 // List specific operations
-router.patch(
-  "/:listId/position",
-  validateRequest(updateListPositionSchema),
-  listController.updateListPosition
-);
-router.patch(
-  "/:listId/archive",
-  validateRequest(archiveListSchema),
-  listController.archiveList
-);
-router.patch(
-  "/:listId/subscribe",
-  validateRequest(subscribeToListSchema),
-  listController.subscribeToList
-);
+// -------------------------REDUNDANT- We cover this in update route-------------------------
+// router.patch(
+//   "/:listId/position",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: CreateListInputSchema.shape.position,
+//   }),
+//   listController.updateListPosition
+// );
+// router.patch(
+//   "/:listId/archive",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: ListDtoSchema.shape.isArchived,
+//   }),
+//   listController.archiveList
+// );
+// router.patch(
+//   "/:listId/subscribe",
+//   validateRequest({
+//     params: ListIdParamSchema,
+//     body: ListDtoSchema.shape.subscribed,
+//   }),
+//   listController.subscribeToList
+// );
 
 // -------------------------nested routes-------------------------
-router.get(
+
+router.use(
   "/:listId/watchers",
-  validateRequest(getListWatchersSchema),
-  listController.getListWatchers
+  validateRequest({ params: ListIdParamSchema }),
+  watchersRouter
 );
 
-router.get(
+router.use(
   "/:listId/cards",
-  validateRequest(getCardsByListSchema),
-  listController.getCardsByList
+  validateRequest({ params: ListIdParamSchema }),
+  cardsRouter
 );
 
 export default router;

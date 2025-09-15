@@ -1,5 +1,5 @@
 import { type Comment } from "@prisma/client";
-import { CommentDtoSchema, type CommentDto } from "@ronmordo/types";
+import { CommentDtoSchema, type CommentDto } from "@ronmordo/contracts";
 
 export function mapCommentToDto(comment: Comment): CommentDto {
   const dto: CommentDto = {

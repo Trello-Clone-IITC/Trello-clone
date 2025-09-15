@@ -2,23 +2,30 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listService from "./list.service.js";
-import type { CardDto, ListDto, ListWatcherDto } from "@ronmordo/types";
+import type {
+  CardDto,
+  CreateListInput,
+  IdParam,
+  ListDto,
+  ListWatcherDto,
+} from "@ronmordo/contracts";
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { userService } from "../users/user.service.js";
 import { mapCardToDto } from "../cards/card.mapper.js";
 
 const createList = async (
-  req: Request,
+  req: Request<IdParam, {}, CreateListInput>,
   res: Response<ApiResponse<ListDto>>,
   next: NextFunction
 ) => {
   try {
-    const { boardId } = req.params;
-    const userId = await userService.getUserIdByRequest(req);
+    const { id: boardId } = req.params;
+    const userId =
+      (await userService.getUserIdByRequest(req)) ||
+      "fc28efe3-ab85-4564-b0dc-b7d2b76b5897";
 
-    const listData = { ...req.body, createdBy: userId };
-    const list = await listService.createList(boardId, listData);
+    const list = await listService.createList(req.body, boardId);
 
     const listDto: ListDto = mapListToDto(list);
 
@@ -27,9 +34,6 @@ const createList = async (
       data: listDto,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
     next(error);
   }
 };
@@ -232,8 +236,9 @@ const getCardsByList = async (
 ) => {
   try {
     const { listId } = req.params;
-    // const userId = req.user?.id;
-    const userId = req.body.userId;
+    const userId =
+      (await userService.getUserIdByRequest(req)) ||
+      "96099bc0-34b7-4be5-b410-4d624cd99da5";
 
     if (!userId) {
       return next(new AppError("User not authenticated", 401));
@@ -247,9 +252,7 @@ const getCardsByList = async (
       data: cardsDtoArr,
     });
   } catch (error) {
-    console.log("Failed to get cards by list", error);
-
-    next(new AppError("Failed to get cards by list", 500));
+    next(error);
   }
 };
 

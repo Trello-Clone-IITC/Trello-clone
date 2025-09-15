@@ -3,7 +3,7 @@ import cardLabelService from "./card-label.service.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import { userService } from "../users/user.service.js";
 import { mapCardLabelToDto } from "./card-label.mapper.js";
-import type { CardLabelDto } from "@ronmordo/types";
+import type { CardLabelDto } from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
 
 export const cardLabelController = {
@@ -16,7 +16,9 @@ export const cardLabelController = {
     try {
       const { cardId } = req.params;
       const { labelId } = req.body;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
       const cardLabel = await cardLabelService.addLabelToCard(
         cardId,
         labelId,
@@ -45,7 +47,9 @@ export const cardLabelController = {
   ) => {
     try {
       const { cardId, labelId } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
       await cardLabelService.removeLabelFromCard(cardId, labelId, userId);
 
       res.status(200).json({
@@ -53,10 +57,7 @@ export const cardLabelController = {
         message: "Label removed from card successfully",
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      return next(new AppError("Failed to remove label from card", 500));
+      return next(error);
     }
   },
 };

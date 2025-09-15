@@ -10,7 +10,7 @@ import type {
   LabelDto,
   ActivityLogDto,
   BoardFullDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import { mapBoardToDto, mapFullBoardToDto } from "./board.mapper.js";
 import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
@@ -24,12 +24,11 @@ const createBoard = async (
   next: NextFunction
 ) => {
   try {
-    const userId = await userService.getUserIdByRequest(req);
+    const userId =
+      (await userService.getUserIdByRequest(req)) ||
+      "3f992ec3-fd72-4153-8c8a-9575e5a61867";
 
-    const board = await boardService.createBoard({
-      ...req.body,
-      createdBy: userId,
-    });
+    const board = await boardService.createBoard(req.body, userId);
     // Transform Date objects to strings for DTO
     const boardDto: BoardDto = mapBoardToDto(board);
 

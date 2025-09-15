@@ -1,3 +1,4 @@
+import type { CreateChecklistItemInput } from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
@@ -18,25 +19,37 @@ interface UpdateChecklistItemData {
 }
 
 // Create checklist item
-const createChecklistItem = async (data: CreateChecklistItemData) => {
+const createChecklistItem = async (
+  data: CreateChecklistItemInput,
+  checklistId: string,
+  userId: string
+) => {
   // Verify checklist exists and user has access
   const checklist = await prisma.checklist.findFirst({
-    where: { id: data.checklistId },
+    where: {
+      id: checklistId,
+      card: {
+        list: {
+          board: {
+            boardMembers: {
+              some: { userId },
+            },
+          },
+        },
+      },
+    },
     include: {
       card: {
         include: {
           list: {
             include: {
-              board: {
-                include: {
-                  boardMembers: {
-                    where: { userId: data.userId },
-                  },
-                },
-              },
+              board: true,
             },
           },
         },
+      },
+      items: {
+        orderBy: { position: "asc" },
       },
     },
   });
@@ -45,25 +58,16 @@ const createChecklistItem = async (data: CreateChecklistItemData) => {
     throw new AppError("Checklist not found", 404);
   }
 
-  if (checklist.card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
   // Get the highest position in the checklist and add 1000
-  const lastItem = await prisma.checklistItem.findFirst({
-    where: { checklistId: data.checklistId },
-    orderBy: { position: "desc" },
-  });
-
+  const lastItem = checklist.items.pop();
 
   const newPosition = lastItem
     ? lastItem.position.toNumber() + 1000
-    : data.position ;
+    : data.position;
   const item = await prisma.checklistItem.create({
     data: {
-      checklistId: data.checklistId,
+      checklistId,
       text: data.text,
-      dueDate: data.dueDate,
       position: new Decimal(newPosition),
     },
     include: {
@@ -93,7 +97,7 @@ const createChecklistItem = async (data: CreateChecklistItemData) => {
     data: {
       boardId: checklist.card.list.board.id,
       cardId: checklist.card.id,
-      userId: data.userId,
+      userId,
       action: "Updated",
       payload: {
         action: "checklist_item_created",

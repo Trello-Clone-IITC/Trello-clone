@@ -1,5 +1,5 @@
 import { Prisma, type List } from "@prisma/client";
-import { ListDtoSchema, type ListDto } from "@ronmordo/types";
+import { ListDtoSchema, type ListDto } from "@ronmordo/contracts";
 
 export function mapListToDto(list: List): ListDto {
   return ListDtoSchema.parse({

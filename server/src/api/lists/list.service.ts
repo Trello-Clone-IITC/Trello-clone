@@ -1,34 +1,18 @@
 import { prisma } from "../../lib/prismaClient.js";
 import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
+import type { CreateListInput } from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
 
 const createList = async (
-  boardId: string,
-  listData: {
-    name: string;
-    position?: number;
-    isArchived?: boolean;
-    subscribed?: boolean;
-  }
+  data: CreateListInput,
+  boardId: string
 ): Promise<List> => {
   // Get the next position if not provided
-  // let position = listData.position;
-  const lastList = await prisma.list.findFirst({
-    where: { boardId },
-    orderBy: { position: "desc" },
-  });
-  const newPosition = lastList
-    ? lastList.position.toNumber() + 1
-    : listData.position ?? 1;
-
   const list = await prisma.list.create({
     data: {
-      boardId,
-      name: listData.name,
-      position: new Decimal(newPosition),
-      isArchived: listData.isArchived ?? false,
-      subscribed: listData.subscribed ?? false,
+      ...data,
+      board: { connect: { id: boardId } },
     },
   });
 
@@ -260,13 +244,42 @@ const isUserWatchingList = async (
 const getCardsByList = async (listId: string, userId: string) => {
   // Verify user has access to the list
   const list = await prisma.list.findFirst({
-    where: { id: listId },
-    include: {
+    where: {
+      id: listId,
       board: {
+        boardMembers: {
+          some: { userId },
+        },
+      },
+    },
+    include: {
+      cards: {
+        orderBy: { position: "asc" },
+        where: {
+          isArchived: false,
+        },
         include: {
-          boardMembers: {
-            where: { userId: userId },
+          assignees: {
+            include: {
+              user: true,
+            },
           },
+          cardLabels: {
+            include: {
+              label: true,
+            },
+          },
+          checklists: {
+            include: {
+              items: {
+                where: {
+                  isCompleted: true,
+                },
+              },
+            },
+          },
+          comments: true,
+          attachments: true,
         },
       },
     },
@@ -276,38 +289,7 @@ const getCardsByList = async (listId: string, userId: string) => {
     throw new AppError("List not found", 404);
   }
 
-  if (list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
-  const cards = await prisma.card.findMany({
-    where: {
-      listId: listId,
-      isArchived: false,
-    },
-    include: {
-      assignees: {
-        include: {
-          user: true,
-        },
-      },
-      cardLabels: {
-        include: {
-          label: true,
-        },
-      },
-      checklists: {
-        include: {
-          items: {
-            where: { isCompleted: true },
-          },
-        },
-      },
-      comments: true,
-      attachments: true,
-    },
-    orderBy: { position: "asc" },
-  });
+  const cards = list.cards;
 
   return cards;
 };

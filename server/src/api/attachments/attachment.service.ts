@@ -1,35 +1,43 @@
+import type {
+  CreateAttachmentInput,
+  UpdateAttachmentInput,
+} from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Prisma } from "@prisma/client";
 
-interface CreateAttachmentData {
-  cardId: string;
-  url: string;
-  filename?: string;
-  bytes?: bigint;
-  meta?: Prisma.InputJsonValue;
-  userId: string;
-}
+// interface CreateAttachmentData {
+//   cardId: string;
+//   url: string;
+//   filename?: string;
+//   bytes?: bigint;
+//   meta?: Prisma.InputJsonValue;
+//   userId: string;
+// }
 
-interface UpdateAttachmentData {
-  url?: string;
-  filename?: string;
-  bytes?: bigint;
-  meta?: Prisma.InputJsonValue;
-}
+// interface UpdateAttachmentData {
+//   url?: string;
+//   filename?: string;
+//   bytes?: bigint;
+//   meta?: Prisma.InputJsonValue;
+// }
 
 // Create a new attachment
-const createAttachment = async (data: CreateAttachmentData) => {
+const createAttachment = async (
+  data: CreateAttachmentInput,
+  cardId: string,
+  userId: string
+) => {
   // Verify card exists and user has access
   const card = await prisma.card.findFirst({
-    where: { id: data.cardId },
+    where: { id: cardId },
     include: {
       list: {
         include: {
           board: {
             include: {
               boardMembers: {
-                where: { userId: data.userId },
+                where: { userId },
               },
             },
           },
@@ -48,12 +56,12 @@ const createAttachment = async (data: CreateAttachmentData) => {
 
   const attachment = await prisma.attachment.create({
     data: {
-      cardId: data.cardId,
+      cardId,
       url: data.url,
       filename: data.filename,
       bytes: data.bytes,
-      meta: data.meta,
-      userId: data.userId,
+      meta: data.meta as Prisma.InputJsonValue,
+      userId,
     },
     include: {
       card: {
@@ -74,11 +82,11 @@ const createAttachment = async (data: CreateAttachmentData) => {
     data: {
       boardId: card.list.board.id,
       cardId: card.id,
-      userId: data.userId,
+      userId,
       action: "Attached",
-      payload: { 
+      payload: {
         filename: attachment.filename || "attachment",
-        url: attachment.url 
+        url: attachment.url,
       },
     },
   });
@@ -122,11 +130,10 @@ const getAttachmentById = async (attachmentId: string, userId: string) => {
   return attachment;
 };
 
-
 // Update an attachment
 const updateAttachment = async (
   attachmentId: string,
-  updateData: UpdateAttachmentData,
+  updateData: UpdateAttachmentInput,
   userId: string
 ) => {
   // Verify user has access to the attachment
@@ -162,10 +169,7 @@ const updateAttachment = async (
   const attachment = await prisma.attachment.update({
     where: { id: attachmentId },
     data: {
-      url: updateData.url,
       filename: updateData.filename,
-      bytes: updateData.bytes,
-      meta: updateData.meta,
     },
     include: {
       card: {
@@ -188,10 +192,10 @@ const updateAttachment = async (
       cardId: existingAttachment.card.id,
       userId: userId,
       action: "Updated",
-      payload: { 
+      payload: {
         attachmentId: attachment.id,
         filename: attachment.filename,
-        changes: updateData as Prisma.InputJsonValue
+        changes: updateData as Prisma.InputJsonValue,
       },
     },
   });
@@ -238,9 +242,9 @@ const deleteAttachment = async (attachmentId: string, userId: string) => {
       cardId: existingAttachment.card.id,
       userId: userId,
       action: "Detached",
-      payload: { 
+      payload: {
         filename: existingAttachment.filename || "attachment",
-        url: existingAttachment.url 
+        url: existingAttachment.url,
       },
     },
   });

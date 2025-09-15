@@ -11,7 +11,7 @@ import type {
   LabelDto,
   CardWatcherDto,
   AttachmentDto,
-} from "@ronmordo/types";
+} from "@ronmordo/contracts";
 import {
   mapCardToDto,
   mapChecklistToDto,
@@ -32,16 +32,17 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const userId = await userService.getUserIdByRequest(req);
+      const { listId } = req.params;
+
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.createCard({
-        ...req.body,
-        createdBy: userId,
-      });
+      const card = await cardService.createCard(req.body, listId, userId);
       const cardDto: CardDto = mapCardToDto(card);
 
       res.status(201).json({
@@ -65,7 +66,9 @@ export const cardController = {
   ) => {
     try {
       const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -97,8 +100,9 @@ export const cardController = {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      // const userId = req.user?.id;
-      const userId = DUMMY_USER_ID; //TODO: remove this after testing;
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -130,7 +134,9 @@ export const cardController = {
     try {
       const { id } = req.params;
       // const userId = req.user?.id;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "96099bc0-34b7-4be5-b410-4d624cd99da5";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -326,14 +332,16 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const { cardId } = req.params;
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const checklists = await cardService.getCardChecklists(id, userId);
+      const checklists = await cardService.getCardChecklists(cardId, userId);
       const checklistsDto = checklists.map(mapChecklistToDto);
       res.status(200).json({
         success: true,
@@ -354,7 +362,9 @@ export const cardController = {
   ) => {
     try {
       const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
@@ -408,20 +418,20 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const { cardId } = req.params;
+      console.log(req.params);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
 
-      const labels = await cardService.getCardLabels(id, userId);
+      const labels = await cardService.getCardLabels(cardId, userId);
       res.status(200).json({
         success: true,
         data: labels,
       });
     } catch (error) {
-      next(new AppError("Failed to get card labels", 500));
+      next(error);
     }
   },
 
@@ -455,21 +465,23 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const { cardId } = req.params;
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const attachments = await cardService.getCardAttachments(id, userId);
+      const attachments = await cardService.getCardAttachments(cardId, userId);
       const attachmentsDto = attachments.map(mapAttachmentToDto);
       res.status(200).json({
         success: true,
         data: attachmentsDto,
       });
     } catch (error) {
-      next(new AppError("Failed to get card attachments", 500));
+      next(error);
     }
   },
 };

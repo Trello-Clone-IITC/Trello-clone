@@ -1,5 +1,5 @@
 import type { Prisma, User, Theme, $Enums } from "@prisma/client";
-import { UserDtoSchema, type UserDto } from "@ronmordo/types";
+import { UserDtoSchema, type UserDto } from "@ronmordo/contracts";
 
 export function mapUserToDto(user: User): UserDto {
   const dto: UserDto = {

@@ -1,79 +1,66 @@
 import { Router } from "express";
 import workspaceController from "./workspace.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
+import { searchWorkspacesSchema } from "./workspace.validation.js";
+import workspaceMemberRouter from "../workspace-members/workspace-members.route.js";
+import boardRouter from "../boards/board.route.js";
 import {
-  createWorkspaceSchema,
-  updateWorkspaceSchema,
-  workspaceIdSchema,
-  getWorkspacesByUserSchema,
-  searchWorkspacesSchema,
-} from "./workspace.validation.js";
-import workspaceMembersRouter from "../workspace-members/workspace-members.route.js";
-import {
-  CreateWorkspaceRequestSchema,
-  GetByIdRequestSchema,
-  UpdateWorkspaceRequestSchema,
-} from "@ronmordo/types";
+  CreateWorkspaceInputSchema,
+  IdParamSchema,
+  UpdateWorkspaceSchema,
+} from "@ronmordo/contracts";
 
 const router = Router();
 
 // Workspace CRUD operations
+
+router.get("/", workspaceController.getAllWorkspaces); // Remove after testing
+
 router.post(
   "/",
-  validateRequest(CreateWorkspaceRequestSchema),
+  validateRequest({ body: CreateWorkspaceInputSchema }),
   workspaceController.createWorkspace
 );
 router.get(
   "/:id",
-  validateRequest(GetByIdRequestSchema),
+  validateRequest({ params: IdParamSchema }),
   workspaceController.getWorkspace
 );
 router.patch(
   "/:id",
-  validateRequest(UpdateWorkspaceRequestSchema),
-  // validateRequest(updateWorkspaceSchema),
+  validateRequest({ params: IdParamSchema, body: UpdateWorkspaceSchema }),
   workspaceController.updateWorkspace
 );
 router.delete(
   "/:id",
-  validateRequest(GetByIdRequestSchema),
+  validateRequest({ params: IdParamSchema }),
   workspaceController.deleteWorkspace
 );
 
-// --------------------------nested routes--------------------------
-
-// Workspace boards
-router.get(
-  "/:id/boards",
-  validateRequest(GetByIdRequestSchema),
-  workspaceController.getWorkspaceBoards
-);
-
-// Workspace member management
-router.get(
-  "/:id/members",
-  validateRequest(GetByIdRequestSchema),
-  workspaceController.getWorkspaceMembers
-);
-
-//extra routes
-
-router.get("/", workspaceController.getAllWorkspaces);
 router.get(
   "/search",
-  validateRequest(searchWorkspacesSchema),
+  validateRequest({ query: searchWorkspacesSchema }),
   workspaceController.searchWorkspaces
 );
-router.get(
-  "/user/:userId",
-  validateRequest(getWorkspacesByUserSchema),
-  workspaceController.getWorkspacesByUser
-);
-router.get(
-  "/creator/:userId",
-  validateRequest(getWorkspacesByUserSchema),
-  workspaceController.getWorkspacesByCreator
+
+// --------------------------nested routes--------------------------
+// ---NOT NEEDED---
+// router.get(
+//   "/creator/:userId",
+//   validateRequest({ params: UserIdParamSchema }),
+//   workspaceController.getWorkspacesByCreator
+// );
+
+router.use(
+  "/:id/members",
+  validateRequest({ params: IdParamSchema }),
+  workspaceMemberRouter
 );
 
-router.use("/", workspaceMembersRouter);
+router.use(
+  "/:id/boards",
+  validateRequest({ params: IdParamSchema }),
+  boardRouter
+);
+
 export default router;

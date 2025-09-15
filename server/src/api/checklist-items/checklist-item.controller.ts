@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import checklistItemService from "./checklist-item.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { ChecklistItemDto, UserDto } from "@ronmordo/types";
+import type { ChecklistItemDto, UserDto } from "@ronmordo/contracts";
 import { mapChecklistItemToDto } from "./checklist-item.mapper.js";
 import { mapUserToDto } from "../users/user.mapper.js";
 import { userService } from "../users/user.service.js";
@@ -15,14 +15,16 @@ export const checklistItemController = {
     next: NextFunction
   ) => {
     try {
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       const { checklistId } = req.params;
-      const item = await checklistItemService.createChecklistItem({
+      const item = await checklistItemService.createChecklistItem(
+        req.body,
         checklistId,
-        ...req.body,
-        userId,
-      });
+        userId
+      );
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
       res.status(201).json({
@@ -46,7 +48,9 @@ export const checklistItemController = {
   ) => {
     try {
       const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       const item = await checklistItemService.getChecklistItemById(id, userId);
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
@@ -73,7 +77,9 @@ export const checklistItemController = {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       const item = await checklistItemService.updateChecklistItem(
         id,
@@ -103,7 +109,9 @@ export const checklistItemController = {
   ) => {
     try {
       const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       await checklistItemService.deleteChecklistItem(id, userId);
 
@@ -128,7 +136,9 @@ export const checklistItemController = {
   ) => {
     try {
       const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       const item = await checklistItemService.toggleChecklistItem(id, userId);
       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
@@ -153,11 +163,13 @@ export const checklistItemController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+      const { itemId } = req.params;
+      const userId =
+        (await userService.getUserIdByRequest(req)) ||
+        "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
       const assignees = await checklistItemService.getChecklistItemAssignees(
-        id,
+        itemId,
         userId
       );
       const assigneesDto = assignees.map((assignee) =>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { BoardDto, BoardFullDto } from "@ronmordo/types";
+import type { BoardDto, BoardFullDto } from "@ronmordo/contracts";
 import {
   getFullBoard,
   getBoard,

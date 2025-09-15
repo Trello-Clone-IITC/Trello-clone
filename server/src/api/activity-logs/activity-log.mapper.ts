@@ -4,7 +4,7 @@ import type {
   ActivityLog,
   ActivityAction,
 } from "@prisma/client";
-import { type ActivityLogDto, ActivityLogDtoSchema } from "@ronmordo/types";
+import { type ActivityLogDto, ActivityLogDtoSchema } from "@ronmordo/contracts";
 
 export function mapActivityLogToDto(log: ActivityLog): ActivityLogDto {
   const dto: ActivityLogDto = {

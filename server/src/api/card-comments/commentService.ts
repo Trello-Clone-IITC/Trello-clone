@@ -15,15 +15,15 @@ export const commentService = {
   // Create a new comment
   async createComment(data: CreateCommentData) {
     // Verify card exists and user has access
-    const card = await prisma.cards.findFirst({
+    const card = await prisma.card.findFirst({
       where: { id: data.cardId },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: {
+            board: {
               include: {
-                board_members: {
-                  where: { user_id: data.userId },
+                boardMembers: {
+                  where: { userId: data.userId },
                 },
               },
             },
@@ -36,37 +36,37 @@ export const commentService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (card.lists.boards.board_members.length === 0) {
+    if (card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const comment = await prisma.comments.create({
+    const comment = await prisma.comment.create({
       data: {
-        card_id: data.cardId,
-        user_id: data.userId,
+        cardId: data.cardId,
+        userId: data.userId,
         text: data.text,
       },
       include: {
-        cards: {
+        card: {
           include: {
-            lists: {
+            list: {
               include: {
-                boards: true,
+                board: true,
               },
             },
           },
         },
-        users: true,
+        user: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: card.lists.boards.id,
-        card_id: data.cardId,
-        user_id: data.userId,
-        action: "commented",
+        boardId: card.list.board.id,
+        cardId: data.cardId,
+        userId: data.userId,
+        action: "Commented",
         payload: {
           commentText: comment.text.substring(0, 100), // Truncate for log
         },
@@ -78,17 +78,17 @@ export const commentService = {
 
   // Get comment by ID
   async getCommentById(commentId: string, userId: string) {
-    const comment = await prisma.comments.findFirst({
+    const comment = await prisma.comment.findFirst({
       where: { id: commentId },
       include: {
-        cards: {
+        card: {
           include: {
-            lists: {
+            list: {
               include: {
-                boards: {
+                board: {
                   include: {
-                    board_members: {
-                      where: { user_id: userId },
+                    boardMembers: {
+                      where: { userId },
                     },
                   },
                 },
@@ -96,7 +96,7 @@ export const commentService = {
             },
           },
         },
-        users: true,
+        user: true,
       },
     });
 
@@ -105,7 +105,7 @@ export const commentService = {
     }
 
     // Check if user has access to the board
-    if (comment.cards.lists.boards.board_members.length === 0) {
+    if (comment.card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
@@ -115,15 +115,15 @@ export const commentService = {
   // Get all comments for a card
   async getCommentsByCard(cardId: string, userId: string) {
     // Verify user has access to the card
-    const card = await prisma.cards.findFirst({
+    const card = await prisma.card.findFirst({
       where: { id: cardId },
       include: {
-        lists: {
+        list: {
           include: {
-            boards: {
+            board: {
               include: {
-                board_members: {
-                  where: { user_id: userId },
+                boardMembers: {
+                  where: { userId },
                 },
               },
             },
@@ -136,16 +136,16 @@ export const commentService = {
       throw new AppError("Card not found", 404);
     }
 
-    if (card.lists.boards.board_members.length === 0) {
+    if (card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
-    const comments = await prisma.comments.findMany({
-      where: { card_id: cardId },
+    const comments = await prisma.comment.findMany({
+      where: { cardId: cardId },
       include: {
-        users: true,
+        user: true,
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     return comments;
@@ -158,17 +158,17 @@ export const commentService = {
     userId: string
   ) {
     // Verify user has access to the comment
-    const existingComment = await prisma.comments.findFirst({
+    const existingComment = await prisma.comment.findFirst({
       where: { id: commentId },
       include: {
-        cards: {
+        card: {
           include: {
-            lists: {
+            list: {
               include: {
-                boards: {
+                board: {
                   include: {
-                    board_members: {
-                      where: { user_id: userId },
+                    boardMembers: {
+                      where: { userId },
                     },
                   },
                 },
@@ -183,41 +183,41 @@ export const commentService = {
       throw new AppError("Comment not found", 404);
     }
 
-    if (existingComment.cards.lists.boards.board_members.length === 0) {
+    if (existingComment.card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     // Only the comment author can edit their comment
-    if (existingComment.user_id !== userId) {
+    if (existingComment.userId !== userId) {
       throw new AppError("You can only edit your own comments", 403);
     }
 
-    const comment = await prisma.comments.update({
+    const comment = await prisma.comment.update({
       where: { id: commentId },
       data: {
         text: updateData.text,
       },
       include: {
-        cards: {
+        card: {
           include: {
-            lists: {
+            list: {
               include: {
-                boards: true,
+                board: true,
               },
             },
           },
         },
-        users: true,
+        user: true,
       },
     });
 
     // Log activity
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingComment.cards.lists.boards.id,
-        card_id: existingComment.cards.id,
-        user_id: userId,
-        action: "updated",
+        boardId: existingComment.card.list.board.id,
+        cardId: existingComment.card.id,
+        userId: userId,
+        action: "Updated",
         payload: {
           action: "comment_updated",
           commentText: comment.text.substring(0, 100), // Truncate for log
@@ -231,17 +231,17 @@ export const commentService = {
   // Delete comment
   async deleteComment(commentId: string, userId: string) {
     // Verify user has access to the comment
-    const existingComment = await prisma.comments.findFirst({
+    const existingComment = await prisma.comment.findFirst({
       where: { id: commentId },
       include: {
-        cards: {
+        card: {
           include: {
-            lists: {
+            list: {
               include: {
-                boards: {
+                board: {
                   include: {
-                    board_members: {
-                      where: { user_id: userId },
+                    boardMembers: {
+                      where: { userId },
                     },
                   },
                 },
@@ -256,14 +256,14 @@ export const commentService = {
       throw new AppError("Comment not found", 404);
     }
 
-    if (existingComment.cards.lists.boards.board_members.length === 0) {
+    if (existingComment.card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 
     // Only the comment author or board admin can delete comments
-    const isAuthor = existingComment.user_id === userId;
-    const isAdmin = existingComment.cards.lists.boards.board_members.some(
-      (member) => member.role === "admin"
+    const isAuthor = existingComment.userId === userId;
+    const isAdmin = existingComment.card.list.board.boardMembers.some(
+      (member) => member.role === "Admin"
     );
 
     if (!isAuthor && !isAdmin) {
@@ -274,12 +274,12 @@ export const commentService = {
     }
 
     // Log activity before deletion
-    await prisma.activity_log.create({
+    await prisma.activityLog.create({
       data: {
-        board_id: existingComment.cards.lists.boards.id,
-        card_id: existingComment.cards.id,
-        user_id: userId,
-        action: "updated",
+        boardId: existingComment.card.list.board.id,
+        cardId: existingComment.card.id,
+        userId: userId,
+        action: "Updated",
         payload: {
           action: "comment_deleted",
           commentText: existingComment.text.substring(0, 100), // Truncate for log
@@ -289,7 +289,7 @@ export const commentService = {
     });
 
     // Delete the comment
-    await prisma.comments.delete({
+    await prisma.comment.delete({
       where: { id: commentId },
     });
   },

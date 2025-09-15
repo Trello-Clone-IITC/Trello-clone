@@ -5,18 +5,29 @@ import { z } from "zod";
 // Since ZodSchema type is deprecated I changed the schema type to z.ZodType which follows latest zod docs.
 // Since Response isnt used in our functions changed the parameter name to _ following unused paramaters naming conventions.
 
-export const validateRequest = (schema: z.ZodType) => {
+export const validateRequest = (fields: {
+  body?: z.ZodType;
+  params?: z.ZodType;
+  query?: z.ZodType;
+}) => {
+  const {
+    body = z.object({}).optional(),
+    params = z.object({}).optional(),
+    query = z.object({}).optional(),
+  } = fields;
+
   return async (req: Request, _: Response, next: NextFunction) => {
     try {
       console.log("req.body", req.body);
       console.log("req.query", req.query);
       console.log("req.params", req.params);
 
-      await schema.parseAsync({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
+      await Promise.all([
+        body.parseAsync(req.body),
+        params.parseAsync(req.params),
+        query.parseAsync(req.query),
+      ]);
+
       next();
     } catch (error) {
       console.log("error in validation", error);
