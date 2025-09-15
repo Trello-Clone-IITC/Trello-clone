@@ -14,7 +14,7 @@ import { X } from "lucide-react";
 import React, { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useCreateWorkspace } from "../hooks/useCreateWorkspace";
-import { WorkspaceTypeSchema, type WorkspaceType } from "@ronmordo/types";
+import { WorkspaceTypeSchema, type WorkspaceType } from "@ronmordo/contracts";
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;

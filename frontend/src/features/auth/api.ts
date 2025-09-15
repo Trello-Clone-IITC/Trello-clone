@@ -1,5 +1,5 @@
 import { api } from "@/lib/axiosInstance";
-import type { UserDto } from "@ronmordo/types";
+import type { UserDto } from "@ronmordo/contracts";
 import type { ApiResponse } from "@/shared/types/apiResponse";
 import type { OnBoardingData } from "./types";
 

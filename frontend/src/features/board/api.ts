@@ -1,5 +1,5 @@
 import { api } from "@/lib/axiosInstance";
-import type { BoardDto, BoardFullDto } from "@ronmordo/types";
+import type { BoardDto, BoardFullDto } from "@ronmordo/contracts";
 import type { ApiResponse } from "@/shared/types/apiResponse";
 
 // Get full board data with all nested information

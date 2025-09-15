@@ -6,7 +6,6 @@ import boardRouter from "./boards/board.route.js";
 import cardRouter from "./cards/card.route.js";
 import listRouter from "./lists/list.route.js";
 import checklistRouter from "./checklists/checklist.route.js";
-import commentRouter from "./card-comments/comment.route.js";
 import docsRouter from "./docs/docs.route.js";
 
 const router = Router();
@@ -18,7 +17,6 @@ router.use("/workspaces", workspaceRouter);
 router.use("/boards", boardRouter);
 router.use("/cards", cardRouter);
 router.use("/checklists", checklistRouter);
-router.use("/comments", commentRouter);
 router.use("/lists", listRouter);
 router.use("/apiDocs", docsRouter);
 

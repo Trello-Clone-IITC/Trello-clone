@@ -1341,18 +1341,12 @@ export const openApiDoc = createDocument({
     // ==========================
     // CHECKLIST ENDPOINTS
     // ==========================
-    "/cards/{cardId}/checklists/{id}": {
+    "/checklists/{id}": {
       get: {
         tags: ["Checklists"],
         summary: "Get checklist by ID",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "id",
             in: "path",
@@ -1376,12 +1370,6 @@ export const openApiDoc = createDocument({
         summary: "Update checklist",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "id",
             in: "path",
@@ -1414,12 +1402,6 @@ export const openApiDoc = createDocument({
         security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
-          {
             name: "id",
             in: "path",
             required: true,
@@ -1431,18 +1413,12 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{cardId}/checklists/{checklistId}/checklistItems": {
+    "/checklists/{checklistId}/checklistItems": {
       get: {
         tags: ["Checklists"],
         summary: "Get checklist items",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "checklistId",
             in: "path",
@@ -1469,12 +1445,6 @@ export const openApiDoc = createDocument({
         summary: "Create a new checklist item",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "checklistId",
             in: "path",
@@ -1503,21 +1473,12 @@ export const openApiDoc = createDocument({
       },
     },
 
-    // ==========================
-    // CHECKLIST ITEM ENDPOINTS
-    // ==========================
-    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{id}": {
+    "/checklists/{checklistId}/checklistItems/{id}": {
       get: {
-        tags: ["Checklist Items"],
+        tags: ["Checklists"],
         summary: "Get checklist item by ID",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "checklistId",
             in: "path",
@@ -1543,16 +1504,10 @@ export const openApiDoc = createDocument({
         },
       },
       patch: {
-        tags: ["Checklist Items"],
+        tags: ["Checklists"],
         summary: "Update checklist item",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "checklistId",
             in: "path",
@@ -1586,16 +1541,10 @@ export const openApiDoc = createDocument({
         },
       },
       delete: {
-        tags: ["Checklist Items"],
+        tags: ["Checklists"],
         summary: "Delete checklist item",
         security: [{ bearerAuth: [] }],
         parameters: [
-          {
-            name: "cardId",
-            in: "path",
-            required: true,
-            schema: { type: "string", format: "uuid" },
-          },
           {
             name: "checklistId",
             in: "path",
@@ -1614,19 +1563,13 @@ export const openApiDoc = createDocument({
         },
       },
     },
-    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees":
+    "/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees":
       {
         get: {
-          tags: ["Checklist Item Assignees"],
+          tags: ["Checklists"],
           summary: "Get checklist item assignees",
           security: [{ bearerAuth: [] }],
           parameters: [
-            {
-              name: "cardId",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
             {
               name: "checklistId",
               in: "path",
@@ -1655,16 +1598,10 @@ export const openApiDoc = createDocument({
           },
         },
         post: {
-          tags: ["Checklist Item Assignees"],
+          tags: ["Checklists"],
           summary: "Assign user to checklist item",
           security: [{ bearerAuth: [] }],
           parameters: [
-            {
-              name: "cardId",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
             {
               name: "checklistId",
               in: "path",
@@ -1704,19 +1641,13 @@ export const openApiDoc = createDocument({
           },
         },
       },
-    "/cards/{cardId}/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees/{userId}":
+    "/checklists/{checklistId}/checklistItems/{itemId}/checklistItemAssignees/{userId}":
       {
         delete: {
-          tags: ["Checklist Item Assignees"],
+          tags: ["Checklists"],
           summary: "Remove user from checklist item",
           security: [{ bearerAuth: [] }],
           parameters: [
-            {
-              name: "cardId",
-              in: "path",
-              required: true,
-              schema: { type: "string", format: "uuid" },
-            },
             {
               name: "checklistId",
               in: "path",
@@ -1744,7 +1675,7 @@ export const openApiDoc = createDocument({
 
     "/cards/{cardId}/attachments/{id}": {
       get: {
-        tags: ["Attachments"],
+        tags: ["Cards"],
         summary: "Get attachment by ID",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1773,7 +1704,7 @@ export const openApiDoc = createDocument({
         },
       },
       patch: {
-        tags: ["Attachments"],
+        tags: ["Cards"],
         summary: "Update attachment",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1810,7 +1741,7 @@ export const openApiDoc = createDocument({
         },
       },
       delete: {
-        tags: ["Attachments"],
+        tags: ["Cards"],
         summary: "Delete attachment",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1836,14 +1767,20 @@ export const openApiDoc = createDocument({
     // ==========================
     // COMMENT ENDPOINTS
     // ==========================
-    "/comments/{id}": {
+    "/cards/{id}/comments/{commentId}": {
       get: {
-        tags: ["Comments"],
+        tags: ["Cards"],
         summary: "Get comment by ID",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "commentId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -1861,12 +1798,18 @@ export const openApiDoc = createDocument({
         },
       },
       patch: {
-        tags: ["Comments"],
+        tags: ["Cards"],
         summary: "Update comment",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "commentId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -1892,12 +1835,18 @@ export const openApiDoc = createDocument({
         },
       },
       delete: {
-        tags: ["Comments"],
+        tags: ["Cards"],
         summary: "Delete comment",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+          {
+            name: "commentId",
             in: "path",
             required: true,
             schema: { type: "string", format: "uuid" },
@@ -1912,12 +1861,18 @@ export const openApiDoc = createDocument({
     // ==========================
     // LABEL ENDPOINTS
     // ==========================
-    "/labels/{labelId}": {
+    "/boards/{id}/labels/{labelId}": {
       get: {
-        tags: ["Labels"],
+        tags: ["Boards"],
         summary: "Get label by ID",
         security: [{ bearerAuth: [] }],
         parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
           {
             name: "labelId",
             in: "path",
@@ -1937,10 +1892,16 @@ export const openApiDoc = createDocument({
         },
       },
       patch: {
-        tags: ["Labels"],
+        tags: ["Boards"],
         summary: "Update label",
         security: [{ bearerAuth: [] }],
         parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
           {
             name: "labelId",
             in: "path",
@@ -1968,10 +1929,16 @@ export const openApiDoc = createDocument({
         },
       },
       delete: {
-        tags: ["Labels"],
+        tags: ["Boards"],
         summary: "Delete label",
         security: [{ bearerAuth: [] }],
         parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
           {
             name: "labelId",
             in: "path",
