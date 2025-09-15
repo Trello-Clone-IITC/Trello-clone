@@ -18,7 +18,7 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import ApiDocs from "@/features/docs/ApiDocs";
 
 ///Aiman pages
-import { AimanPlayground } from "@/features/auth/pages/AimanPlayground";
+import { AimanPlayground } from "@/features/board/pages/AimanPlayground";
 import Board from "@/features/board/components/Board";
 import { BoardExample } from "@/features/board/components/BoardExample";
 

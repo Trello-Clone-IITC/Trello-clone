@@ -22,7 +22,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`px-2  py-2 flex items-center justify-between h-[47px] border-b-1 ${
+      className={`sticky top-0 z-50 px-2 py-2 flex items-center justify-between h-[47px] border-b-1 ${
         isLight ? "bg-white border-[#dcdfe4]" : "bg-[#1f1f21] border-[#434345]"
       }`}
     >
