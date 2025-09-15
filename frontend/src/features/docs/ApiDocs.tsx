@@ -14,6 +14,7 @@ export default function ApiDocs() {
       <ApiReferenceReact
         configuration={{
           content: docs,
+          servers: [{ url: "http://localhost:5173/api" }],
         }}
       />
     </div>

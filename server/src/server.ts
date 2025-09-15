@@ -8,9 +8,6 @@ import { prisma } from "./lib/prismaClient.js";
 import { clerkMiddleware } from "@clerk/express";
 import pino from "pino";
 import * as pinoHttpNS from "pino-http";
-// import swaggerUi from "swagger-ui-express";
-import { openApiDoc } from "./openapi.js";
-import { apiReference } from "@scalar/express-api-reference";
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -52,8 +49,6 @@ app.use(
   })
 );
 app.use(clerkMiddleware());
-
-app.use("/docs", apiReference({ content: openApiDoc }));
 
 // API endpoints
 app.use("/api", router);

@@ -69,7 +69,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateOnBoardingInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateOnBoardingInputSchema",
+              },
             },
           },
         },
@@ -78,7 +80,7 @@ export const openApiDoc = createDocument({
             description: "Onboarding completed",
             content: {
               "application/json": {
-                schema: zodSchemas.UserDtoSchema as any,
+                schema: { $ref: "#/components/schemas/UserDtoSchema" },
               },
             },
           },
@@ -99,7 +101,7 @@ export const openApiDoc = createDocument({
             description: "User profile",
             content: {
               "application/json": {
-                schema: zodSchemas.UserDtoSchema as any,
+                schema: { $ref: "#/components/schemas/UserDtoSchema" },
               },
             },
           },
@@ -118,7 +120,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.WorkspaceDtoSchema as any,
+                  items: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
                 },
               },
             },
@@ -142,7 +144,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.WorkspaceDtoSchema as any,
+                  items: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
                 },
               },
             },
@@ -157,7 +159,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateWorkspaceInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateWorkspaceInputSchema",
+              },
             },
           },
         },
@@ -166,7 +170,7 @@ export const openApiDoc = createDocument({
             description: "Workspace created",
             content: {
               "application/json": {
-                schema: zodSchemas.WorkspaceDtoSchema as any,
+                schema: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
               },
             },
           },
@@ -193,7 +197,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.WorkspaceDtoSchema as any,
+                  items: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
                 },
               },
             },
@@ -219,7 +223,7 @@ export const openApiDoc = createDocument({
             description: "Workspace details",
             content: {
               "application/json": {
-                schema: zodSchemas.WorkspaceDtoSchema as any,
+                schema: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
               },
             },
           },
@@ -241,7 +245,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateWorkspaceSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateWorkspaceSchema" },
             },
           },
         },
@@ -250,7 +254,7 @@ export const openApiDoc = createDocument({
             description: "Workspace updated",
             content: {
               "application/json": {
-                schema: zodSchemas.WorkspaceDtoSchema as any,
+                schema: { $ref: "#/components/schemas/WorkspaceDtoSchema" },
               },
             },
           },
@@ -269,7 +273,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Workspace deleted" },
+          "204": {
+            description: "Workspace deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Workspace deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -293,7 +312,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.BoardDtoSchema as any,
+                  items: { $ref: "#/components/schemas/BoardDtoSchema" },
                 },
               },
             },
@@ -316,7 +335,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateBoardInputSchema as any,
+              schema: { $ref: "#/components/schemas/CreateBoardInputSchema" },
             },
           },
         },
@@ -325,7 +344,7 @@ export const openApiDoc = createDocument({
             description: "Board created",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardDtoSchema" },
               },
             },
           },
@@ -352,7 +371,9 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.WorkspaceMemberDtoSchema as any,
+                  items: {
+                    $ref: "#/components/schemas/WorkspaceMemberDtoSchema",
+                  },
                 },
               },
             },
@@ -375,7 +396,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateWorkspaceMemberInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateWorkspaceMemberInputSchema",
+              },
             },
           },
         },
@@ -384,7 +407,9 @@ export const openApiDoc = createDocument({
             description: "Member added",
             content: {
               "application/json": {
-                schema: zodSchemas.WorkspaceMemberDtoSchema as any,
+                schema: {
+                  $ref: "#/components/schemas/WorkspaceMemberDtoSchema",
+                },
               },
             },
           },
@@ -414,7 +439,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateWorkspaceMemberSchema as any,
+              schema: {
+                $ref: "#/components/schemas/UpdateWorkspaceMemberSchema",
+              },
             },
           },
         },
@@ -423,7 +450,9 @@ export const openApiDoc = createDocument({
             description: "Member role updated",
             content: {
               "application/json": {
-                schema: zodSchemas.WorkspaceMemberDtoSchema as any,
+                schema: {
+                  $ref: "#/components/schemas/WorkspaceMemberDtoSchema",
+                },
               },
             },
           },
@@ -448,7 +477,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Member removed" },
+          "204": {
+            description: "Member removed",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Member removed successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -474,7 +518,7 @@ export const openApiDoc = createDocument({
             description: "Board details",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardDtoSchema" },
               },
             },
           },
@@ -496,7 +540,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateBoardSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateBoardSchema" },
             },
           },
         },
@@ -505,7 +549,7 @@ export const openApiDoc = createDocument({
             description: "Board updated",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardDtoSchema" },
               },
             },
           },
@@ -524,7 +568,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Board deleted" },
+          "204": {
+            description: "Board deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Board deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -546,7 +605,7 @@ export const openApiDoc = createDocument({
             description: "Full board details",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardFullDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardFullDtoSchema" },
               },
             },
           },
@@ -573,7 +632,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.BoardMemberDtoSchema as any,
+                  items: { $ref: "#/components/schemas/BoardMemberDtoSchema" },
                 },
               },
             },
@@ -596,7 +655,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateBoardMemberInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateBoardMemberInputSchema",
+              },
             },
           },
         },
@@ -605,7 +666,7 @@ export const openApiDoc = createDocument({
             description: "Member added",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardMemberDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardMemberDtoSchema" },
               },
             },
           },
@@ -635,7 +696,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateBoardMemberSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateBoardMemberSchema" },
             },
           },
         },
@@ -644,7 +705,7 @@ export const openApiDoc = createDocument({
             description: "Member role updated",
             content: {
               "application/json": {
-                schema: zodSchemas.BoardMemberDtoSchema as any,
+                schema: { $ref: "#/components/schemas/BoardMemberDtoSchema" },
               },
             },
           },
@@ -669,7 +730,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Member removed" },
+          "204": {
+            description: "Member removed",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Member removed successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -693,7 +769,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.ListDtoSchema as any,
+                  items: { $ref: "#/components/schemas/ListDtoSchema" },
                 },
               },
             },
@@ -716,7 +792,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateListInputSchema as any,
+              schema: { $ref: "#/components/schemas/CreateListInputSchema" },
             },
           },
         },
@@ -725,7 +801,7 @@ export const openApiDoc = createDocument({
             description: "List created",
             content: {
               "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ListDtoSchema" },
               },
             },
           },
@@ -752,7 +828,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.LabelDtoSchema as any,
+                  items: { $ref: "#/components/schemas/LabelDtoSchema" },
                 },
               },
             },
@@ -775,7 +851,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateLabelInputSchema as any,
+              schema: { $ref: "#/components/schemas/CreateLabelInputSchema" },
             },
           },
         },
@@ -784,7 +860,7 @@ export const openApiDoc = createDocument({
             description: "Label created",
             content: {
               "application/json": {
-                schema: zodSchemas.LabelDtoSchema as any,
+                schema: { $ref: "#/components/schemas/LabelDtoSchema" },
               },
             },
           },
@@ -813,7 +889,7 @@ export const openApiDoc = createDocument({
             description: "List details",
             content: {
               "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ListDtoSchema" },
               },
             },
           },
@@ -835,7 +911,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateListSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateListSchema" },
             },
           },
         },
@@ -844,7 +920,7 @@ export const openApiDoc = createDocument({
             description: "List updated",
             content: {
               "application/json": {
-                schema: zodSchemas.ListDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ListDtoSchema" },
               },
             },
           },
@@ -863,7 +939,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "List deleted" },
+          "204": {
+            description: "List deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "List deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -887,7 +978,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.ListWatcherDtoSchema as any,
+                  items: { $ref: "#/components/schemas/ListWatcherDtoSchema" },
                 },
               },
             },
@@ -911,7 +1002,7 @@ export const openApiDoc = createDocument({
             description: "Watcher added",
             content: {
               "application/json": {
-                schema: zodSchemas.ListWatcherDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ListWatcherDtoSchema" },
               },
             },
           },
@@ -938,7 +1029,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Watcher removed" },
+          "204": {
+            description: "Watcher removed",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Watcher removed successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -962,7 +1068,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.CardDtoSchema as any,
+                  items: { $ref: "#/components/schemas/CardDtoSchema" },
                 },
               },
             },
@@ -985,7 +1091,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateCardInputSchema as any,
+              schema: { $ref: "#/components/schemas/CreateCardInputSchema" },
             },
           },
         },
@@ -994,7 +1100,7 @@ export const openApiDoc = createDocument({
             description: "Card created",
             content: {
               "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CardDtoSchema" },
               },
             },
           },
@@ -1023,7 +1129,7 @@ export const openApiDoc = createDocument({
             description: "Card details",
             content: {
               "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CardDtoSchema" },
               },
             },
           },
@@ -1045,7 +1151,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateCardSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateCardSchema" },
             },
           },
         },
@@ -1054,7 +1160,7 @@ export const openApiDoc = createDocument({
             description: "Card updated",
             content: {
               "application/json": {
-                schema: zodSchemas.CardDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CardDtoSchema" },
               },
             },
           },
@@ -1073,7 +1179,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Card deleted" },
+          "204": {
+            description: "Card deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Card deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1097,7 +1218,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.ChecklistDtoSchema as any,
+                  items: { $ref: "#/components/schemas/ChecklistDtoSchema" },
                 },
               },
             },
@@ -1120,7 +1241,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateChecklistInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateChecklistInputSchema",
+              },
             },
           },
         },
@@ -1129,7 +1252,7 @@ export const openApiDoc = createDocument({
             description: "Checklist created",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistDtoSchema" },
               },
             },
           },
@@ -1156,7 +1279,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.CardLabelDtoSchema as any,
+                  items: { $ref: "#/components/schemas/CardLabelDtoSchema" },
                 },
               },
             },
@@ -1179,7 +1302,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateCardLabelInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateCardLabelInputSchema",
+              },
             },
           },
         },
@@ -1188,7 +1313,7 @@ export const openApiDoc = createDocument({
             description: "Label added to card",
             content: {
               "application/json": {
-                schema: zodSchemas.CardLabelDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CardLabelDtoSchema" },
               },
             },
           },
@@ -1215,7 +1340,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Label removed from card" },
+          "204": {
+            description: "Label removed from card",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Label removed from card successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1239,7 +1379,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.CommentDtoSchema as any,
+                  items: { $ref: "#/components/schemas/CommentDtoSchema" },
                 },
               },
             },
@@ -1262,7 +1402,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateCommentInputSchema as any,
+              schema: { $ref: "#/components/schemas/CreateCommentInputSchema" },
             },
           },
         },
@@ -1271,7 +1411,7 @@ export const openApiDoc = createDocument({
             description: "Comment created",
             content: {
               "application/json": {
-                schema: zodSchemas.CommentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CommentDtoSchema" },
               },
             },
           },
@@ -1298,7 +1438,7 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.AttachmentDtoSchema as any,
+                  items: { $ref: "#/components/schemas/AttachmentDtoSchema" },
                 },
               },
             },
@@ -1321,7 +1461,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateAttachmentInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateAttachmentInputSchema",
+              },
             },
           },
         },
@@ -1330,7 +1472,7 @@ export const openApiDoc = createDocument({
             description: "Attachment created",
             content: {
               "application/json": {
-                schema: zodSchemas.AttachmentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/AttachmentDtoSchema" },
               },
             },
           },
@@ -1359,7 +1501,7 @@ export const openApiDoc = createDocument({
             description: "Checklist details",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistDtoSchema" },
               },
             },
           },
@@ -1381,7 +1523,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateChecklistSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateChecklistSchema" },
             },
           },
         },
@@ -1390,7 +1532,7 @@ export const openApiDoc = createDocument({
             description: "Checklist updated",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistDtoSchema" },
               },
             },
           },
@@ -1409,7 +1551,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Checklist deleted" },
+          "204": {
+            description: "Checklist deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Checklist deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1433,7 +1590,9 @@ export const openApiDoc = createDocument({
               "application/json": {
                 schema: {
                   type: "array",
-                  items: zodSchemas.ChecklistItemDtoSchema as any,
+                  items: {
+                    $ref: "#/components/schemas/ChecklistItemDtoSchema",
+                  },
                 },
               },
             },
@@ -1456,7 +1615,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.CreateChecklistItemInputSchema as any,
+              schema: {
+                $ref: "#/components/schemas/CreateChecklistItemInputSchema",
+              },
             },
           },
         },
@@ -1465,7 +1626,7 @@ export const openApiDoc = createDocument({
             description: "Checklist item created",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistItemDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistItemDtoSchema" },
               },
             },
           },
@@ -1497,7 +1658,7 @@ export const openApiDoc = createDocument({
             description: "Checklist item details",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistItemDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistItemDtoSchema" },
               },
             },
           },
@@ -1525,7 +1686,9 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateChecklistItemSchema as any,
+              schema: {
+                $ref: "#/components/schemas/UpdateChecklistItemSchema",
+              },
             },
           },
         },
@@ -1534,7 +1697,7 @@ export const openApiDoc = createDocument({
             description: "Checklist item updated",
             content: {
               "application/json": {
-                schema: zodSchemas.ChecklistItemDtoSchema as any,
+                schema: { $ref: "#/components/schemas/ChecklistItemDtoSchema" },
               },
             },
           },
@@ -1559,7 +1722,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Checklist item deleted" },
+          "204": {
+            description: "Checklist item deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Checklist item deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1590,7 +1768,9 @@ export const openApiDoc = createDocument({
                 "application/json": {
                   schema: {
                     type: "array",
-                    items: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
+                    items: {
+                      $ref: "#/components/schemas/ChecklistItemAssigneeDtoSchema",
+                    },
                   },
                 },
               },
@@ -1634,7 +1814,9 @@ export const openApiDoc = createDocument({
               description: "User assigned to item",
               content: {
                 "application/json": {
-                  schema: zodSchemas.ChecklistItemAssigneeDtoSchema as any,
+                  schema: {
+                    $ref: "#/components/schemas/ChecklistItemAssigneeDtoSchema",
+                  },
                 },
               },
             },
@@ -1668,7 +1850,22 @@ export const openApiDoc = createDocument({
             },
           ],
           responses: {
-            "204": { description: "User removed from item" },
+            "204": {
+              description: "User removed from item",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      message: {
+                        type: "string",
+                        example: "User removed from item successfully",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -1697,7 +1894,7 @@ export const openApiDoc = createDocument({
             description: "Attachment details",
             content: {
               "application/json": {
-                schema: zodSchemas.AttachmentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/AttachmentDtoSchema" },
               },
             },
           },
@@ -1725,7 +1922,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateAttachmentSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateAttachmentSchema" },
             },
           },
         },
@@ -1734,7 +1931,7 @@ export const openApiDoc = createDocument({
             description: "Attachment updated",
             content: {
               "application/json": {
-                schema: zodSchemas.AttachmentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/AttachmentDtoSchema" },
               },
             },
           },
@@ -1759,7 +1956,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Attachment deleted" },
+          "204": {
+            description: "Attachment deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Attachment deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1791,7 +2003,7 @@ export const openApiDoc = createDocument({
             description: "Comment details",
             content: {
               "application/json": {
-                schema: zodSchemas.CommentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CommentDtoSchema" },
               },
             },
           },
@@ -1819,7 +2031,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateCommentSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateCommentSchema" },
             },
           },
         },
@@ -1828,7 +2040,7 @@ export const openApiDoc = createDocument({
             description: "Comment updated",
             content: {
               "application/json": {
-                schema: zodSchemas.CommentDtoSchema as any,
+                schema: { $ref: "#/components/schemas/CommentDtoSchema" },
               },
             },
           },
@@ -1853,7 +2065,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Comment deleted" },
+          "204": {
+            description: "Comment deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Comment deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -1885,7 +2112,7 @@ export const openApiDoc = createDocument({
             description: "Label details",
             content: {
               "application/json": {
-                schema: zodSchemas.LabelDtoSchema as any,
+                schema: { $ref: "#/components/schemas/LabelDtoSchema" },
               },
             },
           },
@@ -1913,7 +2140,7 @@ export const openApiDoc = createDocument({
           required: true,
           content: {
             "application/json": {
-              schema: zodSchemas.UpdateLabelSchema as any,
+              schema: { $ref: "#/components/schemas/UpdateLabelSchema" },
             },
           },
         },
@@ -1922,7 +2149,7 @@ export const openApiDoc = createDocument({
             description: "Label updated",
             content: {
               "application/json": {
-                schema: zodSchemas.LabelDtoSchema as any,
+                schema: { $ref: "#/components/schemas/LabelDtoSchema" },
               },
             },
           },
@@ -1947,7 +2174,22 @@ export const openApiDoc = createDocument({
           },
         ],
         responses: {
-          "204": { description: "Label deleted" },
+          "204": {
+            description: "Label deleted",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "Label deleted successfully",
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
