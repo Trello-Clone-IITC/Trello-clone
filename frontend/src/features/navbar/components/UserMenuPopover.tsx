@@ -93,62 +93,6 @@ export default function UserMenuPopover() {
 
   return (
     <>
-      <style>
-        {`
-          input[type="radio"] {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            width: 14px;
-            height: 14px;
-            min-width: 14px;
-            min-height: 14px;
-            border: 2px solid #9fadbc;
-            border-radius: 50%;
-            background-color: transparent;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-          }
-          
-          input[type="radio"]:checked {
-            background-color: #579dff;
-            border-color: #579dff;
-          }
-          
-          
-          input[type="radio"]:focus-visible {
-            outline: 2px solid #85b8ff;
-            outline-offset: 2px;
-          }
-          
-          input[type="radio"]:active {
-            background-color: #85b8ff;
-            border-color: #85b8ff;
-          }
-          
-          /* Blue border using ::after pseudo-element to prevent layout shift */
-          .theme-option-light::after,
-          .theme-option-dark::after,
-          .theme-option-system::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: #579dff;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-          }
-          
-          .theme-option-light.active::after,
-          .theme-option-dark.active::after,
-          .theme-option-system.active::after {
-            opacity: 1;
-          }
-        `}
-      </style>
       <Popover>
         <PopoverTrigger asChild>
           <Button

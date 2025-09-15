@@ -10,10 +10,8 @@ import {
 } from "@/components/ui/collapsible";
 import { useUserWorkspaces } from "../hooks/useUserWorkspaces";
 import { useTheme } from "@/hooks/useTheme";
-import gearwheelIcon from "../../../assets/gearwheel.svg";
-import gearwheelLightIcon from "../../../assets/gearwheel-light.svg";
-import peopleIcon from "../../../assets/people-icon.svg";
-import peopleLightIcon from "../../../assets/people-icon-light.svg";
+import * as Icons from "../../../assets";
+import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 
 // Custom SVG Icons
 const HomeIcon: React.FC<{
@@ -164,29 +162,6 @@ const navigationItems = [
   },
   { name: "Home", href: "/", icon: HomeIcon, current: false },
 ];
-
-const getWorkspaceDisplayProps = (
-  name: string,
-  index: number,
-  isLight: boolean
-) => {
-  const initial = name.charAt(0).toUpperCase();
-  const colors = [
-    "bg-gradient-to-b from-blue-300 to-blue-200",
-    "bg-gradient-to-b from-green-300 to-green-200",
-    "bg-gradient-to-b from-purple-300 to-purple-200",
-    "bg-gradient-to-b from-red-300 to-red-200",
-    "bg-gradient-to-b from-yellow-300 to-yellow-200",
-    "bg-gradient-to-b from-indigo-300 to-indigo-200",
-    "bg-gradient-to-b from-pink-300 to-pink-200",
-    "bg-gradient-to-b from-orange-300 to-orange-200",
-  ];
-  const textColor = isLight ? "!text-[#1f1f21]" : "!text-white";
-  return {
-    initial,
-    color: `${colors[index % colors.length]} ${textColor}`,
-  };
-};
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -496,7 +471,11 @@ const Sidebar: React.FC = () => {
                           >
                             <div className="flex items-center">
                               <img
-                                src={isLight ? peopleLightIcon : peopleIcon}
+                                src={
+                                  isLight
+                                    ? Icons.peopleLightIcon
+                                    : Icons.peopleIcon
+                                }
                                 alt="Members"
                                 className="mr-2 h-3 w-3"
                               />
@@ -517,7 +496,11 @@ const Sidebar: React.FC = () => {
                             )}
                           >
                             <img
-                              src={isLight ? gearwheelLightIcon : gearwheelIcon}
+                              src={
+                                isLight
+                                  ? Icons.gearwheelLightIcon
+                                  : Icons.gearwheelIcon
+                              }
                               alt="Settings"
                               className="mr-2 h-3 w-3"
                             />
