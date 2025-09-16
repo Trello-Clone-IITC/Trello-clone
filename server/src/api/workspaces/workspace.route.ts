@@ -9,12 +9,15 @@ import {
   IdParamSchema,
   UpdateWorkspaceSchema,
 } from "@ronmordo/contracts";
+import { usersController } from "../users/user.controller.js";
 
 const router = Router();
 
 // Workspace CRUD operations
 
-router.get("/", workspaceController.getAllWorkspaces); // Remove after testing
+// router.get("/", workspaceController.getAllWorkspaces); // Remove after testing
+
+router.get("/", usersController.getAllWorkspaces); // Remove after testing
 
 router.post(
   "/",

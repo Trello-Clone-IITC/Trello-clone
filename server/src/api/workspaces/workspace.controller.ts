@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import { WorkspaceRole } from "@prisma/client";
 import {
   type BoardDto,
   type WorkspaceDto,
@@ -207,7 +206,7 @@ const removeWorkspaceMember = async (
   try {
     const { id, userId: userIdToDelete } = req.params;
 
-    const userId = await userService.getUserIdByRequest(req);
+    const userId = (await userService.getUserIdByRequest(req)) || "";
 
     await workspaceService.removeWorkspaceMember(id, userId, userIdToDelete);
 

@@ -28,7 +28,7 @@ const getAllWorkspaces = async (
   next: NextFunction
 ) => {
   try {
-    const userId = await userService.getUserIdByRequest(req);
+    const userId = (await userService.getUserIdByRequest(req)) || "";
     const workspaces = await workspaceService.getWorkspacesByUser(userId);
     return res.status(200).json({
       success: true,
