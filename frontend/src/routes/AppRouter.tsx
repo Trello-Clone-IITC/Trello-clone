@@ -27,6 +27,7 @@ import ApiDocs from "@/features/docs/ApiDocs";
 import { AimanPlayground } from "@/features/board/pages/AimanPlayground";
 import Board from "@/features/board/components/Board";
 import { BoardExample } from "@/features/board/components/BoardExample";
+import { AimansBoardTryPage } from "@/features/aimans-board-try";
 
 export const AppRouter = () => {
   return (
@@ -43,6 +44,7 @@ export const AppRouter = () => {
         <Route path="/docs" element={<ApiDocs />} />
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
+          <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
       </Route>
 
       {/* Protected dashboard area */}
@@ -53,6 +55,8 @@ export const AppRouter = () => {
           <Route path="boards" element={<BoardsPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
+          <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
+          <Route path="board" element={<Board />} />
           {/* add more nested dashboard routes here */}
         </Route>
         {/* Board page with navbar but no sidebar */}
