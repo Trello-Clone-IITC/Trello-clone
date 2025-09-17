@@ -14,7 +14,8 @@ import { OnBoardingPage } from "@/features/auth/pages/OnBoardingPage";
 import { SsoCallback } from "@/features/auth/components/Sso-callback";
 
 // Dashboard pages
-import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+import BoardsPage from "@/features/dashboard/pages/BoardsPage";
+import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
@@ -45,7 +46,8 @@ export const AppRouter = () => {
       <Route path="/" element={<ProtectedRoute />}>
         <Route path="on-boarding" element={<OnBoardingPage />} />
         <Route element={<DashboardLayout />}>
-          <Route index element={<DashboardPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="boards" element={<BoardsPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
           <Route path="board" element={<Board />} />

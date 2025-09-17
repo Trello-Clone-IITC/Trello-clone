@@ -27,7 +27,7 @@ export const BoardCard = ({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden p-0 gap-0 cursor-pointer transition-all duration-200 w-full max-w-[215px]",
+        "group relative overflow-hidden p-0 gap-0 cursor-pointer transition-all duration-200 w-full max-w-[215px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f]",
         className
       )}
     >

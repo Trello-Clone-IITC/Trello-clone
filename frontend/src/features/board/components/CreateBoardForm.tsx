@@ -21,7 +21,17 @@ import { cn } from "@/lib/utils";
 import { X, Check, MoreHorizontal, ChevronLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useCreateBoard } from "../hooks/useBoard";
-import { upgradeIconDark, upgradeIconLight } from "@/assets";
+import { useUserWorkspaces } from "@/features/dashboard/hooks/useUserWorkspaces";
+import {
+  upgradeIconDark,
+  upgradeIconLight,
+  lockIcon,
+  lockIconDark,
+  globeIcon,
+  globeIconDark,
+  peopleIcon,
+  peopleLightIcon,
+} from "@/assets";
 
 interface CreateBoardFormProps {
   onBack?: () => void;
@@ -94,8 +104,8 @@ const backgroundOptions = [
 
 interface FormData {
   title: string;
-  workspace: string;
-  visibility: string;
+  workspaceId: string;
+  visibility: "private" | "workspace_members" | "public";
 }
 
 export const CreateBoardForm = ({
@@ -110,12 +120,14 @@ export const CreateBoardForm = ({
   );
 
   const createBoard = useCreateBoard();
+  const { data: workspaces, isLoading: workspacesLoading } =
+    useUserWorkspaces();
 
   const form = useForm<FormData>({
     defaultValues: {
       title: "",
-      workspace: "Trello Clone",
-      visibility: "Workspace",
+      workspaceId: "",
+      visibility: "workspace_members",
     },
     mode: "onChange", // Enable real-time validation
   });
@@ -129,11 +141,8 @@ export const CreateBoardForm = ({
       await createBoard.mutateAsync({
         name: data.title,
         description: "",
-        visibility: data.visibility.toLowerCase() as
-          | "public"
-          | "private"
-          | "workspace_members",
-        workspaceId: "1", // You might want to get this from context or props
+        visibility: data.visibility,
+        workspaceId: data.workspaceId,
         background: selectedBg?.url || selectedBg?.color || "#0079bf",
         allowCovers: true,
         showComplete: true,
@@ -337,45 +346,72 @@ export const CreateBoardForm = ({
             {/* Workspace Selection */}
             <FormField
               control={form.control}
-              name="workspace"
-              render={({ field }) => (
-                <FormItem className="gap-0">
-                  <FormLabel
-                    className={cn(
-                      "text-xs font-bold mt-3 mb-1",
-                      isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
-                    )}
-                  >
-                    Workspace
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger
-                        className={cn(
-                          "flex items-center justify-between min-h-[40px] rounded-[3px] border-1 w-full py-[2px] px-[6px] cursor-pointer focus-visible:ring-0",
-                          isLight
-                            ? "bg-[#fff] placeholder:text-[#292a2e] border-[#8c8f97] focus-visible:border-[#4688ec]"
-                            : "bg-[#242528] placeholder:text-[#bfc1c4] border-[#7e8188] focus-visible:border-[#596e8f]"
-                        )}
-                      >
-                        <SelectValue
+              name="workspaceId"
+              rules={{ required: "Please select a workspace" }}
+              render={({ field, fieldState }) => {
+                const hasError = fieldState.error || !field.value;
+                return (
+                  <FormItem className="gap-0">
+                    <FormLabel
+                      className={cn(
+                        "text-xs font-bold mt-3 mb-1",
+                        isLight ? "text-[#292a2e]" : "text-[#bfc1c4]"
+                      )}
+                    >
+                      Workspace<span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={workspacesLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger
                           className={cn(
-                            isLight
-                              ? "placeholder:text-[#292a2e]"
-                              : "placeholder:text-[#bfc1c4]"
+                            "flex items-center justify-between min-h-[40px] rounded-[3px] border-1 w-full py-[2px] px-[6px] cursor-pointer focus-visible:ring-0",
+                            hasError
+                              ? "border-[#f15b50] focus-visible:border-[#f15b50]"
+                              : isLight
+                              ? "bg-[#fff] placeholder:text-[#292a2e] border-[#8c8f97] focus-visible:border-[#4688ec]"
+                              : "bg-[#242528] placeholder:text-[#bfc1c4] border-[#7e8188] focus-visible:border-[#596e8f]"
                           )}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Trello Clone">Trello Clone</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
+                        >
+                          <SelectValue
+                            placeholder={
+                              workspacesLoading
+                                ? "Loading workspaces..."
+                                : "Select a workspace"
+                            }
+                            className={cn(
+                              isLight
+                                ? "placeholder:text-[#292a2e]"
+                                : "placeholder:text-[#bfc1c4]"
+                            )}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {workspaces?.map((workspace) => (
+                          <SelectItem key={workspace.id} value={workspace.id}>
+                            {workspace.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage>
+                      {hasError && (
+                        <div className="flex mt-0.5">
+                          <span className="mr-2">👋</span>
+                          <p className="text-sm text-[#bfc1c4] flex items-center mb-2">
+                            {fieldState.error?.message ||
+                              "Please select a workspace"}
+                          </p>
+                        </div>
+                      )}
+                    </FormMessage>
+                  </FormItem>
+                );
+              }}
             />
 
             {/* Visibility Selection */}
@@ -415,9 +451,51 @@ export const CreateBoardForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Workspace">Workspace</SelectItem>
-                      <SelectItem value="Private">Private</SelectItem>
-                      <SelectItem value="Public">Public</SelectItem>
+                      <SelectItem value="private">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={isLight ? lockIcon : lockIconDark}
+                            alt="lock"
+                            className={cn(
+                              "h-4 w-4",
+                              isLight
+                                ? "[filter:brightness(0)_saturate(100%)_invert(20%)_sepia(8%)_saturate(1033%)_hue-rotate(202deg)_brightness(95%)_contrast(89%)]"
+                                : "[filter:brightness(0)_saturate(100%)_invert(75%)_sepia(6%)_saturate(464%)_hue-rotate(202deg)_brightness(96%)_contrast(88%)]"
+                            )}
+                          />
+                          <span>Private</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="workspace_members">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={isLight ? peopleIcon : peopleLightIcon}
+                            alt="people"
+                            className={cn(
+                              "h-4 w-4 data-[state=closed]:hidden data-[state=open]:visible",
+                              isLight
+                                ? "[filter:brightness(0)_saturate(100%)_invert(20%)_sepia(8%)_saturate(1033%)_hue-rotate(202deg)_brightness(95%)_contrast(89%)]"
+                                : "[filter:brightness(0)_saturate(100%)_invert(75%)_sepia(6%)_saturate(464%)_hue-rotate(202deg)_brightness(96%)_contrast(88%)]"
+                            )}
+                          />
+                          <span>Workspace</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="public">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={isLight ? globeIcon : globeIconDark}
+                            alt="globe"
+                            className={cn(
+                              "h-4 w-4",
+                              isLight
+                                ? "[filter:brightness(0)_saturate(100%)_invert(20%)_sepia(8%)_saturate(1033%)_hue-rotate(202deg)_brightness(95%)_contrast(89%)]"
+                                : "[filter:brightness(0)_saturate(100%)_invert(75%)_sepia(6%)_saturate(464%)_hue-rotate(202deg)_brightness(96%)_contrast(88%)]"
+                            )}
+                          />
+                          <span>Public</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -462,13 +540,19 @@ export const CreateBoardForm = ({
             {/* Create Button */}
             <Button
               type="submit"
-              disabled={!form.watch("title")?.trim() || createBoard.isPending}
+              disabled={
+                !form.watch("title")?.trim() ||
+                !form.watch("workspaceId") ||
+                createBoard.isPending
+              }
               className={cn(
-                "w-full h-10",
-                !form.watch("title")?.trim() || createBoard.isPending
+                "w-full h-10 mt-4 mb-0 cursor-pointer",
+                !form.watch("title")?.trim() ||
+                  !form.watch("workspaceId") ||
+                  createBoard.isPending
                   ? isLight
                     ? "bg-[#f8f8f8] text-[#b2b4ba] cursor-not-allowed"
-                    : "bg-[#2a2b2d] text-[#585a60] cursor-not-allowed"
+                    : "bg-[#303134] text-[#585a60] cursor-not-allowed"
                   : isLight
                   ? "bg-[#1868db] hover:bg-[#1558bc] text-white"
                   : "bg-[#669df1] hover:bg-[#8fb8f6] text-[#1f1f21]"
@@ -484,7 +568,7 @@ export const CreateBoardForm = ({
           type="button"
           variant="outline"
           className={cn(
-            "w-full h-10 mt-4",
+            "w-full h-10 mt-2",
             isLight
               ? "border-[#dcdfe4] hover:bg-[#f0f1f2]"
               : "border-[#434345] hover:bg-[#2c2c2e]"

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import {
   Collapsible,
   CollapsibleContent,
@@ -32,7 +31,7 @@ const HomeIcon: React.FC<{
       viewBox="0 0 24 24"
       width="14"
       height="14"
-      className="mr-3"
+      className=""
     >
       <path
         fill={getFillColor()}
@@ -46,7 +45,7 @@ const BoardsIcon: React.FC<{
   className?: string;
   isActive?: boolean;
   isLight?: boolean;
-}> = ({ isActive, isLight = false }) => {
+}> = ({ className, isActive, isLight = false }) => {
   const getFillColor = () => {
     if (isActive) return isLight ? "#186de5" : "#579dff";
     return isLight ? "#292a2e" : "#bfc1c4";
@@ -54,22 +53,16 @@ const BoardsIcon: React.FC<{
 
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
-      version="1.1"
-      id="Capa_1"
-      x="0px"
-      y="0px"
       viewBox="0 0 24 24"
-      xmlSpace="preserve"
-      width="12"
-      height="12"
-      className="mr-3"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn("w-4 h-4", className)}
     >
       <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5ZM5 6C5 5.44772 5.44772 5 6 5H10C10.5523 5 11 5.44772 11 6V16C11 16.5523 10.5523 17 10 17H6C5.44772 17 5 16.5523 5 16V6ZM14 5C13.4477 5 13 5.44772 13 6V12C13 12.5523 13.4477 13 14 13H18C18.5523 13 19 12.5523 19 12V6C19 5.44772 18.5523 5 18 5H14Z"
         fill={getFillColor()}
-        style={{ fillRule: "evenodd", clipRule: "evenodd" }}
-        d="M21.151,0.008H2.853c-0.756,0-1.481,0.3-2.016,0.834  C0.302,1.376,0.001,2.101,0,2.857c0,0,0,18.25,0,18.271c0,0.753,0.3,1.491,0.831,2.025c0.528,0.53,1.275,0.84,2.022,0.84  c0,0,18.274,0,18.298,0c0.748,0,1.493-0.312,2.019-0.841c0.529-0.532,0.833-1.274,0.83-2.023V2.857  c-0.001-0.755-0.302-1.479-0.836-2.013C22.63,0.309,21.906,0.009,21.151,0.008z M10.351,17.283c0,0.253-0.104,0.497-0.283,0.675  c-0.181,0.179-0.424,0.275-0.678,0.275c0,0-3.999,0-3.999,0c-0.251-0.001-0.492-0.101-0.669-0.28  c-0.177-0.178-0.277-0.419-0.277-0.67v-11.9c0-0.251,0.1-0.492,0.277-0.67c0.177-0.178,0.418-0.278,0.669-0.28h3.999  c0.252,0.001,0.492,0.101,0.67,0.279c0.178,0.178,0.278,0.419,0.279,0.67C10.339,5.383,10.351,17.282,10.351,17.283z M19.578,11.819  c0.001,0.253-0.102,0.498-0.282,0.676c-0.176,0.174-0.432,0.277-0.679,0.274h-3.999c-0.252-0.001-0.493-0.101-0.67-0.279  c-0.178-0.178-0.278-0.419-0.279-0.67V5.383c0.001-0.252,0.101-0.493,0.279-0.67c0.178-0.178,0.419-0.278,0.67-0.279h3.999  c0.251,0.001,0.492,0.102,0.669,0.28c0.177,0.178,0.277,0.419,0.277,0.67C19.563,5.383,19.578,11.819,19.578,11.819z"
       />
     </svg>
   );
@@ -104,7 +97,7 @@ const TemplatesIcon: React.FC<{
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeDasharray="2,2"
-        className="absolute -left-1 -top-1 mr-3"
+        className="absolute -left-1 -top-1"
       >
         <path d="M5 3a2 2 0 0 0-2 2" />
         <path d="M3 3h14" />
@@ -126,7 +119,7 @@ const TemplatesIcon: React.FC<{
         xmlSpace="preserve"
         width="12"
         height="12"
-        className="relative z-10 mr-3"
+        className="relative z-10"
       >
         <path
           fill={getFillColor()}
@@ -153,14 +146,13 @@ const TemplatesIcon: React.FC<{
 };
 
 const navigationItems = [
-  { name: "Boards", href: "/boards", icon: BoardsIcon, current: true },
+  { name: "Boards", href: "/boards", icon: BoardsIcon },
   {
     name: "Templates",
     href: "/templates",
     icon: TemplatesIcon,
-    current: false,
   },
-  { name: "Home", href: "/", icon: HomeIcon, current: false },
+  { name: "Home", href: "/", icon: HomeIcon },
 ];
 
 const Sidebar: React.FC = () => {
@@ -171,133 +163,27 @@ const Sidebar: React.FC = () => {
 
   const isLight = theme === "light";
 
-  // Dummy workspaces for testing
-  const dummyWorkspaces = [
-    {
-      id: "1",
-      name: "Personal Workspace",
-      description: "My personal projects and tasks",
-      visibility: "private" as const,
-      premium: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      type: "personal" as const,
-      createdBy: "user-1",
-      workspaceMembershipRestrictions: "admin" as const,
-      publicBoardCreation: "admin" as const,
-      workspaceBoardCreation: "member" as const,
-      privateBoardCreation: "member" as const,
-      publicBoardDeletion: "admin" as const,
-      workspaceBoardDeletion: "admin" as const,
-      privateBoardDeletion: "member" as const,
-      allowGuestSharing: "admin" as const,
-      allowSlackIntegration: "admin" as const,
-    },
-    {
-      id: "2",
-      name: "Team Alpha",
-      description: "Development team workspace",
-      visibility: "workspace" as const,
-      premium: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      type: "team" as const,
-      createdBy: "user-1",
-      workspaceMembershipRestrictions: "admin" as const,
-      publicBoardCreation: "admin" as const,
-      workspaceBoardCreation: "member" as const,
-      privateBoardCreation: "member" as const,
-      publicBoardDeletion: "admin" as const,
-      workspaceBoardDeletion: "admin" as const,
-      privateBoardDeletion: "member" as const,
-      allowGuestSharing: "admin" as const,
-      allowSlackIntegration: "admin" as const,
-    },
-    {
-      id: "3",
-      name: "Marketing Department",
-      description: "Marketing campaigns and content planning",
-      visibility: "workspace" as const,
-      premium: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      type: "team" as const,
-      createdBy: "user-1",
-      workspaceMembershipRestrictions: "admin" as const,
-      publicBoardCreation: "admin" as const,
-      workspaceBoardCreation: "member" as const,
-      privateBoardCreation: "member" as const,
-      publicBoardDeletion: "admin" as const,
-      workspaceBoardDeletion: "admin" as const,
-      privateBoardDeletion: "member" as const,
-      allowGuestSharing: "admin" as const,
-      allowSlackIntegration: "admin" as const,
-    },
-    {
-      id: "4",
-      name: "Product Development",
-      description: "Product roadmap and feature planning",
-      visibility: "workspace" as const,
-      premium: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      type: "team" as const,
-      createdBy: "user-1",
-      workspaceMembershipRestrictions: "admin" as const,
-      publicBoardCreation: "admin" as const,
-      workspaceBoardCreation: "member" as const,
-      privateBoardCreation: "member" as const,
-      publicBoardDeletion: "admin" as const,
-      workspaceBoardDeletion: "admin" as const,
-      privateBoardDeletion: "member" as const,
-      allowGuestSharing: "admin" as const,
-      allowSlackIntegration: "admin" as const,
-    },
-    {
-      id: "5",
-      name: "Design Studio",
-      description: "Creative projects and design assets",
-      visibility: "workspace" as const,
-      premium: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      type: "team" as const,
-      createdBy: "user-1",
-      workspaceMembershipRestrictions: "admin" as const,
-      publicBoardCreation: "admin" as const,
-      workspaceBoardCreation: "member" as const,
-      privateBoardCreation: "member" as const,
-      publicBoardDeletion: "admin" as const,
-      workspaceBoardDeletion: "admin" as const,
-      privateBoardDeletion: "member" as const,
-      allowGuestSharing: "admin" as const,
-      allowSlackIntegration: "admin" as const,
-    },
-  ];
-
-  // Use dummy workspaces for testing, fallback to real data
-  const displayWorkspaces =
-    workspaces && workspaces.length > 0 ? workspaces : dummyWorkspaces;
+  const displayWorkspaces = workspaces;
 
   return (
     <div
       className={cn(
-        "flex h-full w-64 flex-col pl-8",
+        "flex h-full w-64 flex-col pl-8 min-w-[288px]",
         isLight ? "bg-white" : "bg-[#1f1f21]"
       )}
     >
       {/* Main Navigation */}
-      <div className="flex-1 flex flex-col pt-3 pb-4 overflow-y-auto">
-        <nav className="flex flex-col w-full mb-1">
-          <ul className="flex flex-col gap-1">
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        <nav className="flex flex-col w-full pt-10 border-b-1 border-b-[#37373a] ">
+          <ul className="flex flex-col gap-[1px]">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
-                <li key={item.name} className="flex">
+                <li key={item.name} className="flex mb-1">
                   <Link
                     to={item.href}
                     className={cn(
-                      "group flex items-center text-sm font-medium rounded-md transition-colors px-1.5 py-2 w-full",
+                      "group flex items-center gap-2 text-sm font-medium rounded-md transition-colors px-2 py-1.5 w-full",
                       isActive
                         ? isLight
                           ? "text-[#186de5] bg-[#e9f2ff]"
@@ -308,14 +194,9 @@ const Sidebar: React.FC = () => {
                     )}
                   >
                     <span className="flex items-center">
-                      <span className="flex items-center">
+                      <span className="flex items-center justify-center w-6 h-6">
                         <item.icon
-                          className={cn(
-                            "mr-3 h-3 w-3 flex-shrink-0",
-                            isActive
-                              ? "text-blue-500"
-                              : "text-gray-400 group-hover:text-gray-500"
-                          )}
+                          className="w-4 h-4"
                           isActive={isActive}
                           isLight={isLight}
                         />
@@ -328,13 +209,6 @@ const Sidebar: React.FC = () => {
             })}
           </ul>
         </nav>
-
-        <Separator
-          className={cn(
-            "mb-2 my-[1px]",
-            isLight ? "bg-[#dcdfe4]" : "bg-[#37373a]"
-          )}
-        />
 
         {/* Workspaces Section */}
         <div className="py-4">
@@ -453,7 +327,7 @@ const Sidebar: React.FC = () => {
                             )}
                           >
                             <BoardsIcon
-                              className="mr-2 h-3 w-3"
+                              className="mr-2 w-3 h-3"
                               isActive={false}
                               isLight={isLight}
                             />
