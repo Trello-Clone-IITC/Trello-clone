@@ -17,3 +17,9 @@ export { default as gearwheelIcon } from "./gearwheel.svg";
 export { default as gearwheelLightIcon } from "./gearwheel-light.svg";
 export { default as peopleIcon } from "./people-icon.svg";
 export { default as peopleLightIcon } from "./people-icon-light.svg";
+
+// Board Icons
+export { default as lockIcon } from "./lock-icon.svg";
+export { default as lockIconDark } from "./lock-icon-dark.svg";
+export { default as globeIcon } from "./globe-icon.svg";
+export { default as globeIconDark } from "./globe-icon-dark.svg";

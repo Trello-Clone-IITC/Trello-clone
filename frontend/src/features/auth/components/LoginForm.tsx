@@ -25,7 +25,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { useEmailPasswordSignIn } from "../hooks/useEmailPasswordSignIn";
 import { ClockLoader } from "react-spinners";
 import { useOauthSignIn } from "../hooks/useOauthSignIn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { userExists } from "../api";
 import { useSignIn } from "@clerk/clerk-react";
 
@@ -39,6 +39,8 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
 
+  const { setTheme } = useTheme();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,8 +51,7 @@ export default function LoginForm() {
   });
 
   const isMobile = useMediaQuery("(max-width: 425px)");
-  const { theme, setTheme } = useTheme();
-  setTheme("light");
+
   const navigate = useNavigate();
   const { isLoaded, oauthSignIn } = useOauthSignIn();
   const { signInWithPassword, submitting, error } = useEmailPasswordSignIn();
@@ -148,6 +149,10 @@ export default function LoginForm() {
       </g>
     </svg>
   );
+
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
 
   return (
     <div className="bg-[#fafbfc] min-h-screen w-full flex justify-center items-center overflow-y-clip">
@@ -276,10 +281,7 @@ export default function LoginForm() {
                   className="w-full h-[40px] px-[10px] py-0 bg-[#0052cc]/90 hover:bg-[#0055cc] cursor-pointer rounded"
                 >
                   {submitting || !clerkLoaded ? (
-                    <ClockLoader
-                      size={25}
-                      color={theme === "dark" ? "#25103e" : "#f8f8f9"}
-                    />
+                    <ClockLoader size={25} color={"#f8f8f9"} />
                   ) : showPassword ? (
                     "Log In"
                   ) : (

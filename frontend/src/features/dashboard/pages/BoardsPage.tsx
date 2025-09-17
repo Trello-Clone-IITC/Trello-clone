@@ -5,11 +5,13 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 import { BoardCard, CreateNewBoard, useUserWorkspaces } from "../index";
+import { useAllBoards } from "@/features/board/hooks/useBoard";
 
-export default function DashboardPage() {
+export default function BoardsPage() {
   const { theme } = useTheme();
   const isLight = theme === "light";
   const { data: workspaces, isLoading, error } = useUserWorkspaces();
+  const { data: allBoards } = useAllBoards();
 
   const starIcon = isLight ? Icons.starIconLight : Icons.starIconDark;
   const clockIcon = isLight ? Icons.clockIconLight : Icons.clockIconDark;
@@ -22,47 +24,89 @@ export default function DashboardPage() {
 
   const buttonTextColor = isLight ? "text-[#292a2e]" : "text-[#bfc1c4]";
 
+  // Filter boards for starred and recently viewed (for now, we'll use all boards as placeholder)
+  // In a real implementation, you'd have starred/recently viewed properties on boards
+  const starredBoards =
+    allBoards?.filter(
+      (board) =>
+        // Placeholder logic - in real app, check board.isStarred or similar
+        board.name.toLowerCase().includes("starred") ||
+        board.name.toLowerCase().includes("important")
+    ) || [];
+
+  const recentlyViewedBoards =
+    allBoards?.filter(
+      (board) =>
+        // Placeholder logic - in real app, check board.lastViewedAt or similar
+        board.name.toLowerCase().includes("recent") ||
+        board.name.toLowerCase().includes("new")
+    ) || [];
+
+  // Group boards by workspace
+  const boardsByWorkspace =
+    workspaces?.map((workspace) => ({
+      ...workspace,
+      boards:
+        allBoards?.filter((board) => board.workspaceId === workspace.id) || [],
+    })) || [];
+
   return (
     <div className="space-y-6">
-      <section className="max-w-[1266px] pb-10">
-        <div
-          className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
-        >
-          <img src={starIcon} alt="Star" className="w-6 h-6" />
-          <span>Starred boards</span>
-        </div>
-        <div
-          className="
-          grid 
-          [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
-          gap-y-[20px] 
-          gap-x-[2%]
-        "
-        >
-          <BoardCard title="Tasks" isStarred={true} />
-          <BoardCard title="Project Alpha" isStarred={true} />
-          <BoardCard title="Team Planning" isStarred={true} />
-        </div>
-      </section>
-      <section className="max-w-[1266px] pb-10">
-        <div
-          className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
-        >
-          <img src={clockIcon} alt="Clock" className="w-6 h-6" />
-          <span>Recently viewed</span>
-        </div>
-        <div
-          className="
-          grid 
-          [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
-          gap-y-[20px] 
-          gap-x-[2%]
-        "
-        >
-          <BoardCard title="Recent Board 1" />
-          <BoardCard title="Recent Board 2" />
-        </div>
-      </section>
+      {/* Starred Boards Section - Only show if there are starred boards */}
+      {starredBoards.length > 0 && (
+        <section className="max-w-[1266px] pb-10">
+          <div
+            className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
+          >
+            <img src={starIcon} alt="Star" className="w-6 h-6" />
+            <span>Starred boards</span>
+          </div>
+          <div
+            className="
+            grid 
+            [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
+            gap-y-[20px] 
+            gap-x-[2%]
+          "
+          >
+            {starredBoards.map((board) => (
+              <BoardCard
+                key={board.id}
+                title={board.name}
+                backgroundImage={board.background}
+                isStarred={true}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+      {/* Recently Viewed Section - Only show if there are recently viewed boards */}
+      {recentlyViewedBoards.length > 0 && (
+        <section className="max-w-[1266px] pb-10">
+          <div
+            className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
+          >
+            <img src={clockIcon} alt="Clock" className="w-6 h-6" />
+            <span>Recently viewed</span>
+          </div>
+          <div
+            className="
+            grid 
+            [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
+            gap-y-[20px] 
+            gap-x-[2%]
+          "
+          >
+            {recentlyViewedBoards.map((board) => (
+              <BoardCard
+                key={board.id}
+                title={board.name}
+                backgroundImage={board.background}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Your Workspaces Section */}
       <section>
@@ -97,7 +141,7 @@ export default function DashboardPage() {
           </div>
         ) : workspaces && workspaces.length > 0 ? (
           <div className="space-y-6">
-            {workspaces.map((workspace, index) => {
+            {boardsByWorkspace.map((workspace, index) => {
               const { initial, color } = getWorkspaceDisplayProps(
                 workspace.name,
                 index,
@@ -217,6 +261,14 @@ export default function DashboardPage() {
                     gap-x-[2%]
                   "
                   >
+                    {/* Show actual boards */}
+                    {workspace.boards.map((board) => (
+                      <BoardCard
+                        key={board.id}
+                        title={board.name}
+                        backgroundImage={board.background}
+                      />
+                    ))}
                     {/* Create Board Button */}
                     <CreateNewBoard />
                   </div>

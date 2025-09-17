@@ -52,7 +52,7 @@ export default function Logo() {
             isLight ? "text-[#172b4d]" : "text-white"
           }`}
         >
-          Trello
+          T<span className="text-[15px]">rello</span>
         </p>
       </div>
     </a>

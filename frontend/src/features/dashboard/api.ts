@@ -3,9 +3,7 @@ import type { WorkspaceDto, CreateWorkspaceInput } from "@ronmordo/contracts";
 import type { ApiResponse } from "@/shared/types/apiResponse";
 
 export const getUserWorkspaces = async (userId: string) => {
-  const { data } = await api.get<ApiResponse<WorkspaceDto[]>>(
-    `/workspaces/user/${userId}`
-  );
+  const { data } = await api.get<ApiResponse<WorkspaceDto[]>>(`/workspaces`);
   return data.data;
 };
 
