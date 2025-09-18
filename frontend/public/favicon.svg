@@ -1,0 +1,16 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners -->
+  <rect width="32" height="32" rx="10" ry="10" fill="#0055cc"/>
+  
+  <!-- Boards icon structure (scaled from 24x24 to 32x32) -->
+  <!-- Scale factor: 32/24 = 1.33 -->
+  <!-- Outer rounded rectangle (board outline) - same color as background -->
+  <rect x="4" y="6.67" width="24" height="18.67" rx="5.33" ry="5.33" fill="#0055cc" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1"/>
+  
+  <!-- White pipes with rounded corners -->
+  <!-- Left pipe (medium height) -->
+  <rect x="6.67" y="6.67" width="8" height="17.33" rx="2.67" ry="2.67" fill="white"/>
+  
+  <!-- Right pipe (shorter) -->
+  <rect x="17.33" y="6.67" width="8" height="10.67" rx="2.67" ry="2.67" fill="white"/>
+</svg>

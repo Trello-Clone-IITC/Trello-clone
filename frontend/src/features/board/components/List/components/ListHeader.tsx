@@ -74,8 +74,7 @@ const ListHeader: React.FC<ListHeaderProps> = ({
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
-            className="w-full bg-transparent border-none outline-none resize-none text-sm font-semibold text-white leading-tight"
-            style={{ height: "32px" }}
+            className="w-full h-8 py-1 px-2 rounded-[3px] border border-[#7e8188] bg-[#22272b] text-white text-sm font-semibold leading-tight resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border"
             maxLength={512}
             spellCheck={false}
             data-testid="list-name-textarea"
@@ -83,14 +82,12 @@ const ListHeader: React.FC<ListHeaderProps> = ({
           />
         ) : (
           <h2
-            className="text-sm font-semibold text-white leading-tight cursor-pointer hover:bg-white/20 rounded px-1 py-0.5 -mx-1 -my-0.5"
+            className="text-sm font-semibold text-white leading-tight cursor-pointer"
             onClick={onStartEditing}
             data-testid="list-name"
             id={`list-${id}`}
           >
-            <button className="w-full text-left">
-              <span>{title}</span>
-            </button>
+            {title}
           </h2>
         )}
       </div>
