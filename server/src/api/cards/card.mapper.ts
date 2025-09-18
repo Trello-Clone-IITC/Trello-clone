@@ -17,7 +17,20 @@ import {
 } from "@ronmordo/contracts";
 import { Prisma } from "@prisma/client";
 
-export function mapCardToDto(card: Card): CardDto {
+export function mapCardToDto(
+  card: Card,
+  additionalFields: Pick<
+    CardDto,
+    | "attachmentsCount"
+    | "cardAssignees"
+    | "checklistItemsCount"
+    | "completedChecklistItemsCount"
+    | "commentsCount"
+    | "isWatch"
+    | "labels"
+    | "location"
+  >
+): CardDto {
   const dto: CardDto = {
     id: card.id,
     listId: card.listId,
@@ -26,10 +39,10 @@ export function mapCardToDto(card: Card): CardDto {
     dueDate: card.dueDate?.toISOString() ?? null,
     startDate: card.startDate?.toISOString() ?? null,
     position: Number(card.position),
+    ...additionalFields,
     isArchived: card.isArchived,
     createdBy: card.createdBy,
     coverImageUrl: card.coverImageUrl ?? null,
-    subscribed: card.subscribed,
     createdAt: card.createdAt.toISOString(),
     updatedAt: card.updatedAt.toISOString(),
   };
@@ -48,7 +61,6 @@ export function mapCardDtoToCreateInput(dto: CardDto): Prisma.CardCreateInput {
     isArchived: dto.isArchived,
     creator: { connect: { id: dto.createdBy } },
     coverImageUrl: dto.coverImageUrl ?? undefined,
-    subscribed: dto.subscribed,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
   };

@@ -1,11 +1,6 @@
 import { Router } from "express";
 import boardController from "./board.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import {
-//   createBoardSchema,
-//   updateBoardSchema,
-//   boardIdSchema,
-// } from "./board.validation.js";
 import {
   CreateBoardInputSchema,
   IdParamSchema,
@@ -34,10 +29,6 @@ router.post(
   boardController.createBoard
 );
 
-// router.get("/", boardController.getAllBoards); //for aiman dev only
-
-// router.get("/user/:userId", boardController.getBoardsByUser); //here untill ron add it to user controller --> currently we dont need that endpoint
-
 // Full board view with all nested data
 router.get(
   "/:id/full",
@@ -58,36 +49,6 @@ router.delete(
 );
 
 //---------------------------nested routes--------------------------------
-// This routes moved to their respective modules for readability
-// -----------------------------------------------------------------------
-
-// Board member management
-// router.get(
-//   "/:id/members",
-//   validateRequest({ params: IdParamSchema }),
-//   boardController.getBoardMembers
-// );
-
-// // Board lists management
-// router.get(
-//   "/:id/lists",
-//   validateRequest({ params: IdParamSchema }),
-//   boardController.getBoardLists
-// );
-
-// // Board labels management
-// router.get(
-//   "/:id/labels",
-//   validateRequest({ params: IdParamSchema }),
-//   boardController.getBoardLabels
-// );
-
-// // Board activity logs management -----> move this to acivity-logs module when implamented
-// router.get(
-//   "/:id/activity-logs",
-//   validateRequest({ params: IdParamSchema }),
-//   boardController.getBoardActivityLogs
-// );
 
 router.use(
   "/:id/boardMembers",

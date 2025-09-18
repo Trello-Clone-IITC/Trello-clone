@@ -15,6 +15,7 @@ import {
 import { AppError } from "../../utils/appError.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceRoleDto } from "../workspace-members/workspace-members.mapper.js";
+import { getCache, setCache } from "../../lib/cache.js";
 
 const createWorkspace = async (
   workspaceDto: CreateWorkspaceInput,
@@ -39,6 +40,12 @@ const createWorkspace = async (
 };
 
 const getWorkspaceById = async (id: string): Promise<WorkspaceDto> => {
+  const cached = await getCache<WorkspaceDto>(`workspace:${id}`);
+
+  if (cached) {
+    return cached;
+  }
+
   const workspace = await prisma.workspace.findUnique({
     where: { id },
   });
@@ -47,7 +54,10 @@ const getWorkspaceById = async (id: string): Promise<WorkspaceDto> => {
     throw new AppError("Workspace not found", 404);
   }
 
-  return mapWorkspaceToDto(workspace);
+  const workspaceDto = mapWorkspaceToDto(workspace);
+  setCache<WorkspaceDto>(`workspace:${id}`, workspaceDto, 120);
+
+  return workspaceDto;
 };
 
 const getWorkspaceWithMembers = async (
@@ -73,6 +83,12 @@ const getWorkspaceWithMembers = async (
 };
 
 const getWorkspacesByUser = async (userId: string): Promise<WorkspaceDto[]> => {
+  const cached = await getCache<WorkspaceDto[]>(`user:${userId}:workspaces`);
+
+  if (cached) {
+    return cached;
+  }
+
   const workspaces = await prisma.workspace.findMany({
     where: {
       workspaceMembers: {
@@ -86,7 +102,10 @@ const getWorkspacesByUser = async (userId: string): Promise<WorkspaceDto[]> => {
     },
   });
 
-  return workspaces.map(mapWorkspaceToDto);
+  const workspacesDto = workspaces.map(mapWorkspaceToDto);
+  setCache(`user:${userId}:workspaces`, workspacesDto, 120);
+
+  return workspacesDto;
 };
 
 const getWorkspacesByCreator = async (

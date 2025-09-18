@@ -1,9 +1,7 @@
 import { Router } from "express";
 import { checklistController } from "./checklist.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import * as checklistValidation from "./checklist.validation.js";
 import {
-  CardIdParamSchema,
   ChecklistIdParamSchema,
   CreateChecklistInputSchema,
   IdParamSchema,
@@ -47,12 +45,6 @@ router.delete(
 );
 
 //-------------------nested routes-------------------
-// Get checklist items
-// router.get(
-//   "/:cardId/checklists/:id/items",
-//   validateRequest({ params: CardIdParamSchema.extend(IdParamSchema.shape) }),
-//   checklistController.getChecklistItems
-// );
 
 router.use(
   "/:checklistId/checklistItems",

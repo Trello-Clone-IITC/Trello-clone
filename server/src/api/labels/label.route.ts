@@ -1,12 +1,6 @@
 import { Router } from "express";
 import { labelController } from "./label.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import {
-//   CreateLabelRequestSchema,
-//   UpdateLabelRequestSchema,
-//   GetLabelByIdRequestSchema,
-//   DeleteLabelRequestSchema,
-// } from "./label.validation.js";
 import {
   CreateLabelInputSchema,
   LabelIdParamSchema,
