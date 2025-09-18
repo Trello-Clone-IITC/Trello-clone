@@ -3,15 +3,46 @@ import type { BoardClientEvents, BoardServerEvents } from "./types.js";
 import listService from "../api/lists/list.service.js";
 import cardService from "../api/cards/card.service.js";
 import { mapListToDto } from "../api/lists/list.mapper.js";
-import { mapCardToDto } from "../api/cards/card.mapper.js";
 import { emitCardCreated, emitCardDeleted, emitCardMoved, emitCardUpdated, emitListCreated, emitListDeleted, emitListUpdated } from "./emitter.js";
 
-// TODO: DEV USER ID (remove after wiring real auth)
-const DEV_USER_ID = "96099bc0-34b7-4be5-b410-4d624cd99da5";
+// Derive user id per socket (fallback to dev user until auth is wired)
+// const DEV_USER_ID = "96099bc0-34b7-4be5-b410-4d624cd99da5";
+const getUserId = (socket: Socket): string => {
+  // Fast-path: try auth payload first
+  const auth: any = socket.handshake?.auth as any;
+  const headers: Record<string, any> = (socket.handshake as any)?.headers || {};
+
+  let uid: string | undefined =
+    auth?.userId || auth?.user_id || auth?.uid ||
+    (socket.handshake as any)?.query?.userId ||
+    headers["x-user-id"] || headers["x-userid"] || headers["x-uid"];
+
+  // Parse cookies if still not found
+  if (!uid) {
+    const cookieHeader = headers?.cookie as string | undefined;
+    if (cookieHeader) {
+      // Minimal cookie parser (no allocations beyond split/join)
+      const pairs = cookieHeader.split(";");
+      for (let i = 0; i < pairs.length; i++) {
+        const part = pairs[i].trim();
+        const eqIdx = part.indexOf("=");
+        if (eqIdx === -1) continue;
+        const key = decodeURIComponent(part.slice(0, eqIdx));
+        const val = decodeURIComponent(part.slice(eqIdx + 1));
+        if (key === "userId" || key === "user_id" || key === "uid" || key === "x-user-id") {
+          uid = val;
+          break;
+        }
+      }
+    }
+  }
+  if (!uid) throw new Error("User ID not found in socket handshake");
+  return uid;
+};
 
 const room = (boardId: string) => `board:${boardId}`;
 
-export function registerBoardNamespace(io: Server<BoardServerEvents, any, BoardClientEvents>) {
+export function registerBoardNamespace(io: Server) {
   io.on("connection", (socket: Socket<BoardClientEvents, BoardServerEvents>) => {
     socket.on("board:join", ({ boardId }) => {
       socket.join(room(boardId));
@@ -62,13 +93,13 @@ export function registerBoardNamespace(io: Server<BoardServerEvents, any, BoardC
     // Cards
     socket.on("card:create", async ({ boardId, listId, title, position }) => {
       try {
+        const userId = getUserId(socket);
         const created = await cardService.createCard(
           { title, position: position ?? 1000 },
           listId,
-          DEV_USER_ID
+          userId
         );
-        const dto = mapCardToDto(created as any);
-        emitCardCreated(boardId, dto);
+        emitCardCreated(boardId, created);
       } catch (e) {
         // ignore
       }
@@ -76,15 +107,19 @@ export function registerBoardNamespace(io: Server<BoardServerEvents, any, BoardC
 
     socket.on("card:update", async ({ boardId, cardId, updates }) => {
       try {
-        const updated = await cardService.updateCard(cardId, {
-          title: updates.title,
-          description: updates.description ?? undefined,
-          dueDate: updates.dueDate ? new Date(updates.dueDate) : undefined,
-          startDate: updates.startDate ? new Date(updates.startDate) : undefined,
-          coverImageUrl: updates.coverImageUrl ?? undefined,
-        }, DEV_USER_ID);
-        const dto = mapCardToDto(updated as any);
-        emitCardUpdated(boardId, dto);
+        const userId = getUserId(socket);
+        const updated = await cardService.updateCard(
+          cardId,
+          {
+            title: updates.title,
+            description: updates.description ?? undefined,
+            dueDate: updates.dueDate ? new Date(updates.dueDate) : undefined,
+            startDate: updates.startDate ? new Date(updates.startDate) : undefined,
+            coverImageUrl: updates.coverImageUrl ?? undefined,
+          },
+          userId
+        );
+        emitCardUpdated(boardId, updated);
       } catch (e) {
         // ignore
       }
@@ -92,7 +127,8 @@ export function registerBoardNamespace(io: Server<BoardServerEvents, any, BoardC
 
     socket.on("card:delete", async ({ boardId, cardId, listId }) => {
       try {
-        await cardService.deleteCard(cardId, DEV_USER_ID);
+        const userId = getUserId(socket);
+        await cardService.deleteCard(cardId, userId);
         emitCardDeleted(boardId, cardId, listId);
       } catch (e) {
         // ignore
@@ -102,11 +138,11 @@ export function registerBoardNamespace(io: Server<BoardServerEvents, any, BoardC
     socket.on("card:move", async ({ boardId, cardId, toListId, position }) => {
       try {
         // We need fromListId for the client UI to remove from source list; get card first
-        const existing = await cardService.getCardById(cardId, DEV_USER_ID);
-        const fromListId = (existing as any).listId ?? (existing as any).list?.id;
-        const moved = await cardService.moveCard(cardId, toListId, position, DEV_USER_ID);
-        const dto = mapCardToDto(moved as any);
-        emitCardMoved(boardId, dto, fromListId);
+        const userId = getUserId(socket);
+        const existing = await cardService.getCardById(cardId, userId);
+        const fromListId = existing.listId;
+        const moved = await cardService.moveCard(cardId, toListId, position, userId);
+        emitCardMoved(boardId, moved, fromListId);
       } catch (e) {
         // ignore
       }
