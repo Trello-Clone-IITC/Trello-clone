@@ -263,6 +263,11 @@ const getFullBoard = async (
 ) => {
   try {
     const { id } = req.params;
+    const userId = await userService.getUserIdByRequest(req);
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 403);
+    }
 
     const fullBoard = await boardService.getFullBoard(id);
 
@@ -270,18 +275,17 @@ const getFullBoard = async (
       return next(new AppError("Board not found", 404));
     }
 
-    const fullBoardDto: BoardFullDto = mapFullBoardToDto(fullBoard);
+    const fullBoardDto: BoardFullDto = await mapFullBoardToDto(
+      fullBoard,
+      userId
+    );
 
     res.status(200).json({
       success: true,
       data: fullBoardDto,
     });
   } catch (error) {
-    console.error("Error in getFullBoard controller:", error);
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get full board data", 500));
+    next(error);
   }
 };
 
