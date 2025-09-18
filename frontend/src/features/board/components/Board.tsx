@@ -1,20 +1,26 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useFullBoard } from "../hooks/useBoard";
 import List from "./List/components/List";
 import CardModal from "./card/components/CardModal";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
-import { useCreateList } from "./List/hooks/useListQueries";
 import { Input } from "@/components/ui/input";
+import { dummyBoardData, createDummyList } from "../data/dummyData";
+import type { BoardFullDto, ListDto, CardDto } from "@ronmordo/contracts";
 
-const Board: React.FC = () => {
+const Board = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const { data: boardData, isLoading, error } = useFullBoard(boardId || "");
-  const createListMutation = useCreateList();
+
+  // Use dummy data instead of hooks
+  const boardData: BoardFullDto = dummyBoardData;
+  const isLoading = false;
+  const error = null;
 
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [listName, setListName] = useState("");
+  const [lists, setLists] = useState<(ListDto & { cards?: CardDto[] })[]>(
+    boardData.lists
+  );
 
   const handleAddList = () => {
     setIsCreatingList(true);
@@ -30,11 +36,12 @@ const Board: React.FC = () => {
     if (!listName.trim() || !boardId) return;
 
     try {
-      await createListMutation.mutateAsync({
-        name: listName.trim(),
-        position: boardData?.lists?.length || 0,
-        boardId,
-      });
+      // Create a new list with dummy data
+      const newList = createDummyList(listName.trim(), lists.length, boardId);
+
+      // Add the new list to the state
+      setLists((prevLists) => [...prevLists, newList]);
+
       setIsCreatingList(false);
       setListName("");
     } catch (error) {
@@ -66,14 +73,36 @@ const Board: React.FC = () => {
     );
   }
 
-  const lists = boardData.lists || [];
-
   return (
     <div>
       <div className="flex gap-4 p-4 overflow-x-auto min-h-screen">
-        {lists.map((list) => (
-          <List key={list.id} id={list.id} title={list.name} cards={[]} />
-        ))}
+        {lists.map((list) => {
+          // Get cards for this list from the board data or from the list itself
+          const listWithCards = boardData.lists.find((l) => l.id === list.id);
+          const cards = listWithCards?.cards || list.cards || [];
+
+          return (
+            <List
+              key={list.id}
+              id={list.id}
+              title={list.name}
+              cards={cards.map((card: CardDto) => ({
+                id: card.id,
+                title: card.title,
+                description: card.description || undefined,
+                listId: card.listId,
+                position: card.position,
+                labels: card.labels.map((label) => ({
+                  id: label.name || "", // Using name as id for compatibility
+                  title: label.name || "",
+                  color: label.color,
+                })),
+                createdAt: card.createdAt,
+                updatedAt: card.updatedAt,
+              }))}
+            />
+          );
+        })}
 
         <div className="min-w-[272px]">
           {isCreatingList ? (
@@ -88,7 +117,12 @@ const Board: React.FC = () => {
                 className="bg-white text-[#bfc1c4] placeholder:text-gray-500 mb-2"
                 autoFocus
                 onBlur={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  // Only cancel if the blur is not caused by clicking the submit button
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (
+                    !relatedTarget ||
+                    !relatedTarget.closest('button[type="submit"]')
+                  ) {
                     handleCancelCreateList();
                   }
                 }}
@@ -97,10 +131,10 @@ const Board: React.FC = () => {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!listName.trim() || createListMutation.isPending}
+                  disabled={!listName.trim()}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {createListMutation.isPending ? "Adding..." : "Add list"}
+                  Add list
                 </Button>
                 <Button
                   type="button"

@@ -33,7 +33,7 @@ export default function DatesDropdown({ children }: DatesDropdownProps) {
         align="start"
         side="top"
         alignOffset={0}
-        sideOffset={-40}
+        sideOffset={-200}
         className="w-80 bg-[#22272b] border-gray-600 text-white p-0 overflow-y-auto dates-dropdown"
       >
         <div className="p-3">
