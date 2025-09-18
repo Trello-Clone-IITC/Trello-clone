@@ -23,3 +23,13 @@ export { default as lockIcon } from "./lock-icon.svg";
 export { default as lockIconDark } from "./lock-icon-dark.svg";
 export { default as globeIcon } from "./globe-icon.svg";
 export { default as globeIconDark } from "./globe-icon-dark.svg";
+
+// Board Background Images
+export { default as background1Hd } from "./background-1-hd.webp";
+export { default as background1Preview } from "./background-1-preview.webp";
+export { default as background2Hd } from "./background-2-hd.webp";
+export { default as background2Preview } from "./background-2-preview.webp";
+export { default as background3Hd } from "./background-3-hd.webp";
+export { default as background3Preview } from "./background-3-preview.webp";
+export { default as background4Hd } from "./background-4-hd.webp";
+export { default as background4Preview } from "./background-4-preview.webp";
