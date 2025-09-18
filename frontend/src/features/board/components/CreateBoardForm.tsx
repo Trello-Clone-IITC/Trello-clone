@@ -31,6 +31,14 @@ import {
   globeIconDark,
   peopleIcon,
   peopleLightIcon,
+  background1Hd,
+  background1Preview,
+  background2Hd,
+  background2Preview,
+  background3Hd,
+  background3Preview,
+  background4Hd,
+  background4Preview,
 } from "@/assets";
 import type { CreateBoardInput } from "@ronmordo/contracts";
 interface CreateBoardFormProps {
@@ -44,34 +52,30 @@ const backgroundOptions = [
   {
     id: "photo-1",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742156345582-b857d994c84e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDF8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
-    previewUrl:
-      "https://images.unsplash.com/photo-1742156345582-b857d994c84e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDF8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
-    title: "Glacier sits atop an arid, rocky landscape.",
+    url: background1Hd,
+    previewUrl: background1Preview,
+    title: "Sunrise illuminates a beautiful lake and snowy mountains.",
   },
   {
     id: "photo-2",
     type: "photo",
-    url: "https://trello-backgrounds.s3.amazonaws.com/SharedBackground/2560x1543/972d5bb6b30978a434abeed68e6f730b/photo-1741812191037-96bb5f12010a.webp",
-    previewUrl:
-      "https://images.unsplash.com/photo-1741812191037-96bb5f12010a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDJ8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
-    title: "Majestic mountain silhouetted against an orange sky.",
+    url: background2Hd,
+    previewUrl: background2Preview,
+    title: "Palm tree fronds against a neutral, muted background.",
   },
   {
     id: "photo-3",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742937163916-78fd07cc3b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDN8MzE3MDk9fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
-    previewUrl:
-      "https://images.unsplash.com/photo-1742937163916-78fd07cc3b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDN8MzE3MDk9fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
-    title: "Palm tree fronds against a neutral, muted background.",
+    url: background3Hd,
+    previewUrl: background3Preview,
+    title: "Glacier sits atop an arid, rocky landscape.",
   },
   {
     id: "photo-4",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742845918430-c6093f93f740?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDR8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
-    previewUrl:
-      "https://images.unsplash.com/photo-1742845918430-c6093f93f740?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDR8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
-    title: "Sunrise illuminates a beautiful lake and snowy mountains.",
+    url: background4Hd,
+    previewUrl: background4Preview,
+    title: "Majestic mountain silhouetted against an orange sky.",
   },
   {
     id: "gradient-1",
