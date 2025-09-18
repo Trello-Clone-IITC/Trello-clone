@@ -244,6 +244,8 @@ const isUserWatchingList = async (
 
 const getCardsByList = async (listId: string, userId: string) => {
   // Verify user has access to the list
+  console.log(listId,userId);
+  
   const list = await prisma.list.findFirst({
     where: {
       id: listId,
@@ -285,6 +287,8 @@ const getCardsByList = async (listId: string, userId: string) => {
       },
     },
   });
+  console.log(list);
+  
 
   if (!list) {
     throw new AppError("List not found", 404);
