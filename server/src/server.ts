@@ -8,6 +8,11 @@ import { prisma } from "./lib/prismaClient.js";
 import { clerkMiddleware } from "@clerk/express";
 import pino from "pino";
 import * as pinoHttpNS from "pino-http";
+import http from "http";
+import { Server as IOServer } from "socket.io";
+import { setIo } from "./sockets/emitter.js";
+import { registerBoardNamespace } from "./sockets/board.namespace.js";
+import type { BoardServerEvents } from "./sockets/types.js";
 
 // ENV variables
 const { PORT, SESSION_SECRET } = env;
@@ -71,15 +76,26 @@ app.use((req, _res, next) => {
 // Global error handling middleware
 app.use(globalErrorHandler);
 
+// Create HTTP server and attach Socket.IO
+const httpServer = http.createServer(app);
+const io: IOServer<BoardServerEvents> = new IOServer(httpServer, {
+  cors: { origin: "*" },
+});
+setIo(io);
+registerBoardNamespace(io);
+
 // Start listening
-const server = app.listen(PORT, (err) => {
-  if (err) {
-    console.error("❌ Error starting server:", err.message);
-    process.exit(1);
-  }
+httpServer.on("error", (err: any) => {
+  console.error("❌ Error starting server:", err?.message || err);
+  process.exit(1);
+});
+
+const server = httpServer.listen(PORT, () => {
+
   console.log(`🚀 Server listening on PORT: ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🗄️  Database: PostgreSQL`);
+  console.log("🔌 Socket.IO attached to HTTP server");
 });
 
 async function shutdown(reason: string, code = 0) {

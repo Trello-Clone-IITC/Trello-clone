@@ -95,6 +95,7 @@ const createCard = async (
   userId: string
 ): Promise<CardDto> => {
   // Verify list exists and user has access
+
   const list = await prisma.list.findFirst({
     where: {
       id: listId,

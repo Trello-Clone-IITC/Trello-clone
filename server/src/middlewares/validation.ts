@@ -18,9 +18,9 @@ export const validateRequest = (fields: {
 
   return async (req: Request, _: Response, next: NextFunction) => {
     try {
-      console.log("req.body", req.body);
-      console.log("req.query", req.query);
-      console.log("req.params", req.params);
+      // console.log("req.body", req.body);
+      // console.log("req.query", req.query);
+      // console.log("req.params", req.params);
 
       await Promise.all([
         body.parseAsync(req.body),
