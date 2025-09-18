@@ -14,14 +14,14 @@ export interface AimansSocketHandlers {
 }
 
 // Create a singleton socket instance (separate port assumed)
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "/";
 
 let socketInstance: Socket | null = null;
 
 export function getAimansSocket(): Socket {
   if (!socketInstance) {
     // Allow default transports (polling + upgrade) to improve connectivity
-    socketInstance = io(SOCKET_URL, { autoConnect: true });
+    socketInstance = io(SOCKET_URL, { autoConnect: true, withCredentials: true });
     socketInstance.on("connect_error", (err) => {
       console.warn("Socket connect_error:", (err as any)?.message || err);
     });

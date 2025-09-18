@@ -13,9 +13,12 @@ import { Server as IOServer } from "socket.io";
 import { setIo } from "./sockets/emitter.js";
 import { registerBoardNamespace } from "./sockets/board.namespace.js";
 import type { BoardServerEvents } from "./sockets/types.js";
+import cookie from "cookie";
+import { verifyJwt } from "@clerk/backend/jwt";
+import { authenticateSocket } from "./sockets/auth.middleware.js";
 
 // ENV variables
-const { PORT, SESSION_SECRET } = env;
+const { PORT, SESSION_SECRET, CLERK_JWT_KEY } = env;
 
 // Init express app
 const app = express();
@@ -78,9 +81,8 @@ app.use(globalErrorHandler);
 
 // Create HTTP server and attach Socket.IO
 const httpServer = http.createServer(app);
-const io: IOServer<BoardServerEvents> = new IOServer(httpServer, {
-  cors: { origin: "*" },
-});
+const io: IOServer<BoardServerEvents> = new IOServer(httpServer);
+io.use(authenticateSocket);
 setIo(io);
 registerBoardNamespace(io);
 
@@ -91,7 +93,6 @@ httpServer.on("error", (err: any) => {
 });
 
 const server = httpServer.listen(PORT, () => {
-
   console.log(`🚀 Server listening on PORT: ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🗄️  Database: PostgreSQL`);
