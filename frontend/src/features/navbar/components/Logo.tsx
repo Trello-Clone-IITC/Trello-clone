@@ -1,15 +1,26 @@
 import { useTheme } from "@/hooks/useTheme";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Logo() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
   const isLight = theme === "light";
+
+  // Check if we're in board view
+  const isBoardView = location.pathname.startsWith("/board/");
+
+  const handleLogoClick = () => {
+    navigate("/boards");
+  };
+
   return (
-    <a
-      href="/"
+    <button
+      onClick={handleLogoClick}
       className={`group flex items-center rounded-sm py-1 px-2 transition ease-in-out ${
         isLight ? "hover:bg-[#dddedd]" : "hover:bg-[#37373a]"
       }`}
-      aria-label="Back to home"
+      aria-label="Back to boards"
     >
       <div className="flex items-center">
         {/* Trello Logo SVG */}
@@ -17,7 +28,7 @@ export default function Logo() {
           width="24"
           height="24"
           viewBox="0 0 24 24"
-          className="text-[#0055cc]"
+          className={isBoardView ? "text-[#a9abaf]" : "text-[#0055cc]"}
         >
           {/* Background */}
           <path
@@ -33,7 +44,7 @@ export default function Logo() {
             height="13.803"
             rx="0.947869"
             ry="0.947869"
-            fill="white"
+            fill={isBoardView ? "#37373a" : "white"}
             className="group-hover:animate-[reverse-pulse_0.43s_ease-in-out_infinite_alternate]"
           />
           <rect
@@ -43,7 +54,7 @@ export default function Logo() {
             height="8.3366"
             rx="0.947869"
             ry="0.947869"
-            fill="white"
+            fill={isBoardView ? "#37373a" : "white"}
             className="group-hover:animate-[forward-pulse_0.43s_ease-in-out_infinite_alternate]"
           />
         </svg>
@@ -52,9 +63,9 @@ export default function Logo() {
             isLight ? "text-[#172b4d]" : "text-white"
           }`}
         >
-          T<span className="text-[15px]">rello</span>
+          T<span className="xl:text-[15px] text-[0px]">rello</span>
         </p>
       </div>
-    </a>
+    </button>
   );
 }

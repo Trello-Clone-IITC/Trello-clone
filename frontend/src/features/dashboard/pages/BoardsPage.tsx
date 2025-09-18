@@ -72,6 +72,7 @@ export default function BoardsPage() {
             {starredBoards.map((board) => (
               <BoardCard
                 key={board.id}
+                id={board.id}
                 title={board.name}
                 backgroundImage={board.background}
                 isStarred={true}
@@ -100,6 +101,7 @@ export default function BoardsPage() {
             {recentlyViewedBoards.map((board) => (
               <BoardCard
                 key={board.id}
+                id={board.id}
                 title={board.name}
                 backgroundImage={board.background}
               />
@@ -265,6 +267,7 @@ export default function BoardsPage() {
                     {workspace.boards.map((board) => (
                       <BoardCard
                         key={board.id}
+                        id={board.id}
                         title={board.name}
                         backgroundImage={board.background}
                       />

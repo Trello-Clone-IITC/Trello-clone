@@ -17,6 +17,9 @@ import { SsoCallback } from "@/features/auth/components/Sso-callback";
 import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
 
+// Board pages
+import BoardPage from "@/features/board/pages/BoardPage";
+
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
 
@@ -50,9 +53,10 @@ export const AppRouter = () => {
           <Route path="boards" element={<BoardsPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
-          <Route path="board" element={<Board />} />
           {/* add more nested dashboard routes here */}
         </Route>
+        {/* Board page with navbar but no sidebar */}
+        <Route path="board/:boardId" element={<BoardPage />} />
       </Route>
     </Routes>
   );

@@ -32,7 +32,7 @@ import {
   peopleIcon,
   peopleLightIcon,
 } from "@/assets";
-
+import type { CreateBoardInput } from "@ronmordo/contracts";
 interface CreateBoardFormProps {
   onBack?: () => void;
   onClose?: () => void;
@@ -44,25 +44,33 @@ const backgroundOptions = [
   {
     id: "photo-1",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742156345582-b857d994c84e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDF8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
+    url: "https://images.unsplash.com/photo-1742156345582-b857d994c84e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDF8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
+    previewUrl:
+      "https://images.unsplash.com/photo-1742156345582-b857d994c84e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDF8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
     title: "Glacier sits atop an arid, rocky landscape.",
   },
   {
     id: "photo-2",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1741812191037-96bb5f12010a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDJ8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
+    url: "https://trello-backgrounds.s3.amazonaws.com/SharedBackground/2560x1543/972d5bb6b30978a434abeed68e6f730b/photo-1741812191037-96bb5f12010a.webp",
+    previewUrl:
+      "https://images.unsplash.com/photo-1741812191037-96bb5f12010a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDJ8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
     title: "Majestic mountain silhouetted against an orange sky.",
   },
   {
     id: "photo-3",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742937163916-78fd07cc3b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDN8MzE3MDk9fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
+    url: "https://images.unsplash.com/photo-1742937163916-78fd07cc3b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDN8MzE3MDk9fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
+    previewUrl:
+      "https://images.unsplash.com/photo-1742937163916-78fd07cc3b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDN8MzE3MDk9fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
     title: "Palm tree fronds against a neutral, muted background.",
   },
   {
     id: "photo-4",
     type: "photo",
-    url: "https://images.unsplash.com/photo-1742845918430-c6093f93f740?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDR8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
+    url: "https://images.unsplash.com/photo-1742845918430-c6093f93f740?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDR8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=2560",
+    previewUrl:
+      "https://images.unsplash.com/photo-1742845918430-c6093f93f740?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MDY2fDB8MXxjb2xsZWN0aW9ufDR8MzE3MDk5fHx8fHwyfHwxNzU3OTE0ODczfA&ixlib=rb-4.1.0&q=80&w=400",
     title: "Sunrise illuminates a beautiful lake and snowy mountains.",
   },
   {
@@ -102,12 +110,6 @@ const backgroundOptions = [
   },
 ];
 
-interface FormData {
-  title: string;
-  workspaceId: string;
-  visibility: "private" | "workspace_members" | "public";
-}
-
 export const CreateBoardForm = ({
   onBack,
   onClose,
@@ -123,11 +125,12 @@ export const CreateBoardForm = ({
   const { data: workspaces, isLoading: workspacesLoading } =
     useUserWorkspaces();
 
-  const form = useForm<FormData>({
+  const form = useForm<CreateBoardInput>({
     defaultValues: {
-      title: "",
+      name: "",
       workspaceId: "",
       visibility: "workspace_members",
+      background: "",
     },
     mode: "onChange", // Enable real-time validation
   });
@@ -136,14 +139,24 @@ export const CreateBoardForm = ({
     (bg) => bg.id === selectedBackground
   );
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: CreateBoardInput) => {
     try {
+      // Determine the background value based on type
+      let backgroundValue = "#0079bf"; // default fallback
+
+      if (selectedBg?.type === "photo") {
+        backgroundValue = selectedBg.url || "#0079bf";
+      } else if (selectedBg?.type === "gradient") {
+        // For gradients, use the pattern if available, otherwise use the color
+        backgroundValue = selectedBg.pattern || selectedBg.color || "#0079bf";
+      }
+
       await createBoard.mutateAsync({
-        name: data.title,
+        name: data.name,
         description: "",
         visibility: data.visibility,
         workspaceId: data.workspaceId,
-        background: selectedBg?.url || selectedBg?.color || "#0079bf",
+        background: backgroundValue,
         allowCovers: true,
         showComplete: true,
       });
@@ -202,7 +215,7 @@ export const CreateBoardForm = ({
               backgroundColor: selectedBg?.color,
               backgroundImage:
                 selectedBg?.type === "photo"
-                  ? `url(${selectedBg.url})`
+                  ? `url(${selectedBg.previewUrl || selectedBg.url})`
                   : selectedBg?.pattern
                   ? `url(${selectedBg.pattern})`
                   : undefined,
@@ -235,7 +248,7 @@ export const CreateBoardForm = ({
                     type="button"
                     className="relative w-full h-full rounded-[3px] outline-0 bg-cover bg-center cursor-pointer flex items-center justify-center overflow-hidden hover:after:absolute hover:after:inset-0 hover:after:bg-white/20 hover:after:rounded-[3px]"
                     style={{
-                      backgroundImage: `url(${bg.url})`,
+                      backgroundImage: `url(${bg.previewUrl || bg.url})`,
                     }}
                     onClick={() => setSelectedBackground(bg.id)}
                     title={bg.title}
@@ -300,7 +313,7 @@ export const CreateBoardForm = ({
             {/* Board Title */}
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               rules={{ required: "Board title is required" }}
               render={({ field, fieldState }) => {
                 const hasError = fieldState.error || !field.value?.trim();
@@ -541,18 +554,18 @@ export const CreateBoardForm = ({
             <Button
               type="submit"
               disabled={
-                !form.watch("title")?.trim() ||
+                !form.watch("name")?.trim() ||
                 !form.watch("workspaceId") ||
                 createBoard.isPending
               }
               className={cn(
-                "w-full h-10 mt-4 mb-0 cursor-pointer",
-                !form.watch("title")?.trim() ||
+                "w-full h-10 mt-4 mb-0 cursor-pointer rounded-[3px]",
+                !form.watch("name")?.trim() ||
                   !form.watch("workspaceId") ||
                   createBoard.isPending
                   ? isLight
-                    ? "bg-[#f8f8f8] text-[#b2b4ba] cursor-not-allowed"
-                    : "bg-[#303134] text-[#585a60] cursor-not-allowed"
+                    ? "bg-[#f8f8f8] text-[#b2b4ba] cursor-not-allowed disabled:opacity-100"
+                    : "bg-[#303134] text-[#585a60] cursor-not-allowed disabled:opacity-100"
                   : isLight
                   ? "bg-[#1868db] hover:bg-[#1558bc] text-white"
                   : "bg-[#669df1] hover:bg-[#8fb8f6] text-[#1f1f21]"
@@ -566,12 +579,11 @@ export const CreateBoardForm = ({
         {/* Template Button */}
         <Button
           type="button"
-          variant="outline"
           className={cn(
-            "w-full h-10 mt-2",
+            "w-full h-10 mt-2 rounded-[3px] text-sm cursor-pointer",
             isLight
               ? "border-[#dcdfe4] hover:bg-[#f0f1f2]"
-              : "border-[#434345] hover:bg-[#2c2c2e]"
+              : "border-[#434345] bg-[#36373a] text-[#bfc1c4] hover:bg-[#414246]"
           )}
         >
           Start with a template

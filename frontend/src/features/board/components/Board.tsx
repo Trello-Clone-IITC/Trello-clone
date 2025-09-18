@@ -1,73 +1,88 @@
 import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/store/store";
-import { setLists } from "./List/redux/listSlice";
+import { useParams } from "react-router-dom";
+import { useFullBoard } from "../hooks/useBoard";
 import List from "./List/components/List";
-import type { List as ListType } from "./List/redux/listSlice";
-import { getCardsByListId } from "./card/data";
 import CardModal from "./card/components/CardModal";
-
-// Sample lists with realistic data
-const sampleLists: ListType[] = [
-  {
-    id: "list-landing",
-    title: "Landing Page",
-    boardId: "board-1",
-    position: 0,
-    cards: getCardsByListId("list-landing"),
-    createdAt: "2024-01-15T09:00:00Z",
-    updatedAt: "2024-01-15T09:00:00Z",
-  },
-  {
-    id: "list-progress",
-    title: "In Progress",
-    boardId: "board-1",
-    position: 1,
-    cards: getCardsByListId("list-progress"),
-    createdAt: "2024-01-16T09:00:00Z",
-    updatedAt: "2024-01-16T09:00:00Z",
-  },
-  {
-    id: "list-done",
-    title: "Done",
-    boardId: "board-1",
-    position: 2,
-    cards: getCardsByListId("list-done"),
-    createdAt: "2024-01-14T09:00:00Z",
-    updatedAt: "2024-01-14T09:00:00Z",
-  },
-  {
-    id: "list-backlog",
-    title: "Backlog",
-    boardId: "board-1",
-    position: 3,
-    cards: getCardsByListId("list-backlog"),
-    createdAt: "2024-01-17T09:00:00Z",
-    updatedAt: "2024-01-17T09:00:00Z",
-  },
-];
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Board: React.FC = () => {
-  const dispatch = useDispatch();
-  const lists = useSelector((state: RootState) => state.list.lists);
+  const { boardId } = useParams<{ boardId: string }>();
+  const { data: boardData, isLoading, error } = useFullBoard(boardId || "");
 
-  // Initialize with sample data if no lists exist
-  React.useEffect(() => {
-    if (lists.length === 0) {
-      dispatch(setLists(sampleLists));
-    }
-  }, [dispatch, lists.length]);
+  const handleAddList = () => {
+    // TODO: Implement add list functionality
+    console.log("Add list clicked");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-white">Loading board...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-400">Error loading board</div>
+      </div>
+    );
+  }
+
+  if (!boardData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-white">Board not found</div>
+      </div>
+    );
+  }
+
+  const lists = boardData.lists || [];
 
   return (
-    <div className="flex gap-4 p-4 overflow-x-auto min-h-screen bg-[#1d2125]">
-      {lists.map((list) => (
-        <List
-          key={list.id}
-          id={list.id}
-          title={list.title}
-          cards={list.cards}
-        />
-      ))}
+    <div className="board-canvas" data-testid="board-canvas">
+      <ol
+        id="board"
+        className="flex gap-4 p-4 overflow-x-auto min-h-screen"
+        data-testid="lists"
+        data-auto-scrollable="true"
+        data-drag-scroll-enabled="true"
+      >
+        {lists.length > 0 ? (
+          lists.map((list) => (
+            <List key={list.id} id={list.id} title={list.name} cards={[]} />
+          ))
+        ) : (
+          <li className="xiDAKk58vfamwR">
+            <div
+              className="Hdr1lvVT_9hdOt"
+              data-testid="list-composer-button-container"
+              role="presentation"
+            >
+              <Button
+                onClick={handleAddList}
+                className="hCjCvLRiJAOgje PhzBALMp63PY_y ybVBgfOiuWZJtD _St8_YSRMkLv07 bg-[#ffffff3d] hover:bg-[#ffffff52] text-white px-3 py-2 rounded-md flex items-center gap-2 min-w-[272px] h-8"
+                type="button"
+                data-testid="list-composer-button"
+                data-drag-scroll-disabled="true"
+              >
+                <span className="nch-icon hChYpzFshATQo8 GzZMAuibTh5l1i HRDK8sNF4Ja3BM">
+                  <span
+                    data-testid="AddIcon"
+                    data-vc="icon-AddIcon"
+                    aria-hidden="true"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </span>
+                </span>
+                Add a list
+              </Button>
+            </div>
+          </li>
+        )}
+      </ol>
       <CardModal />
     </div>
   );
