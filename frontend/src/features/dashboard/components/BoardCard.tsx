@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
+import { useNavigate } from "react-router-dom";
 import starredIcon from "../../../assets/starred-icon.svg";
 
 interface BoardCardProps {
+  id: string;
   title: string;
   backgroundImage?: string;
   className?: string;
@@ -12,13 +14,19 @@ interface BoardCardProps {
 }
 
 export const BoardCard = ({
+  id,
   title,
   backgroundImage,
   className,
   isStarred = false,
 }: BoardCardProps) => {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const isLight = theme === "light";
+
+  const handleBoardClick = () => {
+    navigate(`/board/${id}`);
+  };
 
   // Generate a random image if none provided
   const imageUrl =
@@ -30,6 +38,7 @@ export const BoardCard = ({
         "group relative overflow-hidden p-0 gap-0 cursor-pointer transition-all duration-200 w-full max-w-[215px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f]",
         className
       )}
+      onClick={handleBoardClick}
     >
       {/* Background Image Container */}
       <div
