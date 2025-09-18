@@ -1,13 +1,13 @@
-import type { AimansBoardAggregated } from "../hooks/useAimansBoard";
+import type { BoardDto, ListDto } from "@ronmordo/contracts";
 import { AimansList } from "./AimansList";
 import { AddListDialogButton } from "./dialogs/AddListDialogButton";
 
 type Props = {
-  data: AimansBoardAggregated;
+  board: BoardDto;
+  lists: ListDto[];
 };
 
-export function AimansBoard({ data }: Props) {
-  const { board, lists } = data;
+export function AimansBoard({ board, lists }: Props) {
 
   return (
     <div className="min-h-screen bg-[#1d2125]">
@@ -29,9 +29,9 @@ export function AimansBoard({ data }: Props) {
       {/* Board Content */}
       <div className="flex gap-4 p-4 overflow-x-auto min-h-[calc(100vh-80px)]">
         {lists
-          .sort((a, b) => a.list.position - b.list.position)
-          .map(({ list, cards }) => (
-            <AimansList key={list.id} list={list} cards={cards} boardId={board.id} />
+          .sort((a, b) => a.position - b.position)
+          .map((list) => (
+            <AimansList key={list.id} list={list} boardId={board.id} />
           ))}
 
         {/* Add new list button */}

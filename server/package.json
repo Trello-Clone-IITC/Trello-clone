@@ -9,7 +9,8 @@
     "clean": "rm -r dist",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/config/seed.ts"
+    "seed": "tsx src/config/seed.ts",
+    "seed:user": "tsx src/scripts/seed-workspace-for-user.ts"
   },
   "keywords": [],
   "author": "",

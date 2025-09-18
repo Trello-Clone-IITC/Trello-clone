@@ -1,150 +1,200 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { BoardDto, ListDto, CardDto } from "@ronmordo/contracts";
-import { fetchBoard, fetchBoardLists, fetchListCards } from "../api";
+import {
+  fetchBoard,
+  fetchBoardLists,
+  fetchListCards,
+  fetchCard,
+  fetchCardAttachments,
+  fetchCardChecklists,
+  fetchCardComments,
+  fetchCardLabels,
+  fetchBoardLabels,
+} from "../api";
 import { useAimansBoardSocket } from "../socket";
 
-// Query keys for this feature
+// Query keys for this feature (separated)
 export const aimanKeys = {
-  board: (boardId: string) => ["aiman-board", boardId] as const,
+  board: (boardId: string) => ["aiman", "board", boardId] as const,
+  lists: (boardId: string) => ["aiman", "lists", boardId] as const,
+  cards: (boardId: string, listId: string) =>
+    ["aiman", "cards", boardId, listId] as const,
+  card: (boardId: string, listId: string, cardId: string) =>
+    ["aiman", "card", boardId, listId, cardId] as const,
+  cardComments: (boardId: string, listId: string, cardId: string) =>
+    ["aiman", "card", "comments", boardId, listId, cardId] as const,
+  cardChecklists: (boardId: string, listId: string, cardId: string) =>
+    ["aiman", "card", "checklists", boardId, listId, cardId] as const,
+  cardLabels: (boardId: string, listId: string, cardId: string) =>
+    ["aiman", "card", "labels", boardId, listId, cardId] as const,
+  cardAttachments: (boardId: string, listId: string, cardId: string) =>
+    ["aiman", "card", "attachments", boardId, listId, cardId] as const,
+  boardLabels: (boardId: string) => ["aiman", "board", "labels", boardId] as const,
 };
 
-// INTERFACE: Aggregated board shape for this page
-export interface AimansBoardAggregated {
-  board: BoardDto;
-  lists: Array<{
-    list: ListDto;
-    cards: CardDto[];
-  }>;
-}
-
-export const useAimansBoard = (boardId: string) => {
-  const queryClient = useQueryClient();
-
-  const query = useQuery<AimansBoardAggregated>({
+// Individual queries
+export const useAimanBoard = (boardId: string) =>
+  useQuery<BoardDto>({
     queryKey: aimanKeys.board(boardId),
-    queryFn: async () => {
-      const [board, lists] = await Promise.all([
-        fetchBoard(boardId),
-        fetchBoardLists(boardId),
-      ]);
-
-      const listsWithCards = await Promise.all(
-        lists.map(async (list) => {
-          try {
-            const cards = await fetchListCards(boardId, list.id);
-            return { list, cards };
-          } catch (err) {
-            console.warn("Cards fetch failed for list", list.id, (err as Error)?.message);
-            return { list, cards: [] as CardDto[] };
-          }
-        })
-      );
-
-      return { board, lists: listsWithCards };
-    },
+    queryFn: () => fetchBoard(boardId),
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   });
 
-  // Wire socket updates to keep cache fresh
+export const useAimanLists = (boardId: string) =>
+  useQuery<ListDto[]>({
+    queryKey: aimanKeys.lists(boardId),
+    queryFn: () => fetchBoardLists(boardId),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+  });
+
+export const useAimanCards = (boardId: string, listId: string) =>
+  useQuery<CardDto[]>({
+    queryKey: aimanKeys.cards(boardId, listId),
+    queryFn: () => fetchListCards(boardId, listId),
+    enabled: !!boardId && !!listId,
+    staleTime: 15_000,
+    gcTime: 5 * 60_000,
+  });
+
+export const useAimanCard = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled?: boolean
+) =>
+  useQuery<CardDto>({
+    queryKey: aimanKeys.card(boardId, listId, cardId),
+    queryFn: () => fetchCard(boardId, listId, cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled !== false,
+    staleTime: 15_000,
+  });
+
+export const useAimanBoardLabels = (boardId: string) =>
+  useQuery({
+    queryKey: aimanKeys.boardLabels(boardId),
+    queryFn: () => fetchBoardLabels(boardId),
+    enabled: !!boardId,
+    staleTime: 60_000,
+  });
+
+export const useAimanCardComments = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: aimanKeys.cardComments(boardId, listId, cardId),
+    queryFn: () => fetchCardComments(boardId, listId, cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled === true,
+  });
+
+export const useAimanCardChecklists = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: aimanKeys.cardChecklists(boardId, listId, cardId),
+    queryFn: () => fetchCardChecklists(boardId, listId, cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled === true,
+  });
+
+export const useAimanCardLabels = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: aimanKeys.cardLabels(boardId, listId, cardId),
+    queryFn: () => fetchCardLabels(boardId, listId, cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled === true,
+  });
+
+export const useAimanCardAttachments = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: aimanKeys.cardAttachments(boardId, listId, cardId),
+    queryFn: () => fetchCardAttachments(boardId, listId, cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled === true,
+  });
+
+// Real-time wiring to keep caches in sync
+export const useAimansBoardRealtime = (boardId: string) => {
+  const queryClient = useQueryClient();
+
   useAimansBoardSocket(boardId, {
+    // Lists
     onListCreated: (list) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
+      queryClient.setQueryData<ListDto[] | undefined>(
+        aimanKeys.lists(boardId),
         (prev) => {
-          if (!prev) return prev;
-          if (prev.lists.some((l) => l.list.id === list.id)) return prev;
-          return { ...prev, lists: [...prev.lists, { list, cards: [] }] };
+          if (!prev) return [list];
+          if (prev.some((l) => l.id === list.id)) return prev;
+          return [...prev, list];
         }
       );
     },
     onListUpdated: (list) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) =>
-          prev && {
-            ...prev,
-            lists: prev.lists.map((l) =>
-              l.list.id === list.id ? { ...l, list } : l
-            ),
-          }
+      queryClient.setQueryData<ListDto[] | undefined>(
+        aimanKeys.lists(boardId),
+        (prev) => prev?.map((l) => (l.id === list.id ? list : l))
       );
     },
     onListDeleted: (listId) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) =>
-          prev && {
-            ...prev,
-            lists: prev.lists.filter((l) => l.list.id !== listId),
-          }
+      queryClient.setQueryData<ListDto[] | undefined>(
+        aimanKeys.lists(boardId),
+        (prev) => prev?.filter((l) => l.id !== listId)
       );
+      // Remove cached cards for that list
+      queryClient.removeQueries({ queryKey: ["aiman", "cards", boardId, listId] });
     },
+
+    // Cards
     onCardCreated: (card) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) =>
-          prev && {
-            ...prev,
-            lists: prev.lists.map((l) =>
-              l.list.id === card.listId
-                ? { ...l, cards: [...l.cards, card] }
-                : l
-            ),
-          }
+      queryClient.setQueryData<CardDto[] | undefined>(
+        aimanKeys.cards(boardId, card.listId),
+        (prev) => (prev ? [...prev, card] : [card])
       );
     },
     onCardUpdated: (card) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) =>
-          prev && {
-            ...prev,
-            lists: prev.lists.map((l) =>
-              l.list.id === card.listId
-                ? {
-                    ...l,
-                    cards: l.cards.map((c) => (c.id === card.id ? card : c)),
-                  }
-                : l
-            ),
-          }
+      queryClient.setQueryData<CardDto[] | undefined>(
+        aimanKeys.cards(boardId, card.listId),
+        (prev) => prev?.map((c) => (c.id === card.id ? card : c))
       );
     },
     onCardDeleted: (cardId, listId) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) =>
-          prev && {
-            ...prev,
-            lists: prev.lists.map((l) =>
-              l.list.id === listId
-                ? { ...l, cards: l.cards.filter((c) => c.id !== cardId) }
-                : l
-            ),
-          }
+      queryClient.setQueryData<CardDto[] | undefined>(
+        aimanKeys.cards(boardId, listId),
+        (prev) => prev?.filter((c) => c.id !== cardId)
       );
     },
     onCardMoved: (card, fromListId) => {
-      queryClient.setQueryData<AimansBoardAggregated>(
-        aimanKeys.board(boardId),
-        (prev) => {
-          if (!prev) return prev;
-          const removed = prev.lists.map((l) =>
-            l.list.id === (fromListId ?? card.listId)
-              ? { ...l, cards: l.cards.filter((c) => c.id !== card.id) }
-              : l
-          );
-          const added = removed.map((l) =>
-            l.list.id === card.listId
-              ? { ...l, cards: [...l.cards, card] }
-              : l
-          );
-          return { ...prev, lists: added };
-        }
+      // Remove from previous list
+      const sourceListId = fromListId ?? card.listId;
+      if (sourceListId) {
+        queryClient.setQueryData<CardDto[] | undefined>(
+          aimanKeys.cards(boardId, sourceListId),
+          (prev) => prev?.filter((c) => c.id !== card.id)
+        );
+      }
+      // Add to new list (card.listId is the target)
+      queryClient.setQueryData<CardDto[] | undefined>(
+        aimanKeys.cards(boardId, card.listId),
+        (prev) => (prev ? [...prev, card] : [card])
       );
     },
   });
-
-  return query;
 };
+
+// Backwards-compat named export (if anything imports it elsewhere)
+export type AimansBoardAggregated = never;
+export const useAimansBoard = undefined as unknown as (boardId: string) => void;

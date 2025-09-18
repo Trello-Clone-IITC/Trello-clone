@@ -326,7 +326,8 @@ export const cardController = {
       const { id } = req.params;
       const userId =
         (await userService.getUserIdByRequest(req)) ||
-        "3f992ec3-fd72-4153-8c8a-9575e5a61867";
+        // "3f992ec3-fd72-4153-8c8a-9575e5a61867";
+        "28410fd4-660c-4d3c-b216-2e1877d93b7a";
 
       if (!userId) {
         return next(new AppError("User not authenticated", 401));
