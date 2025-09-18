@@ -290,7 +290,6 @@ model Card {
   isArchived    Boolean                  @map("is_archived") @default(false)
   createdBy     String                   @map("created_by") @db.Uuid
   coverImageUrl String?                  @map("cover_image_url")
-  subscribed    Boolean                  @default(false)
   createdAt     DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime                 @map("updated_at") @default(now()) @db.Timestamptz(6)
   searchDoc     Unsupported("tsvector")? @map("search_doc")

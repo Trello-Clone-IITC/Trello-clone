@@ -245,11 +245,10 @@ const getCardsByList = async (
     }
 
     const cards = await listService.getCardsByList(listId, userId);
-    const cardsDtoArr: CardDto[] = cards.map((card) => mapCardToDto(card));
 
     res.status(200).json({
       success: true,
-      data: cardsDtoArr,
+      data: cards,
     });
   } catch (error) {
     next(error);

@@ -2,18 +2,9 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
-import type { CreateCardInput } from "@ronmordo/contracts";
-
-// interface CreateCardData {
-//   listId: string;
-//   title: string;
-//   description?: string;
-//   dueDate?: Date;
-//   startDate?: Date;
-//   position: number;
-//   coverImageUrl?: string;
-//   createdBy: string;
-// }
+import type { CardDto, CreateCardInput } from "@ronmordo/contracts";
+import { mapCardToDto } from "./card.mapper.js";
+import type { Card } from "@prisma/client";
 
 interface UpdateCardData {
   title?: string;
@@ -28,12 +19,81 @@ interface SearchFilters {
   listId?: string;
 }
 
+const getCardDto = async (card: Card, userId: string): Promise<CardDto> => {
+  const cardWithNested = await prisma.card.findUnique({
+    where: {
+      id: card.id,
+    },
+    include: {
+      list: {
+        include: {
+          board: true,
+        },
+      },
+      creator: true,
+      assignees: {
+        include: {
+          user: true,
+        },
+      },
+
+      cardLabels: {
+        include: {
+          label: true,
+        },
+      },
+      checklists: {
+        include: {
+          items: true,
+        },
+      },
+      comments: {
+        include: {
+          user: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      attachments: true,
+      watchers: true,
+    },
+  });
+
+  if (!cardWithNested) {
+    throw new AppError("Card not found", 404);
+  }
+
+  const additionalFields = {
+    attachmentsCount: cardWithNested.attachments.length,
+    cardAssignees: cardWithNested.assignees.map((a) => {
+      const { avatarUrl, fullName, id, username, ...rest } = a.user;
+      return { avatarUrl, fullName, id, username };
+    }),
+    isWatch: cardWithNested.watchers.some((w) => w.userId === userId),
+    commentsCount: cardWithNested.comments.length,
+    checklistItemsCount: cardWithNested.checklists.reduce((acc, curr) => {
+      return acc + curr.items.length;
+    }, 0),
+    completedChecklistItemsCount: cardWithNested.checklists.reduce(
+      (acc, curr) => {
+        return acc + curr.items.filter((i) => i.isCompleted === true).length;
+      },
+      0
+    ),
+    labels: cardWithNested.cardLabels.map((l) => ({
+      name: l.label.name,
+      color: mapLabelToDto(l.label).color,
+    })),
+  };
+
+  return mapCardToDto(cardWithNested, additionalFields);
+};
+
 // Create a new card
 const createCard = async (
   data: CreateCardInput,
   listId: string,
   userId: string
-) => {
+): Promise<CardDto> => {
   // Verify list exists and user has access
   const list = await prisma.list.findFirst({
     where: {
@@ -102,6 +162,7 @@ const createCard = async (
         orderBy: { createdAt: "desc" },
       },
       attachments: true,
+      watchers: true,
     },
   });
 
@@ -116,7 +177,7 @@ const createCard = async (
     },
   });
 
-  return card;
+  return getCardDto(card, userId);
 };
 
 // Get a single card by ID with all related data
@@ -189,7 +250,7 @@ const getCardById = async (cardId: string, userId: string) => {
     throw new AppError("Access denied", 403);
   }
 
-  return card;
+  return getCardDto(card, userId);
 };
 
 // Update a card
@@ -277,7 +338,7 @@ const updateCard = async (
     },
   });
 
-  return card;
+  return getCardDto(card, userId);
 };
 
 // Delete a card
@@ -435,7 +496,7 @@ const moveCard = async (
     },
   });
 
-  return updatedCard;
+  return getCardDto(updatedCard, userId);
 };
 
 // Update card position within the same list
@@ -493,7 +554,7 @@ const updateCardPosition = async (
     },
   });
 
-  return card;
+  return getCardDto(card, userId);
 };
 
 // Archive/Unarchive a card
@@ -574,7 +635,7 @@ const toggleArchive = async (cardId: string, userId: string) => {
     },
   });
 
-  return card;
+  return getCardDto(card, userId);
 };
 
 // Search cards using full-text search
@@ -639,7 +700,13 @@ const searchCards = async (
   });
 
   // Filter out cards user doesn't have access to
-  return cards.filter((card) => card.list?.board?.boardMembers?.length > 0);
+  return Promise.all(
+    cards
+      .filter((card) =>
+        card.list.board.boardMembers.some((m) => m.userId === userId)
+      )
+      .map((c) => getCardDto(c, userId))
+  );
 };
 
 // Get card activity
@@ -679,91 +746,6 @@ const getCardActivity = async (cardId: string, userId: string) => {
   });
 
   return activities;
-};
-
-// Subscribe/Unsubscribe to card
-const toggleSubscription = async (cardId: string, userId: string) => {
-  // Verify user has access to the card
-  const existingCard = await prisma.card.findFirst({
-    where: { id: cardId },
-    include: {
-      list: {
-        include: {
-          board: {
-            include: {
-              boardMembers: {
-                where: { userId: userId },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!existingCard) {
-    throw new AppError("Card not found", 404);
-  }
-
-  if (existingCard.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
-
-  const newSubscriptionStatus = !existingCard.subscribed;
-
-  const card = await prisma.card.update({
-    where: { id: cardId },
-    data: {
-      subscribed: newSubscriptionStatus,
-      updatedAt: new Date(),
-    },
-    include: {
-      list: {
-        include: {
-          board: true,
-        },
-      },
-      creator: true,
-      assignees: {
-        include: {
-          user: true,
-        },
-      },
-      cardLabels: {
-        include: {
-          label: true,
-        },
-      },
-      checklists: {
-        include: {
-          items: true,
-        },
-      },
-      comments: {
-        include: {
-          user: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      attachments: true,
-    },
-  });
-
-  // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingCard.list.board.id,
-      cardId: card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        subscribed: newSubscriptionStatus,
-        action: newSubscriptionStatus ? "subscribed" : "unsubscribed",
-      },
-    },
-  });
-
-  return card;
 };
 
 // Get card checklists
@@ -993,11 +975,11 @@ export default {
   toggleArchive,
   searchCards,
   getCardActivity,
-  toggleSubscription,
   getCardChecklists,
   getCardComments,
   getCardAssignees,
   getCardLabels,
   getCardWatchers,
   getCardAttachments,
+  getCardDto,
 };

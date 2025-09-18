@@ -102,6 +102,27 @@ export const WorkspaceVisibilitySchema = z.enum(["private", "public"]);
 // ==========================
 // BASE DTO SCHEMAS
 // ==========================
+export const UserDtoSchema = z.object({
+  id: z.uuid(),
+  clerkId: z.string(),
+  email: z.email(),
+  username: z.string().nullable().optional(),
+  fullName: z.string(),
+  avatarUrl: z.string(),
+  theme: ThemeSchema,
+  emailNotification: z.boolean(),
+  pushNotification: z.boolean(),
+  createdAt: z.iso.datetime(),
+  bio: z.string().nullable().optional(),
+});
+
+export const LabelDtoSchema = z.object({
+  id: z.uuid(),
+  boardId: z.uuid(),
+  name: z.string().optional().nullable(),
+  color: ColorSchema,
+});
+
 export const ActivityLogDtoSchema = z.object({
   id: z.uuid(),
   boardId: z.uuid(),
@@ -163,6 +184,12 @@ export const CardWatcherDtoSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 
+export const CardLocationDtoSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  address: z.string(),
+});
+
 export const CardDtoSchema = z.object({
   id: z.uuid(),
   listId: z.uuid(),
@@ -171,10 +198,29 @@ export const CardDtoSchema = z.object({
   dueDate: z.iso.datetime().nullable().optional(),
   startDate: z.iso.datetime().nullable().optional(),
   position: z.number(),
+  isWatch: z.boolean(),
+  cardAssignees: z.array(
+    UserDtoSchema.pick({
+      avatarUrl: true,
+      fullName: true,
+      username: true,
+      id: true,
+    })
+  ),
+  attachmentsCount: z.number(),
+  commentsCount: z.number(),
+  checklistItemsCount: z.number(),
+  completedChecklistItemsCount: z.number(),
+  labels: z.array(
+    LabelDtoSchema.pick({
+      color: true,
+      name: true,
+    })
+  ),
+  location: CardLocationDtoSchema.nullable().optional(),
   isArchived: z.boolean(),
   createdBy: z.uuid(),
   coverImageUrl: z.string().nullable().optional(),
-  subscribed: z.boolean(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -208,13 +254,6 @@ export const CommentDtoSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 
-export const LabelDtoSchema = z.object({
-  id: z.uuid(),
-  boardId: z.uuid(),
-  name: z.string().optional().nullable(),
-  color: ColorSchema,
-});
-
 export const ListWatcherDtoSchema = z.object({
   listId: z.uuid(),
   userId: z.uuid(),
@@ -228,20 +267,6 @@ export const ListDtoSchema = z.object({
   position: z.number(),
   isArchived: z.boolean(),
   subscribed: z.boolean(),
-});
-
-export const UserDtoSchema = z.object({
-  id: z.uuid(),
-  clerkId: z.string(),
-  email: z.email(),
-  username: z.string().nullable().optional(),
-  fullName: z.string(),
-  avatarUrl: z.string(),
-  theme: ThemeSchema,
-  emailNotification: z.boolean(),
-  pushNotification: z.boolean(),
-  createdAt: z.iso.datetime(),
-  bio: z.string().nullable().optional(),
 });
 
 export const WorkspaceMemberDtoSchema = z.object({
@@ -546,6 +571,7 @@ export const CreateCardLabelInputSchema = CardLabelDtoSchema.pick({
 export const CreateCardInputSchema = CardDtoSchema.pick({
   title: true,
   position: true,
+  location: true,
 });
 
 export const CreateChecklistInputSchema = ChecklistDtoSchema.pick({

@@ -13,7 +13,6 @@ import type {
   AttachmentDto,
 } from "@ronmordo/contracts";
 import {
-  mapCardToDto,
   mapChecklistToDto,
   mapCommentToDto,
   mapCardAssigneeToDto,
@@ -21,7 +20,6 @@ import {
   mapAttachmentToDto,
 } from "./card.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { userService } from "../users/user.service.js";
 
 export const cardController = {
@@ -43,11 +41,10 @@ export const cardController = {
       }
 
       const card = await cardService.createCard(req.body, listId, userId);
-      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(201).json({
         success: true,
-        data: cardDto,
+        data: card,
       });
     } catch (error) {
       console.error("Failed to create card", error);
@@ -75,11 +72,10 @@ export const cardController = {
       }
 
       const card = await cardService.getCardById(id, userId);
-      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
         success: true,
-        data: cardDto,
+        data: card,
       });
     } catch (error) {
       console.log("Failed to get card", error);
@@ -109,11 +105,10 @@ export const cardController = {
       }
 
       const card = await cardService.updateCard(id, updateData, userId);
-      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
         success: true,
-        data: cardDto,
+        data: card,
       });
     } catch (error) {
       console.log("Failed to update card", error);
@@ -179,11 +174,10 @@ export const cardController = {
         parseFloat(position),
         userId
       );
-      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
         success: true,
-        data: cardDto,
+        data: card,
       });
     } catch (error) {
       console.log("Failed to move card errror:", error);
@@ -210,11 +204,10 @@ export const cardController = {
       }
 
       const card = await cardService.toggleArchive(id, userId);
-      const cardDto: CardDto = mapCardToDto(card);
 
       res.status(200).json({
         success: true,
-        data: cardDto,
+        data: card,
       });
     } catch (error) {
       if (error instanceof AppError) {
@@ -250,11 +243,10 @@ export const cardController = {
         },
         userId
       );
-      const cardDtos: CardDto[] = cards.map((card) => mapCardToDto(card));
 
       res.status(200).json({
         success: true,
-        data: cardDtos,
+        data: cards,
       });
     } catch (error) {
       if (error instanceof AppError) {
@@ -292,36 +284,6 @@ export const cardController = {
         return next(error);
       }
       next(new AppError("Failed to get card activity", 500));
-    }
-  },
-
-  // Subscribe/Unsubscribe to card
-  toggleSubscription: async (
-    req: Request,
-    res: Response<ApiResponse<CardDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-
-      const userId = await userService.getUserIdByRequest(req);
-
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
-
-      const card = await cardService.toggleSubscription(id, userId);
-      const cardDto: CardDto = mapCardToDto(card);
-
-      res.status(200).json({
-        success: true,
-        data: cardDto,
-      });
-    } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to toggle card subscription", 500));
     }
   },
 

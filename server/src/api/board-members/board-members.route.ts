@@ -1,11 +1,6 @@
 import { Router } from "express";
 import boardMembersController from "./board-members.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import {
-//   addBoardMemberSchema,
-//   updateBoardMemberSchema,
-//   removeBoardMemberSchema,
-// } from "./board-members.validation.js";
 import {
   CreateBoardMemberInputSchema,
   UpdateBoardMemberSchema,

@@ -1,10 +1,6 @@
 import { Router } from "express";
 import { cardLabelController } from "./card-label.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import {
-//   AddLabelToCardRequestSchema,
-//   RemoveLabelFromCardRequestSchema,
-// } from "./card-label.validation.js";
 import {
   CreateCardLabelInputSchema,
   LabelIdParamSchema,

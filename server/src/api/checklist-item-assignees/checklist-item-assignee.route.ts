@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { checklistItemAssigneeController } from "./checklist-item-assignee.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import * as checklistItemAssigneeValidation from "./checklist-item-assignee.validation.js";
 import { UserIdParamSchema } from "@ronmordo/contracts";
 import { checklistItemController } from "../checklist-items/checklist-item.controller.js";
 

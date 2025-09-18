@@ -26,6 +26,7 @@ export type WorkspaceDto = z.infer<typeof schemas.WorkspaceDtoSchema>;
 export type WorkspaceMemberDto = z.infer<
   typeof schemas.WorkspaceMemberDtoSchema
 >;
+export type CardLocationDto = z.infer<typeof schemas.CardLocationDtoSchema>;
 
 // ==========================
 // CREATE INPUT TYPES FROM SCHEMAS

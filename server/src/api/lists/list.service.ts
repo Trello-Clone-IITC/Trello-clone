@@ -3,6 +3,7 @@ import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import type { CreateListInput } from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
+import cardService from "../cards/card.service.js";
 
 const createList = async (
   data: CreateListInput,
@@ -291,7 +292,7 @@ const getCardsByList = async (listId: string, userId: string) => {
 
   const cards = list.cards;
 
-  return cards;
+  return Promise.all(cards.map((c) => cardService.getCardDto(c, userId)));
 };
 
 export default {

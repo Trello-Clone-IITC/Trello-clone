@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { cardController } from "./card.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import * as cardValidation from "./card.validation.js";
 import {
   CardIdParamSchema,
   CreateCardInputSchema,
@@ -43,70 +42,7 @@ router.delete(
   cardController.deleteCard
 );
 
-// Card operations
-// router.patch(
-//   "/:id/move",
-//   validateRequest(cardValidation.moveCardSchema),
-//   cardController.moveCard
-// );
-// router.patch("/:id/archive", validateRequest(cardValidation.toggleArchiveSchema), cardController.toggleArchive);
-// router.patch("/:id/subscribe", validateRequest(cardValidation.toggleSubscriptionSchema), cardController.toggleSubscription);
-
-// Card search and activity ------> TODO implement search schema
-// router.get(
-//   "/search",
-//   validateRequest(cardValidation.searchCardsSchema),
-//   cardController.searchCards
-// );
 // --------------------------nested routes--------------------------
-// Card activity -------> move to activity module
-// router.get(
-//   "/:id/activity",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardActivity
-// );
-
-// Card attachments -----> moved to attachments module
-// router.get(
-//   "/:id/attachments",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardAttachments
-// );
-
-// Card checklists -------> moved to checklists module
-// router.get(
-//   "/:id/checklists",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardChecklists
-// );
-
-// Card comments -------> moved to card comments module
-// router.get(
-//   "/:id/comments",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardComments
-// );
-
-// Card assignees -------> move to card assignees module
-// router.get(
-//   "/:id/assignees",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardAssignees
-// );
-
-// Card labels -------> moved to cardLabels module
-// router.get(
-//   "/:id/labels",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardLabels
-// );
-
-// Card watchers -------> add to card watchers module
-// router.get(
-//   "/:id/watchers",
-//   validateRequest({ params: IdParamSchema }),
-//   cardController.getCardWatchers
-// );
 
 router.use(
   "/:cardId/checklists",

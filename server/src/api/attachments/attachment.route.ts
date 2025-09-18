@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { attachmentController } from "./attachment.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-// import * as attachmentValidation from "./attachment.validation.js";
 import {
   CreateAttachmentInputSchema,
   IdParamSchema,

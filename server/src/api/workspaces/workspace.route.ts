@@ -15,9 +15,7 @@ const router = Router();
 
 // Workspace CRUD operations
 
-// router.get("/", workspaceController.getAllWorkspaces); // Remove after testing
-
-router.get("/", usersController.getAllWorkspaces); // Remove after testing
+router.get("/", usersController.getAllWorkspaces);
 
 router.post(
   "/",
