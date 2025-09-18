@@ -13,6 +13,7 @@ import { mapUserToDto } from "../users/user.mapper.js";
 import { mapWorkspaceToDto } from "../workspaces/workspace.mapper.js";
 import { mapCardToDto } from "../cards/card.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
+import cardService from "../cards/card.service.js";
 
 export function mapBoardToDto(board: PrismaBoard): BoardDto {
   const dto: BoardDto = {
@@ -154,7 +155,19 @@ function mapCommentingDtoToPrisma(
 }
 
 // Mapper for full board with all nested data
-export function mapFullBoardToDto(board: any): BoardFullDto {
+export async function mapFullBoardToDto(
+  board: any,
+  userId: string
+): Promise<BoardFullDto> {
+  const lists =
+    (await Promise.all(
+      board.lists?.map((list: any) => ({
+        ...mapListToDto(list),
+        watchers: list.watchers?.map(mapListWatcherToDto) ?? [],
+        cards: list.cards?.map((c) => cardService.getCardDto(c, userId)) ?? [],
+      }))
+    )) ?? [];
+
   const dto: BoardFullDto = {
     // Base board data
     id: board.id,
@@ -189,12 +202,7 @@ export function mapFullBoardToDto(board: any): BoardFullDto {
     workspace: board.workspace ? mapWorkspaceToDto(board.workspace) : null,
 
     // Lists with watchers and cards
-    lists:
-      board.lists?.map((list: any) => ({
-        ...mapListToDto(list),
-        watchers: list.watchers?.map(mapListWatcherToDto) ?? [],
-        cards: list.cards?.map(mapCardToDto) ?? [],
-      })) ?? [],
+    lists,
   };
 
   return dto;
