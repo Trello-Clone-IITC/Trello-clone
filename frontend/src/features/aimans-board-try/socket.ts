@@ -17,19 +17,11 @@ export interface AimansSocketHandlers {
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
 let socketInstance: Socket | null = null;
-let currentUserId: string | null = null;
-
-const buildAuth = () => (currentUserId ? { userId: currentUserId } : {});
 
 export function getAimansSocket(): Socket {
   if (!socketInstance) {
     // Allow default transports (polling + upgrade) to improve connectivity
-    // withCredentials enables cookie-based flows if configured; auth sends userId
-    socketInstance = io(SOCKET_URL, {
-      autoConnect: true,
-      withCredentials: true,
-      auth: buildAuth(),
-    });
+    socketInstance = io(SOCKET_URL, { autoConnect: true });
     socketInstance.on("connect_error", (err) => {
       console.warn("Socket connect_error:", (err as any)?.message || err);
     });
@@ -38,17 +30,6 @@ export function getAimansSocket(): Socket {
     });
   }
   return socketInstance;
-}
-
-// Update auth payload and reconnect so the server receives latest user id
-export function setSocketUserId(userId: string | null) {
-  currentUserId = userId;
-  const socket = getAimansSocket();
-  // update auth for next connect
-  (socket as Socket & { auth?: Record<string, unknown> }).auth = buildAuth();
-  // force reconnect to resend handshake with new auth
-  if (socket.connected) socket.disconnect();
-  socket.connect();
 }
 
 export function useAimansBoardSocket(
