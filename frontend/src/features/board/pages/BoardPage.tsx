@@ -1,14 +1,38 @@
 import { Navbar } from "@/features/navbar";
 import { useTheme } from "@/hooks/useTheme";
-import { useParams } from "react-router-dom";
-import { useFullBoard } from "../hooks/useBoard";
+import { useEffect } from "react";
 import Board from "../components/Board";
 import BoardHeader from "../components/BoardHeader";
+import { dummyBoardData } from "../data/dummyData";
+import {
+  generateBoardFavicon,
+  updatePageTitle,
+  resetPageTitle,
+} from "@/lib/faviconUtils";
 
 export default function BoardPage() {
   const { theme } = useTheme();
-  const { boardId } = useParams<{ boardId: string }>();
-  const { data: boardData, isLoading, error } = useFullBoard(boardId || "");
+
+  // Use dummy data instead of hooks
+  const boardData = dummyBoardData;
+  const isLoading = false;
+  const error = null;
+
+  // Dynamic title and favicon based on board
+  useEffect(() => {
+    if (boardData) {
+      // Update page title
+      updatePageTitle(boardData);
+
+      // Update favicon
+      generateBoardFavicon(boardData);
+    }
+
+    // Cleanup function to reset title when component unmounts
+    return () => {
+      resetPageTitle();
+    };
+  }, [boardData]);
 
   const getMainBackgroundColor = () => {
     if (theme === "light") return "#ffffff";

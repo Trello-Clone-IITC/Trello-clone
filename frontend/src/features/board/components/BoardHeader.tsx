@@ -62,7 +62,7 @@ export default function BoardHeader({
                 title={`${member.name}${member.isAdmin ? " (Admin)" : ""}`}
               >
                 <div
-                  className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-xs font-semibold text-white"
+                  className="w-7 h-7 rounded-full bg-gray-400 flex items-center justify-center text-xs font-semibold text-white bg-cover bg-center"
                   style={{
                     backgroundImage: member.avatar
                       ? `url("${member.avatar}")`

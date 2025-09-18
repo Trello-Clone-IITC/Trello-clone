@@ -6,12 +6,37 @@ import { cn } from "@/lib/utils";
 import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 import { BoardCard, CreateNewBoard, useUserWorkspaces } from "../index";
 import { useAllBoards } from "@/features/board/hooks/useBoard";
+import { useEffect } from "react";
+import { resetPageTitle } from "@/lib/faviconUtils";
 
 export default function BoardsPage() {
   const { theme } = useTheme();
   const isLight = theme === "light";
   const { data: workspaces, isLoading, error } = useUserWorkspaces();
   const { data: allBoards } = useAllBoards();
+
+  // Set page title and reset favicon to default
+  useEffect(() => {
+    document.title = "Boards | Trello";
+
+    // Reset favicon to default
+    const existingFavicon = document.querySelector('link[rel="icon"]');
+    if (existingFavicon) {
+      existingFavicon.remove();
+    }
+
+    // Set default favicon (same as in HTML)
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    link.href = "/favicon.svg";
+    document.head.appendChild(link);
+
+    // Cleanup function to reset title when component unmounts
+    return () => {
+      resetPageTitle();
+    };
+  }, []);
 
   const starIcon = isLight ? Icons.starIconLight : Icons.starIconDark;
   const clockIcon = isLight ? Icons.clockIconLight : Icons.clockIconDark;
