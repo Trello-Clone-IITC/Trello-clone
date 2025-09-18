@@ -51,6 +51,30 @@ export const fetchCard = async (
   return data.data;
 };
 
+// Create a card in a list
+export const createCard = async (
+  listId: string,
+  input: Pick<CardDto, "title"> & { position?: number }
+): Promise<CardDto> => {
+  const { data } = await api.post<ApiResponse<CardDto>>(
+    `/lists/${listId}/cards`,
+    { title: input.title, position: input.position ?? 1000 }
+  );
+  return data.data;
+};
+
+// Update a card
+export const updateCard = async (
+  cardId: string,
+  updates: Partial<Pick<CardDto, "title" | "description" | "dueDate" | "startDate" | "coverImageUrl">>
+): Promise<CardDto> => {
+  const { data } = await api.patch<ApiResponse<CardDto>>(
+    `/cards/${cardId}`,
+    updates
+  );
+  return data.data;
+};
+
 // Nested resources
 export const fetchCardComments = async (
   _boardId: string,

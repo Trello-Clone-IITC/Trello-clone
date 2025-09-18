@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { emitCreateCard } from "../../socket";
+// Socket-only flow as requested
 
 type Props = {
   boardId: string;
@@ -19,6 +20,7 @@ export function AddCardDialogButton({ boardId, listId, trigger }: Props) {
     if (!title.trim()) return;
     try {
       setLoading(true);
+      // Emit create via Socket.IO; UI will update from realtime handler
       emitCreateCard(boardId, listId, title.trim());
       setOpen(false);
       setTitle("");

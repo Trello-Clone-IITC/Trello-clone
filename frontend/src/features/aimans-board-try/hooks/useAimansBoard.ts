@@ -162,7 +162,11 @@ export const useAimansBoardRealtime = (boardId: string) => {
     onCardCreated: (card) => {
       queryClient.setQueryData<CardDto[] | undefined>(
         aimanKeys.cards(boardId, card.listId),
-        (prev) => (prev ? [...prev, card] : [card])
+        (prev) => {
+          if (!prev || prev.length === 0) return [card];
+          if (prev.some((c) => c.id === card.id)) return prev;
+          return [...prev, card];
+        }
       );
     },
     onCardUpdated: (card) => {

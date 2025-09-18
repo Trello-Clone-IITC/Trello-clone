@@ -100,7 +100,6 @@ const getBoardLists = async (boardId: string): Promise<List[]> => {
     where: { boardId },
     orderBy: { position: "asc" },
   });
-  console.log(lists);
 
   return lists;
 };

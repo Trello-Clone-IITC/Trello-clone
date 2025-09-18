@@ -28,6 +28,7 @@ import {
   deleteChecklist,
   removeLabelFromCard,
 } from "../../api";
+// Socket-only flow as requested
 
 type Props = {
   boardId: string;
@@ -82,6 +83,7 @@ export function CardDetailsDialog({ boardId, card, trigger }: Props) {
     if (!trimmedTitle) return;
     try {
       setSaving(true);
+      // Emit update via Socket.IO; caches will refresh from realtime event
       emitUpdateCard(boardId, card.id, {
         title: trimmedTitle,
         description: trimmedDesc || undefined,
