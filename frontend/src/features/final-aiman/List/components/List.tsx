@@ -3,8 +3,8 @@ import ListHeader from "./ListHeader";
 import ListCards from "./ListCards";
 import ListFooter from "./ListFooter";
 import type {  ListDto } from "@ronmordo/contracts";
-import { useCards } from "@/features/board-f/hooks/useBoard";
-import Spinner from "../../Spinner";
+import { useCards } from "@/features/final-aiman/List/hooks/useListQueries";
+import Spinner from "@/features/final-aiman/board/components/Spinner";
 
 
 

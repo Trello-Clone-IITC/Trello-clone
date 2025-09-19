@@ -1,4 +1,4 @@
-import Card from "@/features/board-f/components/card/components/Card";
+import Card from "@/features/final-aiman/card/components/Card";
 import type { CardDto } from "@ronmordo/contracts";
 
 

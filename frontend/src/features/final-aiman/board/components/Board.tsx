@@ -1,11 +1,13 @@
 import { useState } from "react";
-import CardModal from "./components/card/components/CardModal";
+// import CardModal from "./components/card/components/CardModal";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import type {  ListDto, CardDto, BoardDto } from "@ronmordo/contracts";
-import { useBoardRealtime, useLists } from "./hooks/useBoard";
-import { List } from "./components/List/components";
+import type { BoardDto } from "@ronmordo/contracts";
+import { useBoardRealtime } from "@/features/final-aiman/board/hooks";
+import { useLists } from "@/features/final-aiman/List/hooks/useListQueries";
+import { List } from "@/features/final-aiman/List/components";
+import { emitCreateList } from "@/features/final-aiman/board/socket";
 
 const Board = ({ board }: { board: BoardDto }) => {
   // const { boardId } = useParams<{ boardId: string }>();
@@ -38,9 +40,14 @@ const Board = ({ board }: { board: BoardDto }) => {
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!listName.trim() ) return;
-
-
+    const name = listName.trim();
+    if (!name) return;
+    const nextPosition =
+      (lists?.reduce((max, l) => Math.max(max, l.position ?? 0), 0) ?? 0) +
+      1000;
+    emitCreateList(board.id, name, nextPosition);
+    setIsCreatingList(false);
+    setListName("");
   };
 
   if (isLoading) {
@@ -74,7 +81,8 @@ const Board = ({ board }: { board: BoardDto }) => {
     
           return (
             <List
-             list={list}
+              key={list.id}
+              list={list}
             />
           );
         })}
@@ -132,7 +140,7 @@ const Board = ({ board }: { board: BoardDto }) => {
           )}
         </div>
       </div>
-      <CardModal />
+      {/* <CardModal /> */}
     </div>
   );
 };

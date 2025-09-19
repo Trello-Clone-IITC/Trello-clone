@@ -1,20 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BoardDto, ListDto, CardDto } from "@ronmordo/contracts";
-import {
-  fetchBoard,
-  fetchBoardLists,
-  fetchListCards,
-  fetchCard,
-  fetchCardAttachments,
-  fetchCardChecklists,
-  fetchCardComments,
-  fetchCardLabels,
-  fetchBoardLabels,
-  fetchChecklistItems,
-} from "../api";
-import { useBoardSocket } from "../socket";
+import type { BoardDto, ListDto, CardDto, LabelDto } from "@ronmordo/contracts";
+import { fetchBoard, fetchBoardLabels } from "./api";
+import { useBoardSocket } from "./socket";
 
-// Query keys for this feature
 export const boardKeys = {
   board: (boardId: string) => ["board", "board", boardId] as const,
   lists: (boardId: string) => ["board", "lists", boardId] as const,
@@ -36,10 +24,18 @@ export const boardKeys = {
     listId: string,
     cardId: string,
     checklistId: string
-  ) => ["board", "card", "checklists", "items", boardId, listId, cardId, checklistId] as const,
+  ) => [
+    "board",
+    "card",
+    "checklists",
+    "items",
+    boardId,
+    listId,
+    cardId,
+    checklistId,
+  ] as const,
 };
 
-// Individual queries
 export const useBoard = (boardId: string) =>
   useQuery<BoardDto>({
     queryKey: boardKeys.board(boardId),
@@ -48,107 +44,14 @@ export const useBoard = (boardId: string) =>
     gcTime: 5 * 60_000,
   });
 
-export const useLists = (boardId: string) =>
-  useQuery<ListDto[]>({
-    queryKey: boardKeys.lists(boardId),
-    queryFn: () => fetchBoardLists(boardId),
-    staleTime: 30_000,
-    gcTime: 5 * 60_000,
-  });
-
-export const useCards = (boardId: string, listId: string) =>
-  useQuery<CardDto[]>({
-    queryKey: boardKeys.cards(boardId, listId),
-    queryFn: () => fetchListCards(boardId, listId),
-    enabled: !!boardId && !!listId,
-    staleTime: 15_000,
-    gcTime: 5 * 60_000,
-  });
-
-export const useCard = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  enabled?: boolean
-) =>
-  useQuery<CardDto>({
-    queryKey: boardKeys.card(boardId, listId, cardId),
-    queryFn: () => fetchCard(boardId, listId, cardId),
-    enabled: !!boardId && !!listId && !!cardId && enabled !== false,
-    staleTime: 15_000,
-  });
-
 export const useBoardLabels = (boardId: string) =>
-  useQuery({
+  useQuery<LabelDto[]>({
     queryKey: boardKeys.boardLabels(boardId),
     queryFn: () => fetchBoardLabels(boardId),
     enabled: !!boardId,
     staleTime: 60_000,
   });
 
-export const useCardComments = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: boardKeys.cardComments(boardId, listId, cardId),
-    queryFn: () => fetchCardComments(boardId, listId, cardId),
-    enabled: !!boardId && !!listId && !!cardId && enabled === true,
-  });
-
-export const useCardChecklists = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: boardKeys.cardChecklists(boardId, listId, cardId),
-    queryFn: () => fetchCardChecklists(boardId, listId, cardId),
-    enabled: !!boardId && !!listId && !!cardId && enabled === true,
-  });
-
-export const useCardLabels = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: boardKeys.cardLabels(boardId, listId, cardId),
-    queryFn: () => fetchCardLabels(boardId, listId, cardId),
-    enabled: !!boardId && !!listId && !!cardId && enabled === true,
-  });
-
-export const useCardAttachments = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
-    queryFn: () => fetchCardAttachments(boardId, listId, cardId),
-    enabled: !!boardId && !!listId && !!cardId && enabled === true,
-  });
-
-export const useChecklistItems = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  checklistId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: boardKeys.checklistItems(boardId, listId, cardId, checklistId),
-    queryFn: () => fetchChecklistItems(boardId, listId, cardId, checklistId),
-    enabled:
-      !!boardId && !!listId && !!cardId && !!checklistId && enabled === true,
-  });
-
-// Real-time wiring to keep caches in sync
 export const useBoardRealtime = (boardId: string) => {
   const queryClient = useQueryClient();
 
@@ -219,3 +122,4 @@ export const useBoardRealtime = (boardId: string) => {
     },
   });
 };
+

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
-import Spinner from "../components/Spinner";
-import Board from "../Board";
-import { useBoard } from "../hooks/useBoard";
+import Spinner from "@/features/final-aiman/board/components/Spinner";
+import Board from "@/features/final-aiman/board/components/Board";
+import { useBoard } from "@/features/final-aiman/board/hooks";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -45,4 +45,3 @@ const BoardPage = () => {
 };
 
 export default BoardPage;
-
