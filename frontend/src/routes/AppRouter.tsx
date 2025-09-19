@@ -31,6 +31,9 @@ import { AimansBoardTryPage } from "@/features/aimans-board-try";
 
 import { AimansBoardTryPage as AimanUIBoardPage } from "@/features/aiman -with-ui";
 
+//caspi imports
+import CaspiBoardPage from "@/features/caspi-playground/board/pages/BoardPage";
+
 
 export const AppRouter = () => {
   return (
@@ -58,6 +61,7 @@ export const AppRouter = () => {
           <Route index element={<HomePage />} />
           <Route path="boards" element={<BoardsPage />} />
           <Route path="/b/:boardId" element={<BoardPage />} />
+          <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />

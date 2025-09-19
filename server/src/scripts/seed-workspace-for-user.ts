@@ -20,7 +20,8 @@ import {
 //   SEED_USER_ID=<uuid> pnpm --filter backend seed:user
 // or pass as argv[2]
 
-const FALLBACK_USER_ID = "abece719-0929-4a21-a672-56a12d4e1d49";
+// const FALLBACK_USER_ID = "abece719-0929-4a21-a672-56a12d4e1d49";
+const FALLBACK_USER_ID = "06c831cd-a26c-4e58-a875-8a706a18fc58";//caspi
 const USER_ID = process.env.SEED_USER_ID || process.argv[2] || FALLBACK_USER_ID;
 
 async function main() {
@@ -77,7 +78,7 @@ async function main() {
       workspaceId: workspace.id,
       name: "Demo Board",
       description: "A demo board with a few lists and cards",
-      background: "#1d2125",
+      background: "Tree",
       createdBy: user.id,
       allowCovers: true,
       showComplete: true,
@@ -139,7 +140,6 @@ async function main() {
           position: toDec((ci + 1) * 100),
           isArchived: false,
           createdBy: user.id,
-          subscribed: false,
           startDate: ci === 0 ? new Date() : null,
           dueDate:
             ci === 0 ? new Date(Date.now() + 7 * 24 * 3600 * 1000) : null,
