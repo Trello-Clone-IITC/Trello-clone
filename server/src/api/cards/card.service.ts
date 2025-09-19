@@ -19,7 +19,10 @@ interface SearchFilters {
   listId?: string;
 }
 
-const getCardDto = async (card: Card, userId: string): Promise<CardDto> => {
+export const getCardDto = async (
+  card: Card,
+  userId: string
+): Promise<CardDto> => {
   const cardWithNested = await prisma.card.findUnique({
     where: {
       id: card.id,
@@ -742,6 +745,8 @@ const getCardActivity = async (cardId: string, userId: string) => {
     where: { cardId: cardId },
     include: {
       user: true,
+      board: true,
+      card: true,
     },
     orderBy: { createdAt: "desc" },
   });

@@ -1,13 +1,21 @@
-import type {
-  Prisma,
-  $Enums,
-  ActivityLog,
-  ActivityAction,
-} from "@prisma/client";
-import { type ActivityLogDto, ActivityLogDtoSchema } from "@ronmordo/contracts";
+import type { Prisma, $Enums, ActivityAction } from "@prisma/client";
+import {
+  type ActivityLogDto,
+  type ActivityLogFullDto,
+  ActivityLogFullSchema,
+} from "@ronmordo/contracts";
+import type { ActivityLogWithRelations } from "./activity-log.types.js";
+import { mapUserToDto } from "../users/user.mapper.js";
+import { mapBoardToDto } from "../boards/board.mapper.js";
+import { getCardDto } from "../cards/card.service.js";
 
-export function mapActivityLogToDto(log: ActivityLog): ActivityLogDto {
-  const dto: ActivityLogDto = {
+export async function mapActivityLogToDto(
+  log: ActivityLogWithRelations
+): Promise<ActivityLogFullDto> {
+  const cardDto =
+    log.card && log.userId ? await getCardDto(log.card, log.userId) : null;
+
+  const dto: ActivityLogFullDto = {
     id: log.id,
     boardId: log.boardId,
     cardId: log.cardId,
@@ -15,8 +23,11 @@ export function mapActivityLogToDto(log: ActivityLog): ActivityLogDto {
     action: mapAction(log.action),
     payload: log.payload,
     createdAt: log.createdAt.toISOString(),
+    user: log.user ? mapUserToDto(log.user) : null,
+    board: mapBoardToDto(log.board),
+    card: cardDto,
   };
-  return ActivityLogDtoSchema.parse(dto);
+  return ActivityLogFullSchema.parse(dto);
 }
 
 function mapAction(a: ActivityAction): ActivityLogDto["action"] {

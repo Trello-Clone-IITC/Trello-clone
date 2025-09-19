@@ -12,6 +12,8 @@ import listController from "../lists/list.controller.js";
 import cardLabelsRouter from "../card-labels/card-label.route.js";
 import commentsRouter from "../card-comments/comment.route.js";
 import attachmentsRouter from "../attachments/attachment.route.js";
+import cardWachersRouter from "../card-watchers/cart-watcher.route.js";
+import activityLogsRouter from "../activity-logs/activity-log.route.js";
 
 const router = Router({ mergeParams: true });
 
@@ -66,6 +68,18 @@ router.use(
   "/:cardId/attachments",
   validateRequest({ params: CardIdParamSchema }),
   attachmentsRouter
+);
+
+router.use(
+  "/:cardId/cardWatchers",
+  validateRequest({ params: CardIdParamSchema }),
+  cardWachersRouter
+);
+
+router.use(
+  "/:cardId/activityLogs",
+  validateRequest({ params: CardIdParamSchema }),
+  activityLogsRouter
 );
 
 export default router;
