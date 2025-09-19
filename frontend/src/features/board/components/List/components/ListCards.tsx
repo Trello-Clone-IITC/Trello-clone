@@ -18,6 +18,7 @@ const ListCards: React.FC<ListCardsProps> = ({ cards }) => {
                 title={card.title}
                 description={card.description}
                 labels={card.labels}
+                members={card.cardAssignees || []}
               />
             </div>
           </li>
