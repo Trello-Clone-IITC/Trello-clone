@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
 import {
-  ChevronDown,
-  List,
   Zap,
   Filter,
   Star,
   Users,
   Share2,
   MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 
 interface BoardHeaderProps {
@@ -28,19 +27,20 @@ export default function BoardHeader({
     <div className="inline-flex relative flex-wrap items-center h-auto w-[calc(100%-2px)] p-3 gap-1  bg-[#ffffff3d] backdrop-blur-[6px]">
       {/* Left Section - Board Name and Dropdown */}
       <div className="grow shrink basis-[20%] text-ellipsis flex flex-nowrap items-start w-full min-h-[32px]">
-        <div className="inline-flex w-full h-[32px] mr-1 mb-0 rounded-[3px] leading-[32px] whitespace-nowrap">
+        <div className="inline-flex gap-0 w-full h-[32px] mr-1 mb-0 rounded-[3px] leading-[32px] whitespace-nowrap">
           <h1 className="text-[16px] h-full  px-[10px] mb-[12px] bg-transparent font-bold leading-[32px] decoration-0 text-ellipsis whitespace-nowrap">
             {boardName}
           </h1>
-        </div>
-        <div>
           <Button
-            variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/20 px-2 py-1"
+            className="text-white bg-transparent flex shadow-none hover:bg-white/10 rounded-[3px] has-[>svg]:p-1.5"
           >
-            <List className="w-4 h-4 mr-1" />
-            <ChevronDown className="w-4 h-4" />
+            <img
+              src="/src/assets/three-bar-icon.svg"
+              alt="Menu"
+              className="w-5 h-5"
+            />
+            <ChevronDown />
           </Button>
         </div>
       </div>

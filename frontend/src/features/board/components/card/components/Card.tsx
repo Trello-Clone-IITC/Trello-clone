@@ -1,12 +1,21 @@
 import React from "react";
 import { useCardModal } from "../hooks/useCardModal";
-import type { Label } from "../../List/redux/listSlice";
+import {
+  getLabelColorClass,
+  getLabelHoverColorClass,
+} from "@/shared/constants";
+
+// Simplified label type that matches what CardDto provides
+interface CardLabel {
+  color: string;
+  name?: string | null;
+}
 
 interface CardProps {
   id: string;
   title: string;
-  description?: string;
-  labels?: Label[];
+  description?: string | null;
+  labels?: CardLabel[];
 }
 
 const Card: React.FC<CardProps> = ({ id, title, description, labels = [] }) => {
@@ -16,18 +25,10 @@ const Card: React.FC<CardProps> = ({ id, title, description, labels = [] }) => {
     openModal(id, title);
   };
 
-  const getLabelColorClass = (color: string) => {
-    const colorMap: Record<string, string> = {
-      green: "bg-[#4bce97] hover:bg-[#7ee2b8] text-[#1d2125]",
-      pink: "bg-[#e774bb] hover:bg-[#f797d2] text-[#1d2125]",
-      blue: "bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125]",
-      yellow: "bg-[#f5cd47] hover:bg-[#f7d96b] text-[#1d2125]",
-      red: "bg-[#f87462] hover:bg-[#fa9a8b] text-[#1d2125]",
-      orange: "bg-[#ff9f1a] hover:bg-[#ffb84d] text-[#1d2125]",
-      purple: "bg-[#9f8fef] hover:bg-[#b5a9f3] text-[#1d2125]",
-      gray: "bg-[#8fbc8f] hover:bg-[#a8d1a8] text-[#1d2125]",
-    };
-    return colorMap[color] || "bg-gray-400 hover:bg-gray-500 text-white";
+  const getLabelClassName = (color: string) => {
+    const bgClass = getLabelColorClass(color);
+    const hoverClass = getLabelHoverColorClass(color);
+    return `${bgClass} ${hoverClass} text-[#1d2125]`;
   };
 
   return (
@@ -44,15 +45,15 @@ const Card: React.FC<CardProps> = ({ id, title, description, labels = [] }) => {
           {/* Labels */}
           {labels.length > 0 && (
             <div className="flex items-center gap-1 mb-2 flex-wrap">
-              {labels.map((label) => (
+              {labels.map((label, index) => (
                 <span
-                  key={label.id}
-                  className={`h-4 rounded-[3px] px-1.5 text-xs font-medium cursor-pointer overflow-hidden max-w-full min-w-[32px] leading-4 text-left text-ellipsis ${getLabelColorClass(
+                  key={label.name || `label-${index}`}
+                  className={`h-4 rounded-[3px] px-1.5 text-xs font-medium cursor-pointer overflow-hidden max-w-full min-w-[32px] leading-4 text-left text-ellipsis transition-opacity ${getLabelClassName(
                     label.color
                   )}`}
-                  title={label.title}
+                  title={label.name || ""}
                 >
-                  {label.title}
+                  {label.name || ""}
                 </span>
               ))}
             </div>
