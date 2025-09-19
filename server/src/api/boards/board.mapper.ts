@@ -83,7 +83,7 @@ export function mapBoardDtoToCreateBoardInput(
 ): Prisma.BoardCreateInput {
   const input: any = {
     name: dto.name,
-    background: dto.background,
+    background: mapBoardBackgroundToPrisma(dto.background),
     visibility: mapBoardVisibilityDtoToPrisma(dto.visibility),
     workspace: { connect: { id: dto.workspaceId } },
   };
