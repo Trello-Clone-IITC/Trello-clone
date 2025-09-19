@@ -141,7 +141,26 @@ const dummyCards: CardDto[] = [
     startDate: "2024-01-18T09:00:00.000Z",
     position: 1,
     isWatch: false,
-    cardAssignees: [],
+    cardAssignees: [
+      {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        avatarUrl: "/src/assets/background-4-hd.webp",
+        fullName: "John Doe",
+        username: "johndoe",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440001",
+        avatarUrl: "/src/assets/background-1-hd.webp",
+        fullName: "Jane Smith",
+        username: "janesmith",
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440002",
+        avatarUrl: null,
+        fullName: "Mike Johnson",
+        username: "mikejohnson",
+      },
+    ],
     attachmentsCount: 1,
     commentsCount: 2,
     checklistItemsCount: 4,
