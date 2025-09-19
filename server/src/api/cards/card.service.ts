@@ -123,14 +123,14 @@ const createCard = async (
   const lastCard = list.cards.pop();
 
   const newPosition = lastCard
-    ? lastCard.position.toNumber() + 1000
-    : data.position;
+    ? lastCard.position.add(new Decimal(1000))
+    : new Decimal(1000);
 
   const card = await prisma.card.create({
     data: {
       listId,
-      title: data.title,
-      position: new Decimal(newPosition),
+      ...data,
+      position: newPosition,
       createdBy: userId,
     },
     include: {

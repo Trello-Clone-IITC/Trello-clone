@@ -556,7 +556,6 @@ export const CreateBoardInputSchema = BoardDtoSchema.pick({
 
 export const CreateListInputSchema = ListDtoSchema.pick({
   name: true,
-  position: true,
 });
 
 export const CreateLabelInputSchema = LabelDtoSchema.pick({
@@ -570,7 +569,6 @@ export const CreateCardLabelInputSchema = CardLabelDtoSchema.pick({
 
 export const CreateCardInputSchema = CardDtoSchema.pick({
   title: true,
-  position: true,
   location: true,
 });
 

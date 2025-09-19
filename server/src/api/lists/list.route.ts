@@ -3,7 +3,6 @@ import listController from "./list.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
 import {
   CreateListInputSchema,
-  // ListDtoSchema,
   ListIdParamSchema,
   UpdateListSchema,
 } from "@ronmordo/contracts";
@@ -36,33 +35,6 @@ router.delete(
   validateRequest({ params: ListIdParamSchema }),
   listController.deleteList
 );
-
-// List specific operations
-// -------------------------REDUNDANT- We cover this in update route-------------------------
-// router.patch(
-//   "/:listId/position",
-//   validateRequest({
-//     params: ListIdParamSchema,
-//     body: CreateListInputSchema.shape.position,
-//   }),
-//   listController.updateListPosition
-// );
-// router.patch(
-//   "/:listId/archive",
-//   validateRequest({
-//     params: ListIdParamSchema,
-//     body: ListDtoSchema.shape.isArchived,
-//   }),
-//   listController.archiveList
-// );
-// router.patch(
-//   "/:listId/subscribe",
-//   validateRequest({
-//     params: ListIdParamSchema,
-//     body: ListDtoSchema.shape.subscribed,
-//   }),
-//   listController.subscribeToList
-// );
 
 // -------------------------nested routes-------------------------
 

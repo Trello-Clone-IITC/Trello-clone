@@ -45,12 +45,6 @@ router.get(
 );
 
 // --------------------------nested routes--------------------------
-// ---NOT NEEDED---
-// router.get(
-//   "/creator/:userId",
-//   validateRequest({ params: UserIdParamSchema }),
-//   workspaceController.getWorkspacesByCreator
-// );
 
 router.use(
   "/:id/members",
