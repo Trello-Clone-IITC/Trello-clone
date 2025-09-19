@@ -67,6 +67,13 @@ export const BoardVisibilitySchema = z.enum([
   "public",
 ]);
 
+export const BoardBackgroundSchema = z.enum([
+  "mountain",
+  "valley",
+  "tree",
+  "snow",
+]);
+
 export const CommentingRestrictionsSchema = z.enum([
   "disabled",
   "board_members",
@@ -156,7 +163,7 @@ export const BoardDtoSchema = z.object({
   workspaceId: z.uuid(),
   name: z.string(),
   description: z.string().nullable().optional(),
-  background: z.string(),
+  background: BoardBackgroundSchema,
   createdBy: z.uuid(),
   allowCovers: z.boolean(),
   showComplete: z.boolean(),
