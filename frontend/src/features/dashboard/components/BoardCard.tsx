@@ -25,7 +25,7 @@ export const BoardCard = ({
   const isLight = theme === "light";
 
   const handleBoardClick = () => {
-    navigate(`/board/${id}`);
+    navigate(`/b/${id}`);
   };
 
   // Generate a random image if none provided
