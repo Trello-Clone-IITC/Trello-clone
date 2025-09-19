@@ -109,6 +109,7 @@ export type BoardCreationRestrictions = z.infer<
 export type BoardRole = z.infer<typeof schemas.BoardRoleSchema>;
 export type BoardSharing = z.infer<typeof schemas.BoardSharingSchema>;
 export type BoardVisibility = z.infer<typeof schemas.BoardVisibilitySchema>;
+export type BoardBackground = z.infer<typeof schemas.BoardBackgroundSchema>;
 export type CommentingRestrictions = z.infer<
   typeof schemas.CommentingRestrictionsSchema
 >;
