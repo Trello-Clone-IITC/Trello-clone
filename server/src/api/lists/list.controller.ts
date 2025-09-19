@@ -12,7 +12,6 @@ import type {
 import { mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { userService } from "../users/user.service.js";
-import { mapCardToDto } from "../cards/card.mapper.js";
 
 const createList = async (
   req: Request<IdParam, {}, CreateListInput>,
@@ -122,90 +121,6 @@ const deleteList = async (
   }
 };
 
-const updateListPosition = async (
-  req: Request,
-  res: Response<ApiResponse<ListDto>>,
-  next: NextFunction
-) => {
-  try {
-    const { listId } = req.params;
-    const { position } = req.body;
-    const list = await listService.updateListPosition(listId, position);
-
-    if (!list) {
-      return next(new AppError("List not found", 404));
-    }
-
-    const listDto: ListDto = mapListToDto(list);
-
-    res.status(200).json({
-      success: true,
-      data: listDto,
-    });
-  } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to update list position", 500));
-  }
-};
-
-const archiveList = async (
-  req: Request,
-  res: Response<ApiResponse<ListDto>>,
-  next: NextFunction
-) => {
-  try {
-    const { listId } = req.params;
-    const { isArchived } = req.body;
-    const list = await listService.archiveList(listId, isArchived);
-
-    if (!list) {
-      return next(new AppError("List not found", 404));
-    }
-
-    const listDto: ListDto = mapListToDto(list);
-
-    res.status(200).json({
-      success: true,
-      data: listDto,
-    });
-  } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to archive list", 500));
-  }
-};
-
-const subscribeToList = async (
-  req: Request,
-  res: Response<ApiResponse<ListDto>>,
-  next: NextFunction
-) => {
-  try {
-    const { listId } = req.params;
-    const { subscribed } = req.body;
-    const list = await listService.subscribeToList(listId, subscribed);
-
-    if (!list) {
-      return next(new AppError("List not found", 404));
-    }
-
-    const listDto: ListDto = mapListToDto(list);
-
-    res.status(200).json({
-      success: true,
-      data: listDto,
-    });
-  } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to update list subscription", 500));
-  }
-};
-
 // List Watcher Management
 const getListWatchers = async (
   req: Request,
@@ -260,9 +175,6 @@ export default {
   getList,
   updateList,
   deleteList,
-  updateListPosition,
-  archiveList,
-  subscribeToList,
   getListWatchers,
   getCardsByList,
 };
