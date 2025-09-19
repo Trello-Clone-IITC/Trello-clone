@@ -28,7 +28,9 @@ import { AimanPlayground } from "@/features/board/pages/AimanPlayground";
 import Board from "@/features/board/components/Board";
 import { BoardExample } from "@/features/board/components/BoardExample";
 import { AimansBoardTryPage } from "@/features/aimans-board-try";
+
 import { AimansBoardTryPage as AimanUIBoardPage } from "@/features/aiman -with-ui";
+
 
 export const AppRouter = () => {
   return (

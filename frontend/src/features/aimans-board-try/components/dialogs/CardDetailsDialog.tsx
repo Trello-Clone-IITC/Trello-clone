@@ -28,7 +28,9 @@ import {
   deleteChecklist,
   removeLabelFromCard,
 } from "../../api";
+
 import ChecklistSection from "./ChecklistSection";
+
 // Socket-only flow as requested
 
 type Props = {
@@ -279,7 +281,9 @@ export function CardDetailsDialog({ boardId, card, trigger }: Props) {
 
           <Separator />
 
+
           <div className="flex flex-col gap-3">
+
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Checklists</label>
               <div className="flex gap-2">
@@ -297,6 +301,7 @@ export function CardDetailsDialog({ boardId, card, trigger }: Props) {
                 </Button>
               </div>
             </div>
+
             <div className="flex flex-col gap-3">
               {checklists?.map((cl) => (
                 <ChecklistSection
@@ -308,6 +313,7 @@ export function CardDetailsDialog({ boardId, card, trigger }: Props) {
                   enabled={open}
                   onDeleteChecklist={(id) => deleteChecklistMut.mutate(id)}
                 />
+
               ))}
             </div>
           </div>

@@ -171,6 +171,7 @@ export const deleteChecklist = async (
   return data.data;
 };
 
+
 // ---------------- Checklist Items ----------------
 export const fetchChecklistItems = async (
   _boardId: string,
@@ -221,6 +222,7 @@ export const deleteChecklistItem = async (
   );
   return data.data;
 };
+
 
 // Mutations: Labels on card
 export const addLabelToCard = async (cardId: string, labelId: string) => {
