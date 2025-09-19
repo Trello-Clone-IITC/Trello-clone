@@ -1,4 +1,9 @@
-import { Prisma, type Board as PrismaBoard, $Enums } from "@prisma/client";
+import {
+  Prisma,
+  type Board as PrismaBoard,
+  $Enums,
+  type Board,
+} from "@prisma/client";
 import {
   type BoardDto,
   BoardDtoSchema,
@@ -11,7 +16,6 @@ import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
 import { mapUserToDto } from "../users/user.mapper.js";
 import { mapWorkspaceToDto } from "../workspaces/workspace.mapper.js";
-import { mapCardToDto } from "../cards/card.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import cardService from "../cards/card.service.js";
 
@@ -21,7 +25,7 @@ export function mapBoardToDto(board: PrismaBoard): BoardDto {
     workspaceId: board.workspaceId ?? null,
     name: board.name,
     description: board.description ?? null,
-    background: board.background,
+    background: mapBoardBackgroundToDto(board.background),
     createdBy: board.createdBy ?? null,
     allowCovers: board.allowCovers,
     showComplete: board.showComplete,
@@ -35,6 +39,12 @@ export function mapBoardToDto(board: PrismaBoard): BoardDto {
 
   return BoardDtoSchema.parse(dto);
 }
+
+export const mapBoardBackgroundToDto = (
+  background: $Enums.BoardBackground
+): BoardDto["background"] => {
+  return background.toLocaleLowerCase() as BoardDto["background"];
+};
 
 // --- ENUM HELPERS (Prisma → DTO) ---
 function mapBoardVisibility(v: $Enums.BoardVisibility): BoardDto["visibility"] {
@@ -91,7 +101,7 @@ export function mapBoardDtoToUpdateBoardInput(
   }
 
   if (dto.background !== undefined) {
-    input.background = dto.background;
+    input.background = mapBoardBackgroundToPrisma(dto.background);
   }
 
   if (dto.visibility !== undefined) {
@@ -120,6 +130,13 @@ export function mapBoardDtoToUpdateBoardInput(
 
   return input;
 }
+
+export const mapBoardBackgroundToPrisma = (
+  background: BoardDto["background"]
+): $Enums.BoardBackground => {
+  return (background.charAt(0).toUpperCase() +
+    background.slice(1)) as $Enums.BoardBackground;
+};
 
 // --- ENUM HELPERS (DTO → Prisma) ---
 function mapBoardVisibilityDtoToPrisma(
@@ -174,7 +191,7 @@ export async function mapFullBoardToDto(
     workspaceId: board.workspaceId ?? null,
     name: board.name,
     description: board.description ?? null,
-    background: board.background,
+    background: mapBoardBackgroundToDto(board.background),
     createdBy: board.createdBy ?? null,
     allowCovers: board.allowCovers,
     showComplete: board.showComplete,
