@@ -90,15 +90,7 @@ const Board = () => {
                 id: card.id,
                 title: card.title,
                 description: card.description || undefined,
-                listId: card.listId,
-                position: card.position,
-                labels: card.labels.map((label) => ({
-                  id: label.name || "", // Using name as id for compatibility
-                  title: label.name || "",
-                  color: label.color,
-                })),
-                createdAt: card.createdAt,
-                updatedAt: card.updatedAt,
+                labels: card.labels || [],
               }))}
             />
           );

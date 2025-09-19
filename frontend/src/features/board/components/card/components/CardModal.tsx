@@ -31,6 +31,10 @@ import { useSelector } from "react-redux";
 import { useCardModal } from "../hooks/useCardModal";
 import type { Card } from "../../List/redux/listSlice";
 import type { RootState } from "@/store/store";
+import {
+  getLabelColorClass,
+  getLabelHoverColorClass,
+} from "@/shared/constants";
 
 export default function CardModal() {
   const { isOpen, cardId, cardTitle, closeModal } = useCardModal();
@@ -61,18 +65,10 @@ export default function CardModal() {
   const displayTitle = displayCard?.title || cardTitle || "Card title";
   const displayDescription = displayCard?.description;
 
-  const getLabelColorClass = (color: string) => {
-    const colorMap: Record<string, string> = {
-      green: "bg-[#4bce97] hover:bg-[#7ee2b8] text-[#1d2125]",
-      pink: "bg-[#e774bb] hover:bg-[#f797d2] text-[#1d2125]",
-      blue: "bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125]",
-      yellow: "bg-[#f5cd47] hover:bg-[#f7d96b] text-[#1d2125]",
-      red: "bg-[#f87462] hover:bg-[#fa9a8b] text-[#1d2125]",
-      orange: "bg-[#ff9f1a] hover:bg-[#ffb84d] text-[#1d2125]",
-      purple: "bg-[#9f8fef] hover:bg-[#b5a9f3] text-[#1d2125]",
-      gray: "bg-[#8fbc8f] hover:bg-[#a8d1a8] text-[#1d2125]",
-    };
-    return colorMap[color] || "bg-gray-400 hover:bg-gray-500 text-white";
+  const getLabelClassName = (color: string) => {
+    const bgClass = getLabelColorClass(color);
+    const hoverClass = getLabelHoverColorClass(color);
+    return `${bgClass} ${hoverClass} text-[#1d2125]`;
   };
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>
@@ -275,7 +271,7 @@ export default function CardModal() {
                     {labels.map((label) => (
                       <span
                         key={label.id}
-                        className={`h-8 rounded-[3px] px-3 text-sm font-medium cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis ${getLabelColorClass(
+                        className={`h-8 rounded-[3px] px-3 text-sm font-medium cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis transition-opacity ${getLabelClassName(
                           label.color
                         )}`}
                         title={label.title}
