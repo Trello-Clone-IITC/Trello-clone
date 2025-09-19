@@ -18,7 +18,7 @@ import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Board pages
-import BoardPage from "@/features/board/pages/BoardPage";
+import BoardPage from "@/features/board-f/pages/BoardPage";
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
@@ -45,6 +45,8 @@ export const AppRouter = () => {
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/docs" element={<ApiDocs />} />
+        <Route path="/b/:boardId" element={<BoardPage />} />
+
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
