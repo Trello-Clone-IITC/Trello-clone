@@ -64,10 +64,8 @@ const getBoard = async (
       data: boardDto,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get board", 500));
+
+    next(error);
   }
 };
 

@@ -18,7 +18,7 @@ import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Board pages
-import BoardPage from "@/features/board/pages/BoardPage";
+import BoardPage from "@/features/final-aiman/board/pages/BoardPage";
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
@@ -30,6 +30,9 @@ import { BoardExample } from "@/features/board/components/BoardExample";
 import { AimansBoardTryPage } from "@/features/aimans-board-try";
 
 import { AimansBoardTryPage as AimanUIBoardPage } from "@/features/aiman -with-ui";
+
+//caspi imports
+import CaspiBoardPage from "@/features/caspi-playground/board/pages/BoardPage";
 
 
 export const AppRouter = () => {
@@ -45,6 +48,7 @@ export const AppRouter = () => {
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/docs" element={<ApiDocs />} />
+        {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
@@ -56,6 +60,8 @@ export const AppRouter = () => {
         <Route element={<DashboardLayout />}>
           <Route index element={<HomePage />} />
           <Route path="boards" element={<BoardsPage />} />
+          <Route path="/b/:boardId" element={<BoardPage />} />
+          <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />

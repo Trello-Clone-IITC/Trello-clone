@@ -9,4 +9,4 @@ export {
   useDeleteBoard,
   useBoardData,
   boardKeys,
-} from "./useBoard";
+} from "./_useBoard";

@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 import { BoardCard, CreateNewBoard, useUserWorkspaces } from "../index";
-import { useAllBoards } from "@/features/board/hooks/useBoard";
+import { useAllBoards } from "@/features/board/hooks/_useBoard";
 import { useEffect } from "react";
 import { resetPageTitle } from "@/lib/faviconUtils";
 
