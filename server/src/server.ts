@@ -79,7 +79,11 @@ app.use(globalErrorHandler);
 // Create HTTP server and attach Socket.IO
 const httpServer = http.createServer(app);
 const io: IOServer<BoardServerEvents> = new IOServer(httpServer, {
-  cors: { origin: "*" },
+  cors: {
+    origin: ["http://localhost:5173"],
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
 });
 setIo(io);
 registerBoardNamespace(io);

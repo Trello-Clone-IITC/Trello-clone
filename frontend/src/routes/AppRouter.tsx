@@ -28,6 +28,7 @@ import { AimanPlayground } from "@/features/board/pages/AimanPlayground";
 import Board from "@/features/board/components/Board";
 import { BoardExample } from "@/features/board/components/BoardExample";
 import { AimansBoardTryPage } from "@/features/aimans-board-try";
+import { AimansBoardTryPage as AimanUIBoardPage } from "@/features/aiman -with-ui";
 
 export const AppRouter = () => {
   return (
@@ -57,6 +58,7 @@ export const AppRouter = () => {
           <Route path="aiman" element={<AimanPlayground />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
           <Route path="board" element={<Board />} />
+          <Route path="aiman/ui-board/:boardId" element={<AimanUIBoardPage />} />
           {/* add more nested dashboard routes here */}
         </Route>
         {/* Board page with navbar but no sidebar */}

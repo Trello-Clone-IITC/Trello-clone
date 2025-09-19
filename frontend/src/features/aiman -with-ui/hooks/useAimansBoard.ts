@@ -10,7 +10,6 @@ import {
   fetchCardComments,
   fetchCardLabels,
   fetchBoardLabels,
-  fetchChecklistItems,
 } from "../api";
 import { useAimansBoardSocket } from "../socket";
 
@@ -31,12 +30,6 @@ export const aimanKeys = {
   cardAttachments: (boardId: string, listId: string, cardId: string) =>
     ["aiman", "card", "attachments", boardId, listId, cardId] as const,
   boardLabels: (boardId: string) => ["aiman", "board", "labels", boardId] as const,
-  checklistItems: (
-    boardId: string,
-    listId: string,
-    cardId: string,
-    checklistId: string
-  ) => ["aiman", "card", "checklists", "items", boardId, listId, cardId, checklistId] as const,
 };
 
 // Individual queries
@@ -132,20 +125,6 @@ export const useAimanCardAttachments = (
     queryKey: aimanKeys.cardAttachments(boardId, listId, cardId),
     queryFn: () => fetchCardAttachments(boardId, listId, cardId),
     enabled: !!boardId && !!listId && !!cardId && enabled === true,
-  });
-
-export const useAimanChecklistItems = (
-  boardId: string,
-  listId: string,
-  cardId: string,
-  checklistId: string,
-  enabled?: boolean
-) =>
-  useQuery({
-    queryKey: aimanKeys.checklistItems(boardId, listId, cardId, checklistId),
-    queryFn: () => fetchChecklistItems(boardId, listId, cardId, checklistId),
-    enabled:
-      !!boardId && !!listId && !!cardId && !!checklistId && enabled === true,
   });
 
 // Real-time wiring to keep caches in sync

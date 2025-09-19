@@ -142,12 +142,13 @@ export const checklistController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
+      //fixed to the parms
+      const { checklistId } = req.params;
       const userId =
         (await userService.getUserIdByRequest(req)) ||
         "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
-      const items = await checklistService.getChecklistItems(id, userId);
+      const items = await checklistService.getChecklistItems(checklistId, userId);
       const itemDtos: ChecklistItemDto[] = items.map((item) =>
         mapChecklistItemToDto(item)
       );
