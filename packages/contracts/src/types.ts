@@ -97,6 +97,7 @@ export type UpdateWorkspaceMemberInput = z.infer<
 // ==========================
 export type IdParam = z.infer<typeof schemas.IdParamSchema>;
 export type SearchQuery = z.infer<typeof schemas.SearchQuerySchema>;
+export type CardIdParam = z.infer<typeof schemas.CardIdParamSchema>;
 
 // ==========================
 // ENUM TYPES FROM SCHEMAS
