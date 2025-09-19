@@ -305,9 +305,9 @@ const createChecklistItem = async (data: CreateChecklistItemData) => {
     throw new AppError("Checklist not found", 404);
   }
 
-  if (checklist.card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
+  // if (checklist.card.list.board.boardMembers.length === 0) {
+  //   throw new AppError("Access denied", 403);
+  // }
 
   // Get the highest position in the checklist and add 1000
   const lastItem = await prisma.checklistItem.findFirst({
@@ -782,35 +782,36 @@ const getChecklistItems = async (checklistId: string, userId: string) => {
   // Verify user has access to the checklist
   const checklist = await prisma.checklist.findFirst({
     where: { id: checklistId },
-    include: {
-      card: {
-        include: {
-          list: {
-            include: {
-              board: {
-                include: {
-                  boardMembers: {
-                    where: { userId: userId },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    // include: {
+    //   card: {
+    //     include: {
+    //       list: {
+    //         include: {
+    //           board: {
+    //             include: {
+    //               boardMembers: {
+    //                 where: { userId: userId },
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
   });
 
   if (!checklist) {
     throw new AppError("Checklist not found", 404);
   }
 
-  if (checklist.card.list.board.boardMembers.length === 0) {
-    throw new AppError("Access denied", 403);
-  }
+  // if (checklist.card.list.board.boardMembers.length === 0) {
+  //   throw new AppError("Access denied", 403);
+  // }
 
   const items = await prisma.checklistItem.findMany({
-    where: { checklistId },
+
+    where: { checklistId: checklist.id },
     include: {
       assignees: {
         include: {

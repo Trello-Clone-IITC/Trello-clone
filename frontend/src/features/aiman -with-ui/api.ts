@@ -8,7 +8,6 @@ import type {
   CommentDto,
   LabelDto,
   AttachmentDto,
-  ChecklistItemDto,
 } from "@ronmordo/contracts";
 
 // Fetch board (without nested data)
@@ -170,59 +169,6 @@ export const deleteChecklist = async (
   );
   return data.data;
 };
-
-
-// ---------------- Checklist Items ----------------
-export const fetchChecklistItems = async (
-  _boardId: string,
-  _listId: string,
-  cardId: string,
-  checklistId: string
-): Promise<ChecklistItemDto[]> => {
-  const { data } = await api.get<ApiResponse<ChecklistItemDto[]>>(
-    `/cards/${cardId}/checklists/${checklistId}/checklistItems`
-  );
-  console.log("checklist items", data);
-  return data.data;
-};
-
-export const createChecklistItem = async (
-  cardId: string,
-  checklistId: string,
-  text: string,
-  position = 0
-): Promise<ChecklistItemDto> => {
-  const { data } = await api.post<ApiResponse<ChecklistItemDto>>(
-    `/cards/${cardId}/checklists/${checklistId}/checklistItems`,
-    { text, position }
-  );
-  return data.data;
-};
-
-export const updateChecklistItem = async (
-  cardId: string,
-  checklistId: string,
-  itemId: string,
-  updates: Partial<ChecklistItemDto>
-): Promise<ChecklistItemDto> => {
-  const { data } = await api.patch<ApiResponse<ChecklistItemDto>>(
-    `/cards/${cardId}/checklists/${checklistId}/checklistItems/${itemId}`,
-    updates
-  );
-  return data.data;
-};
-
-export const deleteChecklistItem = async (
-  cardId: string,
-  checklistId: string,
-  itemId: string
-) => {
-  const { data } = await api.delete<ApiResponse<null>>(
-    `/cards/${cardId}/checklists/${checklistId}/checklistItems/${itemId}`
-  );
-  return data.data;
-};
-
 
 // Mutations: Labels on card
 export const addLabelToCard = async (cardId: string, labelId: string) => {
