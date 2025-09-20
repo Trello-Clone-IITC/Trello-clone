@@ -79,7 +79,7 @@ export default function BoardsPage() {
     <div className="space-y-6">
       {/* Starred Boards Section - Only show if there are starred boards */}
       {starredBoards.length > 0 && (
-        <section className="max-w-[1266px] pb-10">
+        <section className="max-w-[1266px] pb-6">
           <div
             className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
           >
@@ -89,9 +89,9 @@ export default function BoardsPage() {
           <div
             className="
             grid 
-            [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
-            gap-y-[20px] 
-            gap-x-[2%]
+            [grid-template-columns:repeat(auto-fill,minmax(272px,1fr))]
+            gap-y-[8px] 
+            gap-x-[8px]
           "
           >
             {starredBoards.map((board) => (
@@ -108,7 +108,7 @@ export default function BoardsPage() {
       )}
       {/* Recently Viewed Section - Only show if there are recently viewed boards */}
       {recentlyViewedBoards.length > 0 && (
-        <section className="max-w-[1266px] pb-10">
+        <section className="max-w-[1266px] pb-6">
           <div
             className={`flex items-center gap-2 font-bold text-[16px] ${buttonTextColor} mb-4`}
           >
@@ -118,9 +118,9 @@ export default function BoardsPage() {
           <div
             className="
             grid 
-            [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
-            gap-y-[20px] 
-            gap-x-[2%]
+            [grid-template-columns:repeat(auto-fill,minmax(272px,1fr))]
+            gap-y-[8px] 
+            gap-x-[8px]
           "
           >
             {recentlyViewedBoards.map((board) => (
@@ -167,7 +167,7 @@ export default function BoardsPage() {
             Failed to load workspaces
           </div>
         ) : workspaces && workspaces.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {boardsByWorkspace.map((workspace, index) => {
               const { initial, color } = getWorkspaceDisplayProps(
                 workspace.name,
@@ -176,7 +176,7 @@ export default function BoardsPage() {
               );
 
               return (
-                <div key={workspace.id} className="space-y-4">
+                <div key={workspace.id} className="space-y-3">
                   {/* Workspace Header */}
                   <div className="flex items-center">
                     {/* Workspace Icon with gradient */}
@@ -285,7 +285,7 @@ export default function BoardsPage() {
                     grid 
                     [grid-template-columns:repeat(auto-fill,minmax(23%,1fr))]
                     gap-y-[20px] 
-                    gap-x-[2%]
+                    gap-x-[1%]
                   "
                   >
                     {/* Show actual boards */}

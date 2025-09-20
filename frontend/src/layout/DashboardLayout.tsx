@@ -23,14 +23,12 @@ export function DashboardLayout() {
 
         {/* Main content area */}
         <main
-          className="overflow-y-auto scrollbar pt-0 px-12 pb-14 flex-1"
+          className="overflow-y-auto scrollbar pt-0 px-6 pb-14 flex-1"
           style={{
             backgroundColor: getMainBackgroundColor(),
           }}
         >
-          <div className="max-w-[914px] p-0 mt-[2.5rem] mx-auto">
-            {<Outlet />}
-          </div>
+          <div className="max-w-[914px] p-0 mt-[2.5rem]">{<Outlet />}</div>
         </main>
       </div>
     </div>

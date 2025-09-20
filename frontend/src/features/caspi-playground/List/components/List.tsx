@@ -15,19 +15,14 @@ const List = ({ list }: { list: ListDto }) => {
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
   const listFooterRef = useRef<ListFooterRef>(null);
 
-  const hasCards = cards && cards.length > 0;
-  const listHeightClass = hasCards
-    ? "h-full max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)]"
-    : "h-fit";
-
   return (
     <li
-      className={`bg-[#101204] rounded-lg p-1.5 self-start whitespace-nowrap flex-shrink-0 list-none ${listHeightClass}`}
+      className={`bg-[#101204] rounded-lg p-1.5 self-start flex-shrink-0 list-none w-[272px]`}
       data-testid="list-wrapper"
       data-list-id={list.id}
     >
       <div
-        className="flex flex-col h-full min-h-0 w-[272px] max-h-full justify-between self-start pb-1 rounded-[12px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f] scroll-m-2"
+        className={`flex flex-col h-full max-h-[80vh] pb-1 rounded-[12px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f] `}
         data-testid="list"
       >
         <ListHeader
@@ -45,11 +40,7 @@ const List = ({ list }: { list: ListDto }) => {
         />
 
         {/* Cards area with proper scrolling */}
-        <div
-          className={`${
-            hasCards ? "flex-1 min-h-0" : "flex-shrink-0"
-          } overflow-y-auto overflow-x-hidden scroll-smooth touch-pan-y list-scrollbar`}
-        >
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-smooth touch-pan-y list-scrollbar">
           {isLoading ? (
             <div className="flex items-center justify-center py-6">
               <Spinner label="Loading cards..." size={20} />
