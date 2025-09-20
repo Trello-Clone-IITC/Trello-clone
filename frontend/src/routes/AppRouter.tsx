@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { PublicLayout } from "@/layout/PublicLayout";
 import { DashboardLayout } from "@/layout/DashboardLayout";
+import { CaspiBoardLayout } from "@/features/caspi-playground/layout/CaspiBoardLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 // Auth pages
@@ -34,7 +35,6 @@ import { AimansBoardTryPage as AimanUIBoardPage } from "@/features/aiman -with-u
 //caspi imports
 import CaspiBoardPage from "@/features/caspi-playground/board/pages/BoardPage";
 
-
 export const AppRouter = () => {
   return (
     <Routes>
@@ -51,7 +51,7 @@ export const AppRouter = () => {
         <Route path="/b/:boardId" element={<BoardPage />} />
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
-          <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
+        <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
       </Route>
 
       {/* Protected dashboard area */}
@@ -61,13 +61,22 @@ export const AppRouter = () => {
           <Route index element={<HomePage />} />
           <Route path="boards" element={<BoardsPage />} />
           {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
-          <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />
-          <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
+          <Route
+            path="aiman/aimans-board-try"
+            element={<AimansBoardTryPage />}
+          />
           <Route path="board" element={<Board />} />
-          <Route path="aiman/ui-board/:boardId" element={<AimanUIBoardPage />} />
+          <Route
+            path="aiman/ui-board/:boardId"
+            element={<AimanUIBoardPage />}
+          />
           {/* add more nested dashboard routes here */}
+        </Route>
+        {/* Caspi board with its own layout */}
+        <Route element={<CaspiBoardLayout />}>
+          <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
         </Route>
         {/* Board page with navbar but no sidebar */}
         <Route path="board/:boardId" element={<BoardPage />} />

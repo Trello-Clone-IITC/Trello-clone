@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import Spinner from "@/features/caspi-playground/board/components/Spinner";
 import Board from "@/features/caspi-playground/board/components/Board";
 import { useBoard } from "@/features/caspi-playground/board/hooks";
+import { testBoards } from "@/features/caspi-playground/board/data/testBoards";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -11,6 +12,12 @@ const BoardPage = () => {
         Missing board ID
       </div>
     );
+  }
+
+  // For testing purposes, use test boards if the boardId matches a test board
+  const testBoard = testBoards[boardId];
+  if (testBoard) {
+    return <Board board={testBoard} />;
   }
 
   // Kick off data loading to drive a loading state

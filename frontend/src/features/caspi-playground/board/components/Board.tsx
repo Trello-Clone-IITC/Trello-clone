@@ -14,12 +14,8 @@ const Board = ({ board }: { board: BoardDto }) => {
 
   // Use dummy data instead of hooks
   const boardData: BoardDto = board;
- 
-   const {
-    data: lists,
-    isLoading,
-    error,
-  } = useLists(board.id);
+
+  const { data: lists, isLoading, error } = useLists(board.id);
   // Wire realtime updates into the split caches
   useBoardRealtime(board.id);
 
@@ -75,69 +71,66 @@ const Board = ({ board }: { board: BoardDto }) => {
   }
 
   return (
-    <div>
-      <div className="flex gap-4 p-4 overflow-x-auto min-h-screen">
-        {lists&&lists.map((list) => {
-    
-          return (
-            <List
-              key={list.id}
-              list={list}
-            />
-          );
-        })}
+    <div className="flex-1 overflow-hidden">
+      <div className="flex gap-6 px-2 sm:px-4 pt-[2px] pb-[72px] overflow-x-auto h-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent scroll-smooth">
+        <div className="flex gap-6 min-w-max">
+          {lists &&
+            lists.map((list) => {
+              return <List key={list.id} list={list} />;
+            })}
 
-        <div className="min-w-[272px]">
-          {isCreatingList ? (
-            <form
-              onSubmit={handleCreateList}
-              className="bg-[#101204] hover:bg-[#101204] rounded-md p-2"
-            >
-              <Input
-                value={listName}
-                onChange={(e) => setListName(e.target.value)}
-                placeholder="Enter list name..."
-                className="bg-white text-[#bfc1c4] placeholder:text-gray-500 mb-2"
-                autoFocus
-                onBlur={(e) => {
-                  // Only cancel if the blur is not caused by clicking the submit button
-                  const relatedTarget = e.relatedTarget as HTMLElement;
-                  if (
-                    !relatedTarget ||
-                    !relatedTarget.closest('button[type="submit"]')
-                  ) {
-                    handleCancelCreateList();
-                  }
-                }}
-              />
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={!listName.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Add list
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleCancelCreateList}
-                  className="text-[#bfc1c4] hover:bg-[#2a2c21] bg-transparent text-lg p-1.5 has-[>svg]:px-1.5 flex items-center justify-center cursor-pointer rounded-[3px] text-[14px]"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <Button
-              onClick={handleAddList}
-              type="button"
-              className="bg-[#ffffff3d] hover:bg-[#ffffff52] text-white px-3 py-2 rounded-md flex"
-            >
-              <Plus className="w-4 h-4" />
-              Add a list
-            </Button>
-          )}
+          <div className="w-72 flex-shrink-0">
+            {isCreatingList ? (
+              <form
+                onSubmit={handleCreateList}
+                className="bg-[#101204] hover:bg-[#101204] rounded-md p-3"
+              >
+                <Input
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="Enter list name..."
+                  className="bg-white text-[#bfc1c4] placeholder:text-gray-500 mb-2"
+                  autoFocus
+                  onBlur={(e) => {
+                    // Only cancel if the blur is not caused by clicking the submit button
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    if (
+                      !relatedTarget ||
+                      !relatedTarget.closest('button[type="submit"]')
+                    ) {
+                      handleCancelCreateList();
+                    }
+                  }}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!listName.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Add list
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleCancelCreateList}
+                    className="text-[#bfc1c4] hover:bg-[#2a2c21] bg-transparent text-lg p-1.5 has-[>svg]:px-1.5 flex items-center justify-center cursor-pointer rounded-[3px] text-[14px]"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <Button
+                onClick={handleAddList}
+                type="button"
+                className="bg-[#ffffff3d] hover:bg-[#ffffff52] text-white px-3 py-2 rounded-md flex h-8 text-sm font-normal"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add a list
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       {/* <CardModal /> */}

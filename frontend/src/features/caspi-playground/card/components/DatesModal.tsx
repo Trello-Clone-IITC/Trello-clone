@@ -10,15 +10,18 @@ import { Check } from "lucide-react";
 
 type DatesDropdownProps = {
   children: React.ReactNode;
+  initialStartDate?: string | null;
+  initialDueDate?: string | null;
+  onSave: (payload: { startDate?: string | null; dueDate?: string | null }) => void;
+  onClear: () => void;
 };
 
-export default function DatesDropdown({ children }: DatesDropdownProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(2025, 8, 3)
-  ); // September 3, 2025
-  const [startDateEnabled, setStartDateEnabled] = useState(false);
-  const [dueDateEnabled, setDueDateEnabled] = useState(true);
-  const [dueTime, setDueTime] = useState("12:34 PM");
+export default function DatesDropdown({ children, initialStartDate, initialDueDate, onSave, onClear }: DatesDropdownProps) {
+  const initial = initialDueDate ? new Date(initialDueDate) : initialStartDate ? new Date(initialStartDate) : undefined;
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initial);
+  const [startDateEnabled, setStartDateEnabled] = useState(!!initialStartDate);
+  const [dueDateEnabled, setDueDateEnabled] = useState(!!initialDueDate);
+  const [dueTime, setDueTime] = useState("12:00 PM");
   const [reminder, setReminder] = useState("1 Day before");
 
   const formatDate = (date: Date | undefined) => {
@@ -146,12 +149,22 @@ export default function DatesDropdown({ children }: DatesDropdownProps) {
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-2 pt-2">
-              <Button className="bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125] text-sm py-2">
+              <Button
+                className="bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125] text-sm py-2"
+                onClick={() => {
+                  const toIso = (d?: Date) => (d ? new Date(d).toISOString() : null);
+                  onSave({
+                    startDate: startDateEnabled ? toIso(selectedDate) : null,
+                    dueDate: dueDateEnabled ? toIso(selectedDate) : null,
+                  });
+                }}
+              >
                 Save
               </Button>
               <Button
                 variant="outline"
                 className="bg-[#A1BDD914] hover:bg-[#3d474f] text-[#aab4c2] hover:text-[#aab4c2] border-transparent text-sm py-2"
+                onClick={() => onClear()}
               >
                 Remove
               </Button>

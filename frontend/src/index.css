@@ -252,3 +252,26 @@ input[type="radio"]:active {
 .theme-option-system.active::after {
   opacity: 1;
 }
+
+/* List scrollbar styling */
+.list-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #36382e transparent;
+}
+
+.list-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #36382e;
+  border-radius: 3px;
+}
+
+.list-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #4a4d3f;
+}
