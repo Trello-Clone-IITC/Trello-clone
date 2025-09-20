@@ -1,4 +1,3 @@
-import React from "react";
 import { useCardModal } from "../hooks/useCardModal";
 import {
   getLabelColorClass,
@@ -26,13 +25,7 @@ interface CardProps {
   members?: CardMember[];
 }
 
-const Card = ({
-  id,
-  title,
-  description,
-  labels = [],
-  members = [],
-}: CardProps) => {
+const Card = ({ id, title, description, labels = [] }: CardProps) => {
   const { openModal } = useCardModal();
 
   const handleCardClick = () => {

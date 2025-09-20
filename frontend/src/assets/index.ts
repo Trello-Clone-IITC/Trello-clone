@@ -24,6 +24,10 @@ export { default as lockIconDark } from "./lock-icon-dark.svg";
 export { default as globeIcon } from "./globe-icon.svg";
 export { default as globeIconDark } from "./globe-icon-dark.svg";
 
+// Add Members Icons
+export { default as addMembersIconDark } from "./dark-add-members.svg";
+export { default as addMembersIconLight } from "./light-add-members.svg";
+
 // Board Background Images
 export { default as background1Hd } from "./background-1-hd.webp";
 export { default as background1Preview } from "./background-1-preview.webp";

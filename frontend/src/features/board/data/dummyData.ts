@@ -1,11 +1,11 @@
 import type {
-  BoardFullDto,
   ListDto,
   CardDto,
   UserDto,
   WorkspaceDto,
   LabelDto,
   BoardMemberDto,
+  BoardDto,
 } from "@ronmordo/contracts";
 
 // Dummy User data
@@ -156,7 +156,7 @@ const dummyCards: CardDto[] = [
       },
       {
         id: "550e8400-e29b-41d4-a716-446655440002",
-        avatarUrl: null,
+        avatarUrl: "",
         fullName: "Mike Johnson",
         username: "mikejohnson",
       },
@@ -310,12 +310,12 @@ const dummyLists: ListDto[] = [
 ];
 
 // Dummy Board data
-export const dummyBoardData: BoardFullDto = {
+export const dummyBoardData: BoardDto = {
   id: "550e8400-e29b-41d4-a716-446655440002",
   workspaceId: "550e8400-e29b-41d4-a716-446655440001",
   name: "Sprint Planning Board",
   description: "Main board for tracking sprint tasks and user stories",
-  background: "/src/assets/background-1-hd.webp",
+  background: "mountain",
   createdBy: "550e8400-e29b-41d4-a716-446655440000",
   allowCovers: true,
   showComplete: true,
@@ -325,32 +325,6 @@ export const dummyBoardData: BoardFullDto = {
   visibility: "workspace_members",
   memberManage: "members",
   commenting: "workspace_members",
-  labels: dummyLabels,
-  members: [
-    {
-      ...dummyBoardMember,
-      user: dummyUser,
-    },
-  ],
-  lists: [
-    {
-      ...dummyLists[0],
-      watchers: [],
-      cards: dummyCards.filter((card) => card.listId === dummyLists[0].id),
-    },
-    {
-      ...dummyLists[1],
-      watchers: [],
-      cards: dummyCards.filter((card) => card.listId === dummyLists[1].id),
-    },
-    {
-      ...dummyLists[2],
-      watchers: [],
-      cards: dummyCards.filter((card) => card.listId === dummyLists[2].id),
-    },
-  ],
-  creator: dummyUser,
-  workspace: dummyWorkspace,
 };
 
 // Helper function to create a new list with dummy data

@@ -1,5 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import type { CardDto, ChecklistDto, CommentDto, LabelDto, AttachmentDto, ChecklistItemDto } from "@ronmordo/contracts";
+import type {
+  CardDto,
+  ChecklistDto,
+  CommentDto,
+  LabelDto,
+  AttachmentDto,
+  ChecklistItemDto,
+} from "@ronmordo/contracts";
 import {
   fetchCard,
   fetchCardAttachments,

@@ -168,3 +168,16 @@ export const createChecklistItem = async (
   );
   return data.data;
 };
+
+export const updateChecklistItem = async (
+  cardId: string,
+  checklistId: string,
+  itemId: string,
+  updates: Partial<ChecklistItemDto>
+): Promise<ChecklistItemDto> => {
+  const { data } = await api.patch<ApiResponse<ChecklistItemDto>>(
+    `/cards/${cardId}/checklists/${checklistId}/checklistItems/${itemId}`,
+    updates
+  );
+  return data.data;
+};

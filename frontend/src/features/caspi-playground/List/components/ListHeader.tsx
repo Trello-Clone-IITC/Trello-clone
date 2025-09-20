@@ -1,32 +1,30 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import ListActions from "./ListActions";
+import type { ListDto } from "@ronmordo/contracts";
+import type { ListFooterRef } from "./ListFooter";
 
 interface ListHeaderProps {
-  id: string;
-  title: string;
+  list: ListDto;
+  boardId: string;
+  nextPosition: number;
   isEditing: boolean;
   onStartEditing: () => void;
   onStopEditing: () => void;
   onUpdateTitle: (newTitle: string) => void;
+  listFooterRef: React.RefObject<ListFooterRef | null>;
 }
 
-const ListHeader: React.FC<ListHeaderProps> = ({
-  id,
-  title,
+export default function ListHeader({
+  list,
   isEditing,
   onStartEditing,
   onStopEditing,
   onUpdateTitle,
-}) => {
-  const [editTitle, setEditTitle] = useState(title);
+  listFooterRef,
+}: ListHeaderProps) {
+  const [editTitle, setEditTitle] = useState(list.name);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -37,11 +35,11 @@ const ListHeader: React.FC<ListHeaderProps> = ({
   }, [isEditing]);
 
   useEffect(() => {
-    setEditTitle(title);
-  }, [title]);
+    setEditTitle(list.name);
+  }, [list.name]);
 
   const handleSave = () => {
-    if (editTitle.trim() && editTitle !== title) {
+    if (editTitle.trim() && editTitle !== list.name) {
       onUpdateTitle(editTitle.trim());
     }
     onStopEditing();
@@ -52,7 +50,7 @@ const ListHeader: React.FC<ListHeaderProps> = ({
       e.preventDefault();
       handleSave();
     } else if (e.key === "Escape") {
-      setEditTitle(title);
+      setEditTitle(list.name);
       onStopEditing();
     }
   };
@@ -63,10 +61,10 @@ const ListHeader: React.FC<ListHeaderProps> = ({
 
   return (
     <div
-      className="flex items-center justify-between mb-3"
+      className="flex flex-grow-0 flex-wrap items-start justify-between pb-0 px-[0.5rem] pt-[0.5rem] "
       data-testid="list-header"
     >
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-h-[20px] basis-[min-content]">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -78,48 +76,31 @@ const ListHeader: React.FC<ListHeaderProps> = ({
             maxLength={512}
             spellCheck={false}
             data-testid="list-name-textarea"
-            aria-label={title}
+            aria-label={list.name}
           />
         ) : (
           <h2
             className="text-sm font-semibold text-white leading-tight cursor-pointer"
             onClick={onStartEditing}
             data-testid="list-name"
-            id={`list-${id}`}
+            id={`list-${list.id}`}
           >
-            {title}
+            {list.name}
           </h2>
         )}
       </div>
 
-      <div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-gray-300 hover:bg-white/20"
-              data-testid="list-edit-menu-button"
-              aria-label={`More actions on ${title}`}
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>Add card</DropdownMenuItem>
-            <DropdownMenuItem>Copy list</DropdownMenuItem>
-            <DropdownMenuItem>Move list</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Sort by</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
-              Archive this list
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <ListActions list={list} listFooterRef={listFooterRef}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-gray-300 hover:bg-white/20"
+          data-testid="list-edit-menu-button"
+          aria-label={`More actions on ${list.name}`}
+        >
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </ListActions>
     </div>
   );
-};
-
-export default ListHeader;
+}
