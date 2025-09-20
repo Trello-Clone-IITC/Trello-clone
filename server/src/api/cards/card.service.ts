@@ -2,9 +2,14 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
-import type { CardDto, CreateCardInput } from "@ronmordo/contracts";
-import { mapCardToDto } from "./card.mapper.js";
+import type {
+  ActivityLogDto,
+  CardDto,
+  CreateCardInput,
+} from "@ronmordo/contracts";
+import { mapCardToDto, mapCommentToDto } from "./card.mapper.js";
 import type { Card } from "@prisma/client";
+import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 
 interface UpdateCardData {
   title?: string;
@@ -751,7 +756,7 @@ const getCardActivity = async (cardId: string, userId: string) => {
     orderBy: { createdAt: "desc" },
   });
 
-  return activities;
+  return Promise.all(activities.map(mapActivityLogToDto));
 };
 
 // Get card checklists
@@ -813,10 +818,15 @@ const getCardComments = async (cardId: string, userId: string) => {
 
     const comments = await prisma.comment.findMany({
       where: { cardId },
+      include: {
+        user: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return comments;
+    const commentsDto = comments.map(mapCommentToDto);
+
+    return commentsDto;
   } catch (error) {
     console.log("Failed to get card comments:---", error);
     throw new AppError("Failed to get card comments", 500);

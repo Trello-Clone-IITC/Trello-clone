@@ -5,17 +5,14 @@ import boardService from "./board.service.js";
 import boardMembersService from "../board-members/board-members.service.js";
 import type {
   BoardDto,
-  BoardMemberDto,
   ListDto,
   LabelDto,
-  ActivityLogDto,
   BoardFullDto,
+  BoardMemberWithUserDto,
 } from "@ronmordo/contracts";
 import { mapBoardToDto, mapFullBoardToDto } from "./board.mapper.js";
-import { mapBoardMemberToDto } from "../board-members/board-members.mapper.js";
 import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
-import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 import { userService } from "../users/user.service.js";
 
 const createBoard = async (
@@ -64,7 +61,6 @@ const getBoard = async (
       data: boardDto,
     });
   } catch (error) {
-
     next(error);
   }
 };
@@ -171,16 +167,15 @@ const getBoardsByUser = async (
 
 const getBoardMembers = async (
   req: Request,
-  res: Response<ApiResponse<BoardMemberDto[]>>,
+  res: Response<ApiResponse<BoardMemberWithUserDto[]>>,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
     const members = await boardMembersService.getBoardMembers(id);
-    const membersDto = members.map(mapBoardMemberToDto);
     res.status(200).json({
       success: true,
-      data: membersDto,
+      data: members,
     });
   } catch (error) {
     if (error instanceof AppError) {
@@ -233,27 +228,6 @@ const getBoardLabels = async (
   }
 };
 
-const getBoardActivityLogs = async (
-  req: Request,
-  res: Response<ApiResponse<ActivityLogDto[]>>,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params;
-    const activityLogs = await boardService.getBoardActivityLogs(id);
-    const activityLogsDto = activityLogs.map(mapActivityLogToDto);
-    res.status(200).json({
-      success: true,
-      data: activityLogsDto,
-    });
-  } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get board activity logs", 500));
-  }
-};
-
 const getFullBoard = async (
   req: Request,
   res: Response<ApiResponse<BoardFullDto>>,
@@ -297,6 +271,5 @@ export default {
   getBoardMembers,
   getBoardLists,
   getBoardLabels,
-  getBoardActivityLogs,
   getFullBoard,
 };

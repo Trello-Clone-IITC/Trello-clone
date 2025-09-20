@@ -1,18 +1,23 @@
-import { Prisma, type BoardMember, $Enums } from "@prisma/client";
+import { Prisma, type BoardMember, $Enums, type User } from "@prisma/client";
 import {
-  BoardMemberDtoSchema,
+  BoardMemberWithUserSchema,
   type BoardMemberDto,
+  type BoardMemberWithUserDto,
   type CreateBoardMemberInput,
 } from "@ronmordo/contracts";
+import { mapUserToDto } from "../users/user.mapper.js";
 
-export function mapBoardMemberToDto(member: BoardMember): BoardMemberDto {
-  const dto: BoardMemberDto = {
+export function mapBoardMemberToDto(
+  member: BoardMember & { user: User }
+): BoardMemberWithUserDto {
+  const dto: BoardMemberWithUserDto = {
     boardId: member.boardId,
     userId: member.userId,
     role: mapBoardRole(member.role),
     joinedAt: member.joinedAt.toISOString(),
+    user: mapUserToDto(member.user),
   };
-  return BoardMemberDtoSchema.parse(dto);
+  return BoardMemberWithUserSchema.parse(dto);
 }
 
 function mapBoardRole(r: $Enums.BoardRole): BoardMemberDto["role"] {

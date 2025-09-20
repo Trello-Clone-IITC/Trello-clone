@@ -5,6 +5,7 @@ import type {
   CardAssignee,
   CardWatcher,
   Attachment,
+  User,
 } from "@prisma/client";
 import {
   type CardDto,
@@ -14,8 +15,10 @@ import {
   type CardAssigneeDto,
   type CardWatcherDto,
   type AttachmentDto,
+  type CommentWithUserDto,
 } from "@ronmordo/contracts";
 import { Prisma } from "@prisma/client";
+import { mapUserToDto } from "../users/user.mapper.js";
 
 export function mapCardToDto(
   card: Card,
@@ -75,13 +78,16 @@ export function mapChecklistToDto(checklist: Checklist): ChecklistDto {
   };
 }
 
-export function mapCommentToDto(comment: Comment): CommentDto {
+export function mapCommentToDto(
+  comment: Comment & { user: User }
+): CommentWithUserDto {
   return {
     id: comment.id,
     cardId: comment.cardId,
     userId: comment.userId,
     text: comment.text,
     createdAt: comment.createdAt.toISOString(),
+    user: mapUserToDto(comment.user),
   };
 }
 

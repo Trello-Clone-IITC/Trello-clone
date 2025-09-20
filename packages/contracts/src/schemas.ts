@@ -350,6 +350,11 @@ export const BoardFullDtoSchema = BoardDtoSchema.extend({
   workspace: WorkspaceDtoSchema.nullable(),
 });
 
+// Board members
+export const BoardMemberWithUserSchema = BoardMemberDtoSchema.extend({
+  user: UserDtoSchema,
+});
+
 // List
 export const ListWithWatchersIdsSchema = ListDtoSchema.extend({
   watchers: z.array(ListWatcherDtoSchema),
