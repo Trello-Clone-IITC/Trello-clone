@@ -10,9 +10,6 @@ import { List } from "@/features/final-aiman/List/components";
 import { emitCreateList } from "@/features/final-aiman/board/socket";
 
 const Board = ({ board }: { board: BoardDto }) => {
-  // const { boardId } = useParams<{ boardId: string }>();
-
-  // Use dummy data instead of hooks
   const boardData: BoardDto = board;
  
    const {
@@ -25,9 +22,7 @@ const Board = ({ board }: { board: BoardDto }) => {
 
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [listName, setListName] = useState("");
-  // const [lists, setLists] = useState<(ListDto & { cards?: CardDto[] })[]>(
-  //   boardData.lists
-  // );
+  
 
   const handleAddList = () => {
     setIsCreatingList(true);

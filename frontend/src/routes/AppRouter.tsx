@@ -48,7 +48,7 @@ export const AppRouter = () => {
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/docs" element={<ApiDocs />} />
-        {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
+        <Route path="/b/:boardId" element={<BoardPage />} />
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
           <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
@@ -60,7 +60,7 @@ export const AppRouter = () => {
         <Route element={<DashboardLayout />}>
           <Route index element={<HomePage />} />
           <Route path="boards" element={<BoardsPage />} />
-          <Route path="/b/:boardId" element={<BoardPage />} />
+          {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
           <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           {/* Aiman playing */}
           <Route path="aiman" element={<AimanPlayground />} />

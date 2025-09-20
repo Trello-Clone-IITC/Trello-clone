@@ -1,22 +1,57 @@
 import React, { useState } from "react";
 import { Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { emitCreateCard } from "@/features/final-aiman/board/socket";
+import { useQueryClient } from "@tanstack/react-query";
+import { boardKeys } from "@/features/final-aiman/board/hooks";
+import type { CardDto } from "@ronmordo/contracts";
 
 interface ListFooterProps {
   listId: string;
+  boardId: string;
+  nextPosition: number;
 }
 
-const ListFooter: React.FC<ListFooterProps> = ({ listId }) => {
+const ListFooter: React.FC<ListFooterProps> = ({ listId, boardId, nextPosition }) => {
   const [isAddingCard, setIsAddingCard] = useState(false);
-  const [newCardTitle, setNewCardTitle] = useState("");
+  const [title, setTitle] = useState("");
+  const queryClient = useQueryClient();
 
   const handleAddCard = () => {
-    if (newCardTitle.trim()) {
-      // TODO: Dispatch action to add card to Redux store
-      console.log("Adding card:", newCardTitle, "to list:", listId);
-      setNewCardTitle("");
-      setIsAddingCard(false);
-    }
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    // Optimistic insert into the cards cache
+    const tempCard: CardDto = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` as any,
+      listId,
+      title: trimmed,
+      description: null,
+      position: nextPosition,
+      createdAt: new Date().toISOString() as any,
+      updatedAt: new Date().toISOString() as any,
+      // Optional fields tolerated by UI
+      coverImageUrl: null as any,
+      dueDate: null as any,
+      startDate: null as any,
+      labels: [],
+      archived: false as any,
+      subscribed: false as any,
+    } as unknown as CardDto;
+
+    queryClient.setQueryData<CardDto[] | undefined>(
+      boardKeys.cards(boardId, listId),
+      (prev) => (prev ? [...prev, tempCard] : [tempCard])
+    );
+
+    // Emit to server
+    emitCreateCard(boardId, listId, trimmed, nextPosition);
+    setTitle("");
+    setIsAddingCard(false);
+  };
+
+  const handleCancel = () => {
+    setTitle("");
+    setIsAddingCard(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -24,8 +59,7 @@ const ListFooter: React.FC<ListFooterProps> = ({ listId }) => {
       e.preventDefault();
       handleAddCard();
     } else if (e.key === "Escape") {
-      setNewCardTitle("");
-      setIsAddingCard(false);
+      handleCancel();
     }
   };
 
@@ -34,8 +68,8 @@ const ListFooter: React.FC<ListFooterProps> = ({ listId }) => {
       {isAddingCard ? (
         <div className="space-y-2">
           <textarea
-            value={newCardTitle}
-            onChange={(e) => setNewCardTitle(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter a title for this card..."
             className="w-full p-2 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -50,14 +84,7 @@ const ListFooter: React.FC<ListFooterProps> = ({ listId }) => {
             >
               Add card
             </Button>
-            <Button
-              onClick={() => {
-                setNewCardTitle("");
-                setIsAddingCard(false);
-              }}
-              variant="ghost"
-              size="sm"
-            >
+            <Button onClick={handleCancel} variant="ghost" size="sm">
               Cancel
             </Button>
           </div>

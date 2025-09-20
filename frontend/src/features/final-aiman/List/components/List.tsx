@@ -9,7 +9,7 @@ import Spinner from "@/features/final-aiman/board/components/Spinner";
 
 
 const List= ({ list }:{list:ListDto}) => {
-  const { isEditing, startEditing, stopEditing, updateTitle } = useList(list.id);
+  const { isEditing, startEditing, stopEditing, updateTitle } = useList(list.id, list.boardId);
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
 
   
@@ -40,10 +40,17 @@ const List= ({ list }:{list:ListDto}) => {
             <ol className="space-y-2" data-testid="list-cards" />
           </div>
         ) : (
-          <ListCards cards={cards} />
+          <ListCards cards={cards} boardId={list.boardId} />
         )}
 
-        <ListFooter listId={list.id} />
+        <ListFooter
+          listId={list.id}
+          boardId={list.boardId}
+          nextPosition={
+            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ?? 0) +
+            1000
+          }
+        />
       </div>
     </li>
   );

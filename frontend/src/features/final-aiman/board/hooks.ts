@@ -88,6 +88,20 @@ export const useBoardRealtime = (boardId: string) => {
         boardKeys.cards(boardId, card.listId),
         (prev) => {
           if (!prev || prev.length === 0) return [card];
+          // Try to replace a matching temp card (same title + position)
+          const idx = prev.findIndex(
+            (c) =>
+              typeof c.id === "string" &&
+              c.id.startsWith("temp-") &&
+              c.title === card.title &&
+              (c as any).position === (card as any).position
+          );
+          if (idx !== -1) {
+            const next = prev.slice();
+            next[idx] = card;
+            return next;
+          }
+          // Avoid duplicate real entry
           if (prev.some((c) => c.id === card.id)) return prev;
           return [...prev, card];
         }
@@ -122,4 +136,3 @@ export const useBoardRealtime = (boardId: string) => {
     },
   });
 };
-
