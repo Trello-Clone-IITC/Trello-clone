@@ -15,21 +15,24 @@ const router = Router({ mergeParams: true });
 // List CRUD operations
 router.get("/", boardController.getBoardLists);
 
-router.post(
-  "/",
-  validateRequest({ body: CreateListInputSchema }),
-  listController.createList
-);
 router.get(
   "/:listId",
   validateRequest({ params: ListIdParamSchema }),
   listController.getList
 );
+
+router.post(
+  "/",
+  validateRequest({ body: CreateListInputSchema }),
+  listController.createList
+);
+
 router.patch(
   "/:listId",
   validateRequest({ params: ListIdParamSchema, body: UpdateListSchema }),
   listController.updateList
 );
+
 router.delete(
   "/:listId",
   validateRequest({ params: ListIdParamSchema }),

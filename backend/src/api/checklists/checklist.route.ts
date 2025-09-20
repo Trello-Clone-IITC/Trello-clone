@@ -15,18 +15,18 @@ const router = Router({ mergeParams: true });
 // Checklist CRUD routes
 router.get("/", cardController.getCardChecklists);
 
+router.get(
+  "/:id",
+  validateRequest({ params: IdParamSchema }),
+  checklistController.getChecklist
+);
+
 router.post(
   "/",
   validateRequest({
     body: CreateChecklistInputSchema,
   }),
   checklistController.createChecklist
-);
-
-router.get(
-  "/:id",
-  validateRequest({ params: IdParamSchema }),
-  checklistController.getChecklist
 );
 
 router.patch(

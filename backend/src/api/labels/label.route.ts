@@ -13,16 +13,16 @@ const router = Router({ mergeParams: true });
 // Label CRUD routes
 router.get("/", boardController.getBoardLabels);
 
-router.post(
-  "/",
-  validateRequest({ body: CreateLabelInputSchema }),
-  labelController.createLabel
-);
-
 router.get(
   "/:labelId",
   validateRequest({ params: LabelIdParamSchema }),
   labelController.getLabel
+);
+
+router.post(
+  "/",
+  validateRequest({ body: CreateLabelInputSchema }),
+  labelController.createLabel
 );
 
 router.patch(

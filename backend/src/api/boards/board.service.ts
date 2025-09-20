@@ -1,4 +1,9 @@
-import type { CreateBoardInput, UpdateBoardInput } from "@ronmordo/contracts";
+import type {
+  CreateBoardInput,
+  LabelDto,
+  ListDto,
+  UpdateBoardInput,
+} from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import {
   type Board,
@@ -10,6 +15,9 @@ import {
   mapBoardDtoToCreateBoardInput,
   mapBoardDtoToUpdateBoardInput,
 } from "./board.mapper.js";
+import { getCache, setCache } from "../../lib/cache.js";
+import { mapListToDto } from "../lists/list.mapper.js";
+import { mapLabelToDto } from "../labels/label.mapper.js";
 
 const createBoard = async (
   boardData: CreateBoardInput,
@@ -95,22 +103,42 @@ const createList = async (listData: Omit<List, "id">): Promise<List> => {
   return list;
 };
 
-const getBoardLists = async (boardId: string): Promise<List[]> => {
+const getBoardLists = async (boardId: string): Promise<ListDto[]> => {
+  const cached = await getCache<ListDto[]>(`board:${boardId}:lists`);
+
+  if (cached) {
+    return cached;
+  }
+
   const lists = await prisma.list.findMany({
     where: { boardId },
     orderBy: { position: "asc" },
   });
 
-  return lists;
+  const listsDto = await Promise.all(lists.map(mapListToDto));
+
+  await setCache<ListDto[]>(`board:${boardId}:lists`, listsDto, 120);
+
+  return listsDto;
 };
 
-const getBoardLabels = async (boardId: string): Promise<Label[]> => {
+const getBoardLabels = async (boardId: string): Promise<LabelDto[]> => {
+  const cached = await getCache<LabelDto[]>(`board:${boardId}:labels`);
+
+  if (cached) {
+    return cached;
+  }
+
   const labels = await prisma.label.findMany({
     where: { boardId: boardId },
     orderBy: { name: "asc" },
   });
-  // console.log("labels from service", labels);
-  return labels;
+
+  const labelsDto = labels.map(mapLabelToDto);
+
+  await setCache<LabelDto[]>(`board:${boardId}:labels`, labelsDto, 60);
+
+  return labelsDto;
 };
 
 const getBoardActivityLogs = async (

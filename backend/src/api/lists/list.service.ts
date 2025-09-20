@@ -1,9 +1,19 @@
 import { prisma } from "../../lib/prismaClient.js";
 import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import type { CreateListInput, UpdateListInput } from "@ronmordo/contracts";
+import type {
+  CreateListInput,
+  ListDto,
+  ListWatcherDto,
+  ListWithCardsAndWatchersDto,
+  UpdateListInput,
+  UserDto,
+} from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
 import cardService from "../cards/card.service.js";
+import { getCache, setCache } from "../../lib/cache.js";
+import { mapFullListToDto, mapListToDto } from "./list.mapper.js";
+import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 
 const createList = async (
   data: CreateListInput,
@@ -38,21 +48,35 @@ const createList = async (
   return list;
 };
 
-const getListById = async (id: string): Promise<List | null> => {
+const getListById = async (id: string, userId: string): Promise<ListDto> => {
+  const cached = await getCache<ListDto>(`list:${id}`);
+
+  if (cached) {
+    return cached;
+  }
+
   const list = await prisma.list.findUnique({
     where: { id },
     include: {
       cards: {
         orderBy: { position: "asc" },
       },
-      watchers: {
-        include: {
-          user: true,
-        },
-      },
+      watchers: true,
     },
   });
-  return list;
+
+  if (!list) {
+    throw new AppError("List not found", 404);
+  }
+
+  const listDto: ListWithCardsAndWatchersDto = await mapFullListToDto(
+    list,
+    userId
+  );
+
+  await setCache<ListWithCardsAndWatchersDto>(`list:${id}`, listDto, 60);
+
+  return listDto;
 };
 
 const getAllListsByBoard = async (boardId: string): Promise<List[]> => {
@@ -157,6 +181,18 @@ const searchLists = async (
 // List Watcher Management
 
 const getListWatchers = async (listId: string) => {
+  const cached = await getCache<
+    Array<
+      ListWatcherDto & {
+        user: Pick<UserDto, "id" | "avatarUrl" | "fullName" | "email">;
+      }
+    >
+  >(`list:${listId}:watchers`);
+
+  if (cached) {
+    return cached;
+  }
+
   const watchers = await prisma.listWatcher.findMany({
     where: { listId },
     include: {
@@ -171,9 +207,21 @@ const getListWatchers = async (listId: string) => {
     },
     orderBy: { createdAt: "asc" },
   });
-  console.log("watchers", watchers);
 
-  return watchers;
+  const watchersDto = watchers.map((w) => ({
+    ...w,
+    ...mapListWatcherToDto(w),
+  }));
+
+  await setCache<
+    Array<
+      ListWatcherDto & {
+        user: Pick<UserDto, "id" | "avatarUrl" | "fullName" | "email">;
+      }
+    >
+  >(`list:${listId}:watchers`, watchersDto, 120);
+
+  return watchersDto;
 };
 
 const getCardsByList = async (listId: string, userId: string) => {

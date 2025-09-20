@@ -193,10 +193,9 @@ const getBoardLists = async (
   try {
     const { id } = req.params;
     const lists = await boardService.getBoardLists(id);
-    const listsDto = lists.map(mapListToDto);
     res.status(200).json({
       success: true,
-      data: listsDto,
+      data: lists,
     });
   } catch (error) {
     if (error instanceof AppError) {
@@ -214,10 +213,9 @@ const getBoardLabels = async (
   try {
     const { id } = req.params;
     const labels = await boardService.getBoardLabels(id);
-    const labelsDto = labels.map(mapLabelToDto);
     res.status(200).json({
       success: true,
-      data: labelsDto,
+      data: labels,
     });
   } catch (error) {
     console.log("error from get board labels", error);

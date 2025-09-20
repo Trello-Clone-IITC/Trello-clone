@@ -1,7 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { AppError } from "../../utils/appError.js";
-import type { CreateLabelInput, UpdateLabelInput } from "@ronmordo/contracts";
-import { mapLabelDtoToCreateInput } from "./label.mapper.js";
+import type {
+  CreateLabelInput,
+  LabelDto,
+  UpdateLabelInput,
+} from "@ronmordo/contracts";
+import { mapLabelDtoToCreateInput, mapLabelToDto } from "./label.mapper.js";
+import { getCache, setCache } from "../../lib/cache.js";
 
 const prisma = new PrismaClient();
 
@@ -84,35 +89,34 @@ const createLabel = async (
   }
 };
 
-const getLabelById = async (boardId: string, labelId: string) => {
-  try {
-    const label = await prisma.label.findFirst({
-      where: { id: labelId, boardId: boardId },
-      include: {
-        board: {
-          include: {
-            boardMembers: true,
-          },
-        },
-      },
-    });
+const getLabelById = async (
+  boardId: string,
+  labelId: string,
+  userId: string
+) => {
+  const cached = await getCache<LabelDto>(`label:${labelId}`);
 
-    if (!label) {
-      throw new AppError("Label not found", 404);
-    }
-
-    if (label.board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
-    }
-
-    return label;
-  } catch (error) {
-    console.error("Failed to get label:", error);
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError("Failed to get label", 500);
+  if (cached) {
+    return cached;
   }
+
+  const label = await prisma.label.findFirst({
+    where: {
+      id: labelId,
+      boardId: boardId,
+      board: { boardMembers: { some: { userId } } },
+    },
+  });
+
+  if (!label) {
+    throw new AppError("Label not found", 404);
+  }
+
+  const labelDto = mapLabelToDto(label);
+
+  await setCache<LabelDto>(`label:${labelId}`, labelDto, 60);
+
+  return labelDto;
 };
 
 const updateLabel = async (

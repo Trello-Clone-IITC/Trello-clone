@@ -42,12 +42,17 @@ export const labelController = {
   ) => {
     try {
       const { id, labelId } = req.params;
-      const label = await labelService.getLabelById(id, labelId);
-      const labelDto: LabelDto = mapLabelToDto(label);
+      const userId = await userService.getUserIdByRequest(req);
+
+      if (!userId) {
+        throw new AppError("UnAutherized", 403);
+      }
+
+      const label = await labelService.getLabelById(id, labelId, userId);
 
       res.status(200).json({
         success: true,
-        data: labelDto,
+        data: label,
       });
     } catch (error) {
       console.error("Failed to get label", error);

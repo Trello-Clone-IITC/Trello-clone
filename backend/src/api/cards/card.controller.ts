@@ -3,7 +3,6 @@ import cardService from "./card.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type {
-  ActivityLogDto,
   CardDto,
   ChecklistDto,
   CommentDto,
@@ -15,13 +14,11 @@ import type {
   CommentWithUserDto,
 } from "@ronmordo/contracts";
 import {
-  mapChecklistToDto,
   mapCommentToDto,
   mapCardAssigneeToDto,
   mapCardWatcherToDto,
   mapAttachmentToDto,
 } from "./card.mapper.js";
-import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 import { userService } from "../users/user.service.js";
 
 export const cardController = {
@@ -303,10 +300,10 @@ export const cardController = {
       }
 
       const checklists = await cardService.getCardChecklists(cardId, userId);
-      const checklistsDto = checklists.map(mapChecklistToDto);
+
       res.status(200).json({
         success: true,
-        data: checklistsDto,
+        data: checklists,
       });
     } catch (error) {
       if (error instanceof AppError) {

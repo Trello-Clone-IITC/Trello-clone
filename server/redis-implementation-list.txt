@@ -1,0 +1,17 @@
+userService (server/src/api/users/user.service.ts)
+getUserIdByClerkId(userId)
+
+boardService (server/src/api/boards/boardService.ts) 
+- getBoardById(boardId) ------ OK
+
+listService (server/src/api/lists/list.service.ts)
+- createList({ name }, boardId) ----- OK
+- updateList(listId, updates) ----- OK
+- deleteList(listId) ------ OK
+
+cardService (server/src/api/cards/card.service.ts)
+- createCard({ title }, listId, userId) ----- OK
+- updateCard(cardId, { ...updates }, userId) ----- OK
+- deleteCard(cardId, userId) ------ OK
+- getCardById(cardId, userId) ------ NOT OK
+- moveCard(cardId, toListId, position, userId) ----- OK

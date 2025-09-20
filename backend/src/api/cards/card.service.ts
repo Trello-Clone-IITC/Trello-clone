@@ -3,12 +3,14 @@ import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
 import type {
-  ActivityLogDto,
   CardDto,
+  ChecklistDto,
   CreateCardInput,
 } from "@ronmordo/contracts";
 import { mapCardToDto, mapCommentToDto } from "./card.mapper.js";
 import type { Card } from "@prisma/client";
+import { getCache, setCache } from "../../lib/cache.js";
+import { mapChecklistToDto } from "../checklists/checklist.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 
 interface UpdateCardData {
@@ -765,6 +767,12 @@ const getCardActivity = async (cardId: string, userId: string) => {
 
 // Get card checklists
 const getCardChecklists = async (cardId: string, userId: string) => {
+  const cached = await getCache<ChecklistDto[]>(`card:${cardId}:checklists`);
+
+  if (cached) {
+    return cached;
+  }
+
   // Verify user has access to the card
   const card = await prisma.card.findFirst({
     where: {
@@ -788,7 +796,15 @@ const getCardChecklists = async (cardId: string, userId: string) => {
     throw new AppError("Card not found", 404);
   }
 
-  return card.checklists;
+  const checklistsDto = card.checklists.map(mapChecklistToDto);
+
+  await setCache<ChecklistDto[]>(
+    `card:${cardId}:checklists`,
+    checklistsDto,
+    60
+  );
+
+  return checklistsDto;
 };
 
 // Get card comments
