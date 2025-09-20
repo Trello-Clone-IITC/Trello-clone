@@ -48,7 +48,7 @@ export const AppRouter = () => {
         <Route path="/recovery" element={<Recovery />} />
         <Route path="/sso-callback" element={<SsoCallback />} />
         <Route path="/docs" element={<ApiDocs />} />
-        {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
+        <Route path="/b/:boardId" element={<BoardPage />} />
         <Route path="/board-example" element={<BoardExample />} />
         <Route path="/board" element={<Board />} />
         <Route path="aiman/aimans-board-try" element={<AimansBoardTryPage />} />
@@ -66,17 +66,18 @@ export const AppRouter = () => {
           <Route
             path="aiman/aimans-board-try"
             element={<AimansBoardTryPage />}
-          />
+            />
           <Route path="board" element={<Board />} />
           <Route
             path="aiman/ui-board/:boardId"
             element={<AimanUIBoardPage />}
-          />
+            />
           {/* add more nested dashboard routes here */}
         </Route>
         {/* Caspi board with its own layout */}
         <Route element={<CaspiBoardLayout />}>
           <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
+          <Route path="/caspi/b/:boardId" element={<BoardPage />} />
         </Route>
         {/* Board page with navbar but no sidebar */}
         <Route path="board/:boardId" element={<BoardPage />} />

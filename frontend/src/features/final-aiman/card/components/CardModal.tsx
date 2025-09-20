@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import React from "react";
+import { useState } from "react";
 import type { CardDto } from "@ronmordo/contracts";
 import { useCardAttachments, useCardChecklists, useCardComments } from "@/features/final-aiman/card/hooks/useCardQueries";
 import { TitleHeader } from "./TitleHeader";
@@ -31,7 +31,7 @@ export default function CardModal({
   const displayDescription = card.description;
 
   // Lazy-load extras only when asked
-  const [showDetails, setShowDetails] = React.useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const enableExtras = open && showDetails;
   const { data: comments } = useCardComments(
     boardId,

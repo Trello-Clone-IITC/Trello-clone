@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { boardKeys } from "@/features/final-aiman/board/hooks";
 import { useCardChecklists, useChecklistItems } from "@/features/final-aiman/card/hooks/useCardQueries";
-import type { ChecklistDto, ChecklistItemDto } from "@ronmordo/contracts";
+import type { ChecklistDto } from "@ronmordo/contracts";
 import { CheckSquare } from "lucide-react";
 import { useCreateChecklistItem, useDeleteChecklist, useToggleChecklistItem } from "../hooks/useCardMutations";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Props = { boardId: string; listId: string; cardId: string };
 
@@ -30,7 +29,6 @@ const SingleChecklist = ({
   cardId: string;
   checklist: ChecklistDto;
 }) => {
-  const queryClient = useQueryClient();
   const addItemMut = useCreateChecklistItem(boardId, listId, cardId, checklist.id);
   const toggleItemMut = useToggleChecklistItem(boardId, listId, cardId, checklist.id);
   const deleteChecklistMut = useDeleteChecklist(boardId, listId, cardId);
@@ -61,6 +59,7 @@ const SingleChecklist = ({
     return { progress: pct, displayedItems: visible };
   }, [items, hideCompleted]);
 
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -75,29 +74,43 @@ const SingleChecklist = ({
           >
             {hideCompleted ? "Show checked items" : "Hide checked items"}
           </button>
-          <button onClick={removeChecklist} className="text-xs text-gray-300 bg-[#2c3339] hover:bg-[#3a4249] px-3 py-1 rounded">
+          <button
+            onClick={removeChecklist}
+            className="text-xs text-gray-300 bg-[#2c3339] hover:bg-[#3a4249] px-3 py-1 rounded"
+          >
             Delete
           </button>
         </div>
       </div>
       <div className="text-xs text-gray-400">{progress}%</div>
-      <div className="h-1 bg-gray-700 rounded overflow-hidden">
-        <div className="h-1 bg-white/80" style={{ width: `${progress}%` }} />
+      <div className="h-1 bg-[#303134] rounded overflow-hidden">
+        <div className="h-1 bg-[#94c748]" style={{ width: `${progress}%` }} />
       </div>
       <div className="space-y-2">
         {displayedItems?.map((it) => (
-          <label key={it.id} className="flex items-start gap-2 text-sm text-white">
-            <input
-              type="checkbox"
-              className="mt-0.5"
+          <div
+            key={it.id}
+            className="flex items-start gap-2 text-sm text-white"
+          >
+            <Checkbox
               checked={it.isCompleted}
-              onChange={async (e) => {
-                const next = e.target.checked;
-                await toggleItemMut.mutateAsync({ itemId: it.id, isCompleted: next });
+              onCheckedChange={async (checked) => {
+                const next = checked as boolean;
+                await toggleItemMut.mutateAsync({
+                  itemId: it.id,
+                  isCompleted: next,
+                });
               }}
+              className="data-[state=checked]:bg-[#8fb8f6] data-[state=checked]:border-[#8fb8f6] hover:bg-[#8fb8f6] transition ease-in-out w-3.5 h-3.5 border-1 border-[#8590a2] rounded mt-0.5 [&>span>svg]:text-[#242528] [&>span]:bg-transparent"
             />
-            <span className={it.isCompleted ? "line-through text-gray-400" : undefined}>{it.text}</span>
-          </label>
+            <span
+              className={
+                it.isCompleted ? "line-through text-gray-400" : undefined
+              }
+            >
+              {it.text}
+            </span>
+          </div>
         ))}
       </div>
       {adding ? (
@@ -109,16 +122,25 @@ const SingleChecklist = ({
             className="w-full rounded-md border border-gray-600 bg-[#22272b] p-2 text-sm text-white"
           />
           <div className="flex items-center gap-2">
-            <button onClick={addItem} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm">
+            <button
+              onClick={addItem}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm"
+            >
               Add
             </button>
-            <button onClick={() => setAdding(false)} className="text-[#b1bcca] hover:text-white text-sm">
+            <button
+              onClick={() => setAdding(false)}
+              className="text-[#b1bcca] hover:text-white text-sm"
+            >
               Cancel
             </button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="bg-[#2c3339] hover:bg-[#3a4249] text-gray-200 px-3 py-1.5 rounded text-sm">
+        <button
+          onClick={() => setAdding(true)}
+          className="bg-[#2c3339] hover:bg-[#3a4249] text-gray-200 px-3 py-1.5 rounded text-sm"
+        >
           Add an item
         </button>
       )}

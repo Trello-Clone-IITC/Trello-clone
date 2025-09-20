@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BoardDto, ListDto, CardDto, LabelDto } from "@ronmordo/contracts";
-import { fetchBoard, fetchBoardLabels } from "./api";
+import type { BoardDto, ListDto, CardDto, LabelDto, BoardMemberDto } from "@ronmordo/contracts";
+import { fetchBoard, fetchBoardLabels, fetchBoardMembers } from "./api";
 import { useBoardSocket } from "./socket";
 
 export const boardKeys = {
@@ -19,6 +19,7 @@ export const boardKeys = {
   cardAttachments: (boardId: string, listId: string, cardId: string) =>
     ["board", "card", "attachments", boardId, listId, cardId] as const,
   boardLabels: (boardId: string) => ["board", "board", "labels", boardId] as const,
+  boardMembers: (boardId: string) => ["board", "board", "members", boardId] as const,
   checklistItems: (
     boardId: string,
     listId: string,
@@ -48,6 +49,14 @@ export const useBoardLabels = (boardId: string) =>
   useQuery<LabelDto[]>({
     queryKey: boardKeys.boardLabels(boardId),
     queryFn: () => fetchBoardLabels(boardId),
+    enabled: !!boardId,
+    staleTime: 60_000,
+  });
+
+export const useBoardMembers = (boardId: string) =>
+  useQuery<BoardMemberDto[]>({
+    queryKey: boardKeys.boardMembers(boardId),
+    queryFn: () => fetchBoardMembers(boardId),
     enabled: !!boardId,
     staleTime: 60_000,
   });

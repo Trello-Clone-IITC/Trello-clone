@@ -1,6 +1,6 @@
 import { api } from "@/lib/axiosInstance";
 import type { ApiResponse } from "@/shared/types/apiResponse";
-import type { BoardDto, LabelDto } from "@ronmordo/contracts";
+import type { BoardDto, LabelDto, BoardMemberDto } from "@ronmordo/contracts";
 
 export const fetchBoard = async (boardId: string): Promise<BoardDto> => {
   const { data } = await api.get<ApiResponse<BoardDto>>(`/boards/${boardId}`);
@@ -16,3 +16,11 @@ export const fetchBoardLabels = async (
   return data.data;
 };
 
+export const fetchBoardMembers = async (
+  boardId: string
+): Promise<BoardMemberDto[]> => {
+  const { data } = await api.get<ApiResponse<BoardMemberDto[]>>(
+    `/boards/${boardId}/members`
+  );
+  return data.data;
+};
