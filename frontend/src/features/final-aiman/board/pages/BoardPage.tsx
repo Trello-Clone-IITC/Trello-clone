@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import Spinner from "@/features/final-aiman/board/components/Spinner";
 import Board from "@/features/final-aiman/board/components/Board";
 import { useBoard } from "@/features/final-aiman/board/hooks";
+// import BoardHeader from "../components/BoardHeader";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -15,6 +16,7 @@ const BoardPage = () => {
 
   // Kick off data loading to drive a loading state
   const { data: board, isLoading, isFetching, isError } = useBoard(boardId);
+
 
   if (!boardId) {
     return (
@@ -41,7 +43,10 @@ const BoardPage = () => {
   }
 
   // Delegate rendering to the Board component
-  return <Board board={board} />;
+  return (<>
+    {/* <BoardHeader boardName={board.name} boardId={board.id} /> */}
+  <Board board={board} />;
+  </>)
 };
 
 export default BoardPage;
