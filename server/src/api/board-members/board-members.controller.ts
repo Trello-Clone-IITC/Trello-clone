@@ -2,13 +2,15 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import boardMembersService from "./board-members.service.js";
-import type { BoardMemberDto } from "@ronmordo/contracts";
-import { mapBoardMemberToDto } from "./board-members.mapper.js";
+import type {
+  BoardMemberDto,
+  BoardMemberWithUserDto,
+} from "@ronmordo/contracts";
 import { userService } from "../users/user.service.js";
 
 const addBoardMember = async (
   req: Request,
-  res: Response<ApiResponse<BoardMemberDto>>,
+  res: Response<ApiResponse<BoardMemberWithUserDto>>,
   next: NextFunction
 ) => {
   try {
@@ -23,10 +25,9 @@ const addBoardMember = async (
       memberUserId,
       role
     );
-    const memberDto = mapBoardMemberToDto(member);
     res.status(201).json({
       success: true,
-      data: memberDto,
+      data: member,
     });
   } catch (error) {
     if (error instanceof AppError) {
@@ -75,12 +76,6 @@ const updateBoardMemberRole = async (
     const { role } = req.body;
     const userId = await userService.getUserIdByRequest(req);
 
-    // if (memberUserId !== userId) { -----> The admin can update the roles of members in his board, we need to check that userId is the admin of the board
-    //   return next(
-    //     new AppError("User not authorized to update this board member", 403)
-    //   );
-    // }
-
     const member = await boardMembersService.updateBoardMemberRole(
       id,
       memberUserId,
@@ -89,11 +84,9 @@ const updateBoardMemberRole = async (
     if (!member) {
       return next(new AppError("Board member not found", 404));
     }
-    const memberDto = mapBoardMemberToDto(member);
-
     res.status(200).json({
       success: true,
-      data: memberDto,
+      data: member,
     });
   } catch (error) {
     next(new AppError("Failed to update board member role", 500));

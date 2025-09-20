@@ -11,6 +11,8 @@ import type {
   LabelDto,
   CardWatcherDto,
   AttachmentDto,
+  ActivityLogFullDto,
+  CommentWithUserDto,
 } from "@ronmordo/contracts";
 import {
   mapChecklistToDto,
@@ -259,7 +261,7 @@ export const cardController = {
   // Get card activity
   getCardActivity: async (
     req: Request,
-    res: Response<ApiResponse<ActivityLogDto[]>>,
+    res: Response<ApiResponse<ActivityLogFullDto[]>>,
     next: NextFunction
   ) => {
     try {
@@ -271,13 +273,10 @@ export const cardController = {
       }
 
       const activities = await cardService.getCardActivity(id, userId);
-      const activitiesDtoArr: ActivityLogDto[] = activities.map((activity) =>
-        mapActivityLogToDto(activity)
-      );
 
       res.status(200).json({
         success: true,
-        data: activitiesDtoArr,
+        data: activities,
       });
     } catch (error) {
       if (error instanceof AppError) {
@@ -319,7 +318,7 @@ export const cardController = {
 
   getCardComments: async (
     req: Request,
-    res: Response<ApiResponse<CommentDto[]>>,
+    res: Response<ApiResponse<CommentWithUserDto[]>>,
     next: NextFunction
   ) => {
     try {
@@ -333,10 +332,9 @@ export const cardController = {
       }
 
       const comments = await cardService.getCardComments(id, userId);
-      const commentsDto = comments.map(mapCommentToDto);
       res.status(200).json({
         success: true,
-        data: commentsDto,
+        data: comments,
       });
     } catch (error) {
       console.log("Failed to get card comments:---", error);

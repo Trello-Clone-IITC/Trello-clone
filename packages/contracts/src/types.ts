@@ -150,6 +150,11 @@ export type BoardWithListsAndCardsDto = z.infer<
 >;
 export type BoardFullDto = z.infer<typeof schemas.BoardFullDtoSchema>;
 
+// Board member
+export type BoardMemberWithUserDto = z.infer<
+  typeof schemas.BoardMemberWithUserSchema
+>;
+
 // List
 export type ListWithWatchersIdsDto = z.infer<
   typeof schemas.ListWithWatchersIdsSchema

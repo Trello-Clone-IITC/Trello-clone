@@ -1,8 +1,8 @@
 import { prisma } from "../../lib/prismaClient.js";
-import type { BoardMember } from "@prisma/client";
-import type { BoardRole } from "@ronmordo/contracts";
+import type { BoardMemberWithUserDto, BoardRole } from "@ronmordo/contracts";
 import {
   mapBoardMemberDtoToCreateInput,
+  mapBoardMemberToDto,
   mapBoardRoleDto,
 } from "./board-members.mapper.js";
 
@@ -10,13 +10,18 @@ const addBoardMember = async (
   boardId: string,
   userId: string,
   role: BoardRole = "member"
-): Promise<BoardMember> => {
+): Promise<BoardMemberWithUserDto> => {
   const member = await prisma.boardMember.create({
     data: {
       ...mapBoardMemberDtoToCreateInput({ userId, role }, boardId),
     },
+    include: {
+      user: true,
+    },
   });
-  return member;
+  const memberDto = mapBoardMemberToDto(member);
+
+  return memberDto;
 };
 
 const removeBoardMember = async (
@@ -42,24 +47,28 @@ const updateBoardMemberRole = async (
   boardId: string,
   userId: string,
   newRole: BoardRole
-): Promise<BoardMember | null> => {
-  try {
-    const member = await prisma.boardMember.update({
-      where: {
-        boardId_userId: {
-          boardId,
-          userId,
-        },
+): Promise<BoardMemberWithUserDto> => {
+  const member = await prisma.boardMember.update({
+    where: {
+      boardId_userId: {
+        boardId,
+        userId,
       },
-      data: { role: mapBoardRoleDto(newRole) },
-    });
-    return member;
-  } catch {
-    return null;
-  }
+    },
+    data: { role: mapBoardRoleDto(newRole) },
+    include: {
+      user: true,
+    },
+  });
+
+  const memberDto = mapBoardMemberToDto(member);
+
+  return memberDto;
 };
 
-const getBoardMembers = async (boardId: string): Promise<BoardMember[]> => {
+const getBoardMembers = async (
+  boardId: string
+): Promise<BoardMemberWithUserDto[]> => {
   const members = await prisma.boardMember.findMany({
     where: { boardId },
     include: {
@@ -67,7 +76,10 @@ const getBoardMembers = async (boardId: string): Promise<BoardMember[]> => {
     },
     orderBy: { joinedAt: "asc" },
   });
-  return members;
+
+  const membersDto = members.map(mapBoardMemberToDto);
+
+  return membersDto;
 };
 
 export default {
