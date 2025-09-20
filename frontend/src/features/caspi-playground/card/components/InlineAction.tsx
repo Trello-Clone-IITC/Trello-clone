@@ -9,10 +9,9 @@ export const InlineAction = ({
 }) => (
   <button
     type="button"
-    className="inline-flex items-center gap-1.5 rounded-sm border border-gray-600 px-2 py-1.5 text-sm font-medium hover:bg-gray-700 text-white whitespace-nowrap"
+    className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
   >
     {icon}
     <span>{label}</span>
   </button>
 );
-

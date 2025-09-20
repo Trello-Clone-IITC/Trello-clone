@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Calendar,
   CheckSquare,
@@ -13,6 +18,7 @@ import {
   User,
   Plus,
   List as ListIcon,
+  X,
 } from "lucide-react";
 import DatesDropdown from "./DatesModal";
 import { InlineAction } from "./InlineAction";
@@ -22,9 +28,11 @@ import {
 } from "@/shared/constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { boardKeys } from "@/features/caspi-playground/board/hooks";
-import { updateCard } from "../api";
 import { useCreateChecklist, useUpdateCard } from "../hooks/useCardMutations";
 import { ChecklistSection } from "./ChecklistSection";
+import { MembersPopover } from "./MembersPopover";
+import { addMembersIconDark, addMembersIconLight } from "@/assets";
+import { useTheme } from "@/hooks/useTheme";
 
 type Label = { color: string; name?: string | null };
 
@@ -48,7 +56,7 @@ export const MainContent = ({
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
     const hoverClass = getLabelHoverColorClass(color);
-    return `${bgClass} ${hoverClass} text-[#1d2125]`;
+    return `${bgClass} ${hoverClass} text-[#b2ebd3]`;
   };
 
   const [isEditingDesc, setIsEditingDesc] = useState(false);
@@ -58,6 +66,7 @@ export const MainContent = ({
   const queryClient = useQueryClient();
   const updateCardMut = useUpdateCard(boardId, listId, cardId);
   const createChecklistMut = useCreateChecklist(boardId, listId, cardId);
+  const { theme } = useTheme();
 
   const startEdit = () => {
     setDescDraft(description || "");
@@ -67,12 +76,11 @@ export const MainContent = ({
   const addChecklist = async () => {
     const name = checklistTitle.trim() || "Checklist";
     const prev =
-      queryClient.getQueryData<any[]>(
+      queryClient.getQueryData<{ position?: number }[]>(
         boardKeys.cardChecklists(boardId, listId, cardId)
       ) || [];
     const nextPos =
-      (prev?.reduce((m, c: any) => Math.max(m, c.position ?? 0), 0) ?? 0) +
-      1000;
+      (prev?.reduce((m, c) => Math.max(m, c.position ?? 0), 0) ?? 0) + 1000;
     setAddingChecklist(false);
     setChecklistTitle("Checklist");
     await createChecklistMut.mutateAsync({ title: name, position: nextPos });
@@ -98,12 +106,12 @@ export const MainContent = ({
   return (
     <div className="px-6 pb-6 pt-4 overflow-hidden">
       <main className="space-y-6">
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2.5 py-1.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-sm border-1 border-[#46474b] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
               >
                 <Plus className="size-4" />
                 <span>Add</span>
@@ -179,51 +187,98 @@ export const MainContent = ({
           >
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2.5 py-1.5 text-sm font-medium"
+              className="inline-flex items-center gap-2 rounded-sm border border-[#46474b] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
             >
-              <Calendar className="size-4" />
+              <Calendar className="size-4 text-[#a9abaf]" />
               <span>Dates</span>
             </button>
           </DatesDropdown>
-          <button
-            type="button"
-            onClick={() => setAddingChecklist((v) => !v)}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-gray-600 px-2 py-1.5 text-sm font-medium hover:bg-gray-700 text-white whitespace-nowrap"
-          >
-            <CheckSquare className="size-4" />
-            <span>Checklist</span>
-          </button>
-          <InlineAction icon={<User className="size-4" />} label="Members" />
+          <Popover open={addingChecklist} onOpenChange={setAddingChecklist}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+              >
+                <CheckSquare className="size-4 text-[#a9abaf]" />
+                <span>Checklist</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-80 p-0 bg-[#2b2c2f] border-0 rounded-lg"
+              align="start"
+              side="bottom"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-center p-4 relative">
+                <h3 className="text-[#a9abaf] font-medium text-sm">
+                  Add checklist
+                </h3>
+                <button
+                  onClick={() => setAddingChecklist(false)}
+                  className="absolute right-4 w-6 h-6 flex items-center justify-center hover:bg-gray-600 transition-colors rounded"
+                >
+                  <X className="w-4 h-4 text-[#a9abaf]" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="pt-0 px-3 pb-3">
+                {/* Title Input */}
+                <div className="font-bold mt-3 mb-1 text-xs leading-4 flex flex-col">
+                  <label className="block text-sm font-medium text-[#a9abaf] mb-2">
+                    Title
+                  </label>
+                  <input
+                    value={checklistTitle}
+                    onChange={(e) => setChecklistTitle(e.target.value)}
+                    className="w-full h-[41px] py-1 px-3 rounded-[3px] border-1 border-[#7e8188] bg-[#242528] placeholder:text-[#96999e] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1"
+                    placeholder="Checklist"
+                    autoFocus
+                  />
+                </div>
+
+                {/* Copy Items Dropdown */}
+                <div>
+                  <label className="block text-sm font-bold text-[#bfc1c4] mb-0.5 mt-3">
+                    Copy items from...
+                  </label>
+                  <select className="w-full h-[48px] py-1 px-[6px] rounded-[3px] border-1 border-[#7e8188] bg-[#242528] placeholder:text-[#bfc1c4] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1">
+                    <option value="">(none)</option>
+                  </select>
+                </div>
+
+                {/* Add Button */}
+                <div className="flex justify-start">
+                  <button
+                    onClick={addChecklist}
+                    className="bg-[#669df1] hover:bg-[#8fb8f6] text-[#a9abaf] rounded text-sm font-medium  mt-3.5 px-6 py-1.5"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <MembersPopover members={[]}>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+            >
+              <img
+                src={
+                  theme === "dark" ? addMembersIconDark : addMembersIconLight
+                }
+                alt="Members"
+                className="w-4 h-4"
+              />
+              <span>Members</span>
+            </button>
+          </MembersPopover>
           <InlineAction
-            icon={<Paperclip className="size-4" />}
+            icon={<Paperclip className="size-4 text-[#a9abaf]" />}
             label="Attachment"
           />
         </div>
-
-        {addingChecklist && (
-          <div className="rounded-md border border-gray-600 bg-[#22272b] p-3 text-sm text-white w-full max-w-sm">
-            <div className="font-medium mb-2">Add checklist</div>
-            <input
-              value={checklistTitle}
-              onChange={(e) => setChecklistTitle(e.target.value)}
-              className="w-full rounded-sm border border-gray-600 bg-[#161a1d] px-2 py-1 text-sm mb-2"
-            />
-            <div className="flex items-center gap-2">
-              <button
-                onClick={addChecklist}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => setAddingChecklist(false)}
-                className="text-[#b1bcca] hover:text-white"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
 
         <section className="space-y-2">
           <div className="text-sm font-medium text-gray-400">Labels</div>

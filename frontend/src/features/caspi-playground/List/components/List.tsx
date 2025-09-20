@@ -1,10 +1,11 @@
 import { useList } from "../hooks/useList";
 import ListHeader from "./ListHeader";
 import ListCards from "./ListCards";
-import ListFooter from "./ListFooter";
+import ListFooter, { type ListFooterRef } from "./ListFooter";
 import type { ListDto } from "@ronmordo/contracts";
 import { useCards } from "@/features/caspi-playground/List/hooks/useListQueries";
 import Spinner from "@/features/caspi-playground/board/components/Spinner";
+import { useRef } from "react";
 
 const List = ({ list }: { list: ListDto }) => {
   const { isEditing, startEditing, stopEditing, updateTitle } = useList(
@@ -12,6 +13,7 @@ const List = ({ list }: { list: ListDto }) => {
     list.boardId
   );
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
+  const listFooterRef = useRef<ListFooterRef>(null);
 
   const hasCards = cards && cards.length > 0;
   const listHeightClass = hasCards
@@ -20,17 +22,26 @@ const List = ({ list }: { list: ListDto }) => {
 
   return (
     <li
-      className={`bg-[#101204] rounded-lg p-3 w-72 flex-shrink-0 list-none ${listHeightClass}`}
+      className={`bg-[#101204] rounded-lg p-1.5 self-start whitespace-nowrap flex-shrink-0 list-none ${listHeightClass}`}
       data-testid="list-wrapper"
       data-list-id={list.id}
     >
-      <div className="flex flex-col h-full min-h-0" data-testid="list">
+      <div
+        className="flex flex-col h-full min-h-0 w-[272px] max-h-full justify-between self-start pb-1 rounded-[12px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f] scroll-m-2"
+        data-testid="list"
+      >
         <ListHeader
           list={list}
+          boardId={list.boardId}
+          nextPosition={
+            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ??
+              0) + 1000
+          }
           isEditing={isEditing}
           onStartEditing={startEditing}
           onStopEditing={stopEditing}
           onUpdateTitle={updateTitle}
+          listFooterRef={listFooterRef}
         />
 
         {/* Cards area with proper scrolling */}
@@ -50,13 +61,17 @@ const List = ({ list }: { list: ListDto }) => {
               </div>
             </div>
           ) : !cards || cards.length === 0 ? (
-            <ol className="space-y-2 p-1" data-testid="list-cards" />
+            <ol
+              className="flex z-1 grow shrink basis-auto flex-col my-0 mx-1 p-1 overflow-x-hidden overflow-y-auto list-none "
+              data-testid="list-cards"
+            />
           ) : (
             <ListCards cards={cards} boardId={list.boardId} />
           )}
         </div>
 
         <ListFooter
+          ref={listFooterRef}
           listId={list.id}
           boardId={list.boardId}
           nextPosition={

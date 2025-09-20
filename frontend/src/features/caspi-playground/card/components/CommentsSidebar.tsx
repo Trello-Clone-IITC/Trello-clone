@@ -111,61 +111,61 @@ export const CommentsSidebar = ({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4 p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
-          <MessageSquare className="size-4" />
-          Comments and activity
+      <div className="flex items-center justify-between mb-2 md:mb-4 p-2 md:p-4">
+        <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium text-gray-400">
+          <MessageSquare className="size-3 md:size-4" />
+          <span className="hidden sm:inline">Comments and activity</span>
         </div>
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="text-sm font-medium text-[#b1bcca] bg-[#21272c] hover:bg-[#2d363c] px-3 py-1.5 rounded"
+          className="text-xs md:text-sm font-medium text-[#b1bcca] bg-[#21272c] hover:bg-[#2d363c] px-2 md:px-3 py-1 md:py-1.5 rounded"
         >
-          {showDetails ? "Hide details" : "Show details"}
+          {showDetails ? "Hide" : "Show"}
         </button>
       </div>
-      <div className="space-y-3 flex-1 px-4 pb-4 pt-2">
-        <div className="flex gap-3">
-          <div className="size-8 shrink-0 rounded-full bg-gray-600" />
+      <div className="space-y-2 md:space-y-3 flex-1 px-2 md:px-4 pb-4 pt-2">
+        <div className="flex gap-2 md:gap-3">
+          <div className="hidden md:block size-6 md:size-8 shrink-0 rounded-full bg-gray-600" />
           <div className="flex-1">
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Write a comment..."
-              className="rounded-md border border-gray-600 bg-[#161a1d] p-2 text-sm text-gray-400 w-full resize-none"
+              className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-gray-400 w-full resize-none"
               rows={2}
             />
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-end mt-1 md:mt-2">
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!text.trim()}
-                className="inline-flex items-center gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2.5 py-1.5 text-sm font-medium disabled:opacity-50"
+                className="inline-flex items-center gap-1 md:gap-2 rounded-sm border border-gray-600 hover:bg-gray-700 text-white px-2 md:px-2.5 py-1 md:py-1.5 text-xs md:text-sm font-medium disabled:opacity-50"
               >
                 Post
               </button>
             </div>
           </div>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {/* Pending (optimistic) comments first */}
           {pending.map((c) => (
-            <div key={c.id} className="flex gap-3 opacity-80">
+            <div key={c.id} className="flex gap-2 md:gap-3 opacity-80">
               {/* No user data yet for pending */}
               {user?.imageUrl ? (
                 <img
                   src={user.imageUrl}
                   alt="avatar"
-                  className="size-8 shrink-0 rounded-full object-cover"
+                  className="hidden md:block size-6 md:size-8 shrink-0 rounded-full object-cover"
                 />
               ) : (
-                <div className="size-8 shrink-0 rounded-full bg-gray-600" />
+                <div className="hidden md:block size-6 md:size-8 shrink-0 rounded-full bg-gray-600" />
               )}
               <div className="flex-1">
                 <div className="text-xs text-gray-400 mb-1">
                   {user?.fullName || user?.username || "You"}
                 </div>
-                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-2 text-sm text-white">
+                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-white">
                   {c.text}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">Sending…</div>
@@ -174,13 +174,13 @@ export const CommentsSidebar = ({
           ))}
           {/* Server comments */}
           {comments?.map((c) => (
-            <div key={c.id} className="flex gap-3">
-              {renderAvatar(c)}
+            <div key={c.id} className="flex gap-2 md:gap-3">
+              <div className="hidden md:block">{renderAvatar(c)}</div>
               <div className="flex-1">
                 <div className="text-xs text-gray-400 mb-1">
                   {getDisplayName(c)}
                 </div>
-                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-2 text-sm text-white">
+                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-white">
                   {c.text}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">

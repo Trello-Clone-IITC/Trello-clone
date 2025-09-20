@@ -18,22 +18,24 @@ export const boardKeys = {
     ["board", "card", "labels", boardId, listId, cardId] as const,
   cardAttachments: (boardId: string, listId: string, cardId: string) =>
     ["board", "card", "attachments", boardId, listId, cardId] as const,
-  boardLabels: (boardId: string) => ["board", "board", "labels", boardId] as const,
+  boardLabels: (boardId: string) =>
+    ["board", "board", "labels", boardId] as const,
   checklistItems: (
     boardId: string,
     listId: string,
     cardId: string,
     checklistId: string
-  ) => [
-    "board",
-    "card",
-    "checklists",
-    "items",
-    boardId,
-    listId,
-    cardId,
-    checklistId,
-  ] as const,
+  ) =>
+    [
+      "board",
+      "card",
+      "checklists",
+      "items",
+      boardId,
+      listId,
+      cardId,
+      checklistId,
+    ] as const,
 };
 
 export const useBoard = (boardId: string) =>
@@ -122,4 +124,3 @@ export const useBoardRealtime = (boardId: string) => {
     },
   });
 };
-

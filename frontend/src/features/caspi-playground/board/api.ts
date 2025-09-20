@@ -15,4 +15,3 @@ export const fetchBoardLabels = async (
   );
   return data.data;
 };
-

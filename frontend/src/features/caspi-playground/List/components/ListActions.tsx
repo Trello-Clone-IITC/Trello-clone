@@ -8,18 +8,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { ListDto } from "@ronmordo/contracts";
+import type { ListFooterRef } from "./ListFooter";
 
 interface ListActionsProps {
   list: ListDto;
+  listFooterRef: React.RefObject<ListFooterRef | null>;
   children: React.ReactNode;
 }
 
-export default function ListActions({ list, children }: ListActionsProps) {
+export default function ListActions({
+  list,
+  listFooterRef,
+  children,
+}: ListActionsProps) {
   const [isAutomationExpanded, setIsAutomationExpanded] = useState(false);
 
   const handleAddCard = () => {
-    // TODO: Implement add card functionality
-    console.log("Add card to list:", list.id);
+    // Trigger the ListFooter's add card functionality
+    if (listFooterRef.current) {
+      listFooterRef.current.triggerAddCard();
+    }
   };
 
   const handleCopyList = () => {

@@ -73,7 +73,7 @@ const Board = ({ board }: { board: BoardDto }) => {
   return (
     <div className="flex-1 overflow-hidden">
       <div className="flex gap-6 px-2 sm:px-4 pt-[2px] pb-[72px] overflow-x-auto h-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent scroll-smooth">
-        <div className="flex gap-6 min-w-max">
+        <div className="pt-0.5 pb-[calc(64px +8px)] mb-0 top-[-2px] right-0 bot-0 left-0 whitespace-nowrap overflow-x-auto overflow-y-hidden flex gap-6 list-none">
           {lists &&
             lists.map((list) => {
               return <List key={list.id} list={list} />;

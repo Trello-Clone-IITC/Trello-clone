@@ -3,13 +3,17 @@ import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ListActions from "./ListActions";
 import type { ListDto } from "@ronmordo/contracts";
+import type { ListFooterRef } from "./ListFooter";
 
 interface ListHeaderProps {
   list: ListDto;
+  boardId: string;
+  nextPosition: number;
   isEditing: boolean;
   onStartEditing: () => void;
   onStopEditing: () => void;
   onUpdateTitle: (newTitle: string) => void;
+  listFooterRef: React.RefObject<ListFooterRef | null>;
 }
 
 export default function ListHeader({
@@ -18,6 +22,7 @@ export default function ListHeader({
   onStartEditing,
   onStopEditing,
   onUpdateTitle,
+  listFooterRef,
 }: ListHeaderProps) {
   const [editTitle, setEditTitle] = useState(list.name);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -56,10 +61,10 @@ export default function ListHeader({
 
   return (
     <div
-      className="flex items-center justify-between mb-3"
+      className="flex flex-grow-0 flex-wrap items-start justify-between pb-0 px-[0.5rem] pt-[0.5rem] "
       data-testid="list-header"
     >
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-h-[20px] basis-[min-content]">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -85,7 +90,7 @@ export default function ListHeader({
         )}
       </div>
 
-      <ListActions list={list}>
+      <ListActions list={list} listFooterRef={listFooterRef}>
         <Button
           variant="ghost"
           size="icon"

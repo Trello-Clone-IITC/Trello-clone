@@ -12,6 +12,7 @@ import {
   useDeleteChecklist,
   useToggleChecklistItem,
 } from "../hooks/useCardMutations";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Props = { boardId: string; listId: string; cardId: string };
 
@@ -120,26 +121,25 @@ const SingleChecklist = ({
         </div>
       </div>
       <div className="text-xs text-gray-400">{progress}%</div>
-      <div className="h-1 bg-gray-700 rounded overflow-hidden">
-        <div className="h-1 bg-white/80" style={{ width: `${progress}%` }} />
+      <div className="h-1 bg-[#303134] rounded overflow-hidden">
+        <div className="h-1 bg-[#94c748]" style={{ width: `${progress}%` }} />
       </div>
       <div className="space-y-2">
         {displayedItems?.map((it) => (
-          <label
+          <div
             key={it.id}
             className="flex items-start gap-2 text-sm text-white"
           >
-            <input
-              type="checkbox"
-              className="mt-0.5"
+            <Checkbox
               checked={it.isCompleted}
-              onChange={async (e) => {
-                const next = e.target.checked;
+              onCheckedChange={async (checked) => {
+                const next = checked as boolean;
                 await toggleItemMut.mutateAsync({
                   itemId: it.id,
                   isCompleted: next,
                 });
               }}
+              className="data-[state=checked]:bg-[#8fb8f6] data-[state=checked]:border-[#8fb8f6] hover:bg-[#8fb8f6] transition ease-in-out w-3.5 h-3.5 border-1 border-[#8590a2] rounded mt-0.5 [&>span>svg]:text-[#242528] [&>span]:bg-transparent"
             />
             <span
               className={
@@ -148,7 +148,7 @@ const SingleChecklist = ({
             >
               {it.text}
             </span>
-          </label>
+          </div>
         ))}
       </div>
       {adding ? (
