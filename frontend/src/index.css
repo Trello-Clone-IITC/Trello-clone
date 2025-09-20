@@ -256,7 +256,7 @@ input[type="radio"]:active {
 /* List scrollbar styling */
 .list-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #36382e transparent;
+  scrollbar-color: #36382e #1e2013;
 }
 
 .list-scrollbar::-webkit-scrollbar {
@@ -274,4 +274,31 @@ input[type="radio"]:active {
 
 .list-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #4a4d3f;
+}
+
+/* Header Popover Menu Scrollbar */
+.dark .header-popover-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4c4d51 #37383b;
+}
+
+.header-popover-scrollbar {
+  scrollbar-width: thin;
+}
+
+.header-popover-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.header-popover-scrollbar::-webkit-scrollbar-track {
+  background: #37383b;
+}
+
+.header-popover-scrollbar::-webkit-scrollbar-thumb {
+  background: #4c4d51;
+  border-radius: 2px;
+}
+
+.header-popover-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #72737b;
 }

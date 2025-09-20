@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Zap,
@@ -8,6 +9,8 @@ import {
   MoreHorizontal,
   ChevronDown,
 } from "lucide-react";
+import HeaderPopoverMenu from "./HeaderPopoverMenu";
+import ShareBoardModal from "./ShareBoardModal";
 
 interface BoardHeaderProps {
   boardName: string;
@@ -23,6 +26,7 @@ export default function BoardHeader({
   boardName,
   members = [],
 }: BoardHeaderProps) {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   return (
     <div className="inline-flex relative flex-wrap items-center h-auto w-[calc(100%-2px)] p-3 gap-1 bg-[#ffffff3d] backdrop-blur-[6px]">
       {/* Left Section - Board Name and Dropdown */}
@@ -158,20 +162,28 @@ export default function BoardHeader({
         <Button
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1"
+          onClick={() => setIsShareModalOpen(true)}
         >
           <Share2 className="w-4 h-4 mr-1" />
           Share
         </Button>
 
         {/* Three Dots Menu */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white hover:bg-white/20 px-2 py-1"
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </Button>
+        <HeaderPopoverMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/20 px-2 py-1"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </Button>
+        </HeaderPopoverMenu>
       </div>
+
+      <ShareBoardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </div>
   );
 }
