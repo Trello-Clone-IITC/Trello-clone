@@ -12,7 +12,7 @@ export const authenticateSocket = async (
 ) => {
   try {
     const cookies = cookie.parse(socket.request.headers.cookie || "");
-    console.log("cookies:", cookies);
+    // console.log("cookies:", cookies);
 
     const sessionToken = cookies.__session; // Clerk cookie name
 
