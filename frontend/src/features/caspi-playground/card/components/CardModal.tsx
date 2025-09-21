@@ -8,13 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import React from "react";
+import { useState } from "react";
 import type { CardDto } from "@ronmordo/contracts";
 import {
   useCardAttachments,
   useCardChecklists,
   useCardComments,
-} from "@/features/caspi-playground/card/hooks/useCardQueries";
+} from "@/features/final-aiman/card/hooks/useCardQueries";
 import { TitleHeader } from "./TitleHeader";
 import { MainContent } from "./MainContent";
 import { CommentsSidebar } from "./CommentsSidebar";
@@ -35,7 +35,7 @@ export default function CardModal({
   const displayDescription = card.description;
 
   // Lazy-load extras only when asked
-  const [showDetails, setShowDetails] = React.useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const enableExtras = open && showDetails;
   const { data: comments } = useCardComments(
     boardId,
@@ -58,7 +58,7 @@ export default function CardModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-5xl p-0 bg-[#242528] border-[#313234] text-white flex flex-col overflow-hidden gap-0 top-[30px] left-[50%] translate-x-[-50%] translate-y-0"
+        className="sm:max-w-5xl p-0 bg-[#22272b] border-[#22272b] text-white flex flex-col overflow-hidden gap-0 top-[30px] left-[50%] translate-x-[-50%] translate-y-0"
         showCloseButton={false}
       >
         {/* Cover div */}
@@ -78,7 +78,7 @@ export default function CardModal({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-48 bg-[#22272b] border-[#313234] text-white"
+                className="w-48 bg-[#22272b] border-gray-600 text-white"
               >
                 <DropdownMenuItem className="hover:bg-gray-700">
                   Join
@@ -121,10 +121,10 @@ export default function CardModal({
         </div>
 
         {/* Bottom content container */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_320px] -mt-px overflow-y-auto">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_460px] -mt-px overflow-hidden">
           {/* Left side - Title + Main content */}
           <div
-            className="border border-[#313234] border-t-0 border-r-0 sm:border-r w-full overflow-y-auto sm:overflow-y-auto"
+            className="border border-[#2d363c] border-t-0 border-r-0 w-full overflow-y-auto"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr",
@@ -146,7 +146,7 @@ export default function CardModal({
           </div>
 
           {/* Right column - Comments & Activity */}
-          <aside className="border border-[#2d363c] border-t-0 sm:border-l-0 h-auto sm:h-full flex flex-col bg-[#18191a] overflow-hidden">
+          <aside className="border border-[#2d363c] border-t-0 border-l-0 h-full flex flex-col bg-[#161a1d] overflow-hidden">
             <CommentsSidebar
               showDetails={showDetails}
               setShowDetails={setShowDetails}

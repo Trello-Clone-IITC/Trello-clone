@@ -122,7 +122,12 @@ const SingleChecklist = ({
       </div>
       <div className="text-xs text-gray-400">{progress}%</div>
       <div className="h-1 bg-[#303134] rounded overflow-hidden">
-        <div className="h-1 bg-[#94c748]" style={{ width: `${progress}%` }} />
+        <div
+          className={`h-1 ${
+            progress === 100 ? "bg-[#94c748]" : "bg-[#cecfd2]"
+          }`}
+          style={{ width: `${progress}%` }}
+        />
       </div>
       <div className="space-y-2">
         {displayedItems?.map((it) => (

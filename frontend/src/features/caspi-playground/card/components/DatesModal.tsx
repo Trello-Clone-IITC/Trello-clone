@@ -12,12 +12,29 @@ type DatesDropdownProps = {
   children: React.ReactNode;
   initialStartDate?: string | null;
   initialDueDate?: string | null;
-  onSave: (payload: { startDate?: string | null; dueDate?: string | null }) => void;
+  onSave: (payload: {
+    startDate?: string | null;
+    dueDate?: string | null;
+  }) => void;
   onClear: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export default function DatesDropdown({ children, initialStartDate, initialDueDate, onSave, onClear }: DatesDropdownProps) {
-  const initial = initialDueDate ? new Date(initialDueDate) : initialStartDate ? new Date(initialStartDate) : undefined;
+export default function DatesDropdown({
+  children,
+  initialStartDate,
+  initialDueDate,
+  onSave,
+  onClear,
+  open,
+  onOpenChange,
+}: DatesDropdownProps) {
+  const initial = initialDueDate
+    ? new Date(initialDueDate)
+    : initialStartDate
+    ? new Date(initialStartDate)
+    : undefined;
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initial);
   const [startDateEnabled, setStartDateEnabled] = useState(!!initialStartDate);
   const [dueDateEnabled, setDueDateEnabled] = useState(!!initialDueDate);
@@ -30,7 +47,7 @@ export default function DatesDropdown({ children, initialStartDate, initialDueDa
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -152,7 +169,8 @@ export default function DatesDropdown({ children, initialStartDate, initialDueDa
               <Button
                 className="bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125] text-sm py-2"
                 onClick={() => {
-                  const toIso = (d?: Date) => (d ? new Date(d).toISOString() : null);
+                  const toIso = (d?: Date) =>
+                    d ? new Date(d).toISOString() : null;
                   onSave({
                     startDate: startDateEnabled ? toIso(selectedDate) : null,
                     dueDate: dueDateEnabled ? toIso(selectedDate) : null,
