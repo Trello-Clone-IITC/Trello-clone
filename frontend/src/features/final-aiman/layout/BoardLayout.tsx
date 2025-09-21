@@ -14,8 +14,6 @@
 // export function CaspiBoardLayout() {
 //   const { theme } = useTheme();
 
-
-
 //   // Dynamic title and favicon based on board
 //   useEffect(() => {
 //     if (boardData) {

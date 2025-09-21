@@ -1,5 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BoardDto, ListDto, CardDto, LabelDto, BoardMemberDto } from "@ronmordo/contracts";
+import type {
+  BoardDto,
+  ListDto,
+  CardDto,
+  LabelDto,
+  BoardMemberDto,
+  BoardMemberWithUserDto,
+} from "@ronmordo/contracts";
 import { fetchBoard, fetchBoardLabels, fetchBoardMembers } from "./api";
 import { useBoardSocket } from "./socket";
 
@@ -18,23 +25,26 @@ export const boardKeys = {
     ["board", "card", "labels", boardId, listId, cardId] as const,
   cardAttachments: (boardId: string, listId: string, cardId: string) =>
     ["board", "card", "attachments", boardId, listId, cardId] as const,
-  boardLabels: (boardId: string) => ["board", "board", "labels", boardId] as const,
-  boardMembers: (boardId: string) => ["board", "board", "members", boardId] as const,
+  boardLabels: (boardId: string) =>
+    ["board", "board", "labels", boardId] as const,
+  boardMembers: (boardId: string) =>
+    ["board", "board", "members", boardId] as const,
   checklistItems: (
     boardId: string,
     listId: string,
     cardId: string,
     checklistId: string
-  ) => [
-    "board",
-    "card",
-    "checklists",
-    "items",
-    boardId,
-    listId,
-    cardId,
-    checklistId,
-  ] as const,
+  ) =>
+    [
+      "board",
+      "card",
+      "checklists",
+      "items",
+      boardId,
+      listId,
+      cardId,
+      checklistId,
+    ] as const,
 };
 
 export const useBoard = (boardId: string) =>
@@ -54,7 +64,7 @@ export const useBoardLabels = (boardId: string) =>
   });
 
 export const useBoardMembers = (boardId: string) =>
-  useQuery<BoardMemberDto[]>({
+  useQuery<BoardMemberWithUserDto[]>({
     queryKey: boardKeys.boardMembers(boardId),
     queryFn: () => fetchBoardMembers(boardId),
     enabled: !!boardId,
