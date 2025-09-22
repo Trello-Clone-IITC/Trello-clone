@@ -5,6 +5,7 @@ export { DashboardPage } from "./pages";
 export { default as Sidebar } from "./components/Sidebar";
 export { CreateNewBoard } from "./components/CreateNewBoard";
 export { BoardCard } from "./components/BoardCard";
+export { WorkspaceBoards } from "./components/WorkspaceBoards";
 export { default as CreateWorkspaceModal } from "./components/CreateWorkspaceModal";
 
 // Hooks
@@ -13,6 +14,9 @@ export { useCreateWorkspace } from "./hooks/useCreateWorkspace";
 
 // API
 export * from "./api";
+
+// Utils
+export * from "./utils/backgroundUtils";
 
 // Types (if any)
 // export * from './types';

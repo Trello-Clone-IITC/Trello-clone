@@ -22,7 +22,7 @@ const List = ({ list }: { list: ListDto }) => {
       data-list-id={list.id}
     >
       <div
-        className={`flex flex-col h-full max-h-[80vh] pb-1 rounded-[12px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f] `}
+        className={`flex flex-col h-full max-h-[70vh] pb-1 rounded-[12px] shadow-[0px_1px_1px_#091e4240,0px_0px_1px_#091e424f] `}
         data-testid="list"
       >
         <ListHeader

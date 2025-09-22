@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { getUserWorkspaces } from "../api";
+import { getBoardByWorkspace } from "../api";
 import { useMe } from "@/features/auth/hooks/useMe";
 
-export const useUserWorkspaces = () => {
+export const useUserBoards = (workspaceId: string) => {
   const { data: user, isLoading: userLoading } = useMe();
 
   return useQuery({
-    queryKey: ["user-workspaces"],
+    queryKey: ["user-boards", workspaceId],
     queryFn: async () => {
-      return await getUserWorkspaces();
+      return await getBoardByWorkspace(workspaceId);
     },
-    enabled: !!user?.id && !userLoading,
+    enabled: !!user?.id && !userLoading && !!workspaceId,
     staleTime: 120 * 60 * 1000,
     retry: false,
   });

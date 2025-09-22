@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { PublicLayout } from "@/layout/PublicLayout";
 import { DashboardLayout } from "@/layout/DashboardLayout";
-import { CaspiBoardLayout } from "@/features/caspi-playground/layout/CaspiBoardLayout";
+import { BoardLayout } from "@/layout/BoardLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 // Auth pages
@@ -66,16 +66,16 @@ export const AppRouter = () => {
           <Route
             path="aiman/aimans-board-try"
             element={<AimansBoardTryPage />}
-            />
+          />
           <Route path="board" element={<Board />} />
           <Route
             path="aiman/ui-board/:boardId"
             element={<AimanUIBoardPage />}
-            />
+          />
           {/* add more nested dashboard routes here */}
         </Route>
         {/* Caspi board with its own layout */}
-        <Route element={<CaspiBoardLayout />}>
+        <Route element={<BoardLayout />}>
           <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           <Route path="/caspi/b/:boardId" element={<BoardPage />} />
         </Route>

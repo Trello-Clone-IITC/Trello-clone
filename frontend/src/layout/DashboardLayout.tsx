@@ -28,7 +28,9 @@ export function DashboardLayout() {
             backgroundColor: getMainBackgroundColor(),
           }}
         >
-          <div className="max-w-[914px] p-0 mt-[2.5rem]">{<Outlet />}</div>
+          <div className="max-w-[914px] p-0 mt-[2.5rem] mx-auto">
+            {<Outlet />}
+          </div>
         </main>
       </div>
     </div>

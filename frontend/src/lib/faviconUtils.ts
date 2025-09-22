@@ -126,10 +126,27 @@ export const generateBoardFavicon = (boardData: BoardData): Promise<void> => {
     ) {
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.onload = () => drawFavicon(img);
-      img.onerror = () => drawFavicon(); // Fallback to solid color
+      img.onload = () => {
+        console.log(
+          "Background image loaded for favicon:",
+          boardData.background
+        );
+        drawFavicon(img);
+      };
+      img.onerror = (error) => {
+        console.warn(
+          "Failed to load background image for favicon:",
+          boardData.background,
+          error
+        );
+        drawFavicon(); // Fallback to solid color
+      };
       img.src = boardData.background;
     } else {
+      console.log(
+        "Using solid color background for favicon:",
+        boardData.background
+      );
       // Solid color background
       drawFavicon();
     }
