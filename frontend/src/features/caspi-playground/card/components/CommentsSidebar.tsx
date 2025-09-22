@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { MessageSquare } from "lucide-react";
 import type { CommentDto } from "@ronmordo/contracts";
 import { useCreateCardComment } from "../hooks/useCardMutations";
@@ -118,21 +118,36 @@ export const CommentsSidebar = ({
         </div>
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="text-xs md:text-sm font-medium text-[#b1bcca] bg-[#21272c] hover:bg-[#2d363c] px-2 md:px-3 py-1 md:py-1.5 rounded"
+          className="text-xs md:text-sm font-medium text-[#b1bcca] bg-[#242528] hover:bg-[#2d363c] px-2 md:px-3 py-1 md:py-1.5 rounded"
         >
           {showDetails ? "Hide" : "Show"}
         </button>
       </div>
       <div className="space-y-2 md:space-y-3 flex-1 px-2 md:px-4 pb-4 pt-2">
         <div className="flex gap-2 md:gap-3">
-          <div className="hidden md:block size-6 md:size-8 shrink-0 rounded-full bg-gray-600" />
+          {user?.imageUrl ? (
+            <img
+              src={user.imageUrl}
+              alt="avatar"
+              className="hidden md:block size-6 md:size-8 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="md:block size-6 md:size-8 shrink-0 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+              {(user?.fullName || user?.username || "U")
+                .split(/\s+/)
+                .map((p: string) => p[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
+            </div>
+          )}
           <div className="flex-1">
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Write a comment..."
-              className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-gray-400 w-full resize-none"
+              className="rounded-[8px] justify-start  bg-[#242528] px-3 py-1.5 h-9  text-xs md:text-sm placeholder:text-[#96999e] w-full resize-none shadow-[0px_1px_1px_#0e0f10,_0px_0px_1px_#0e0f10]"
               rows={2}
             />
             <div className="flex justify-end mt-1 md:mt-2">
@@ -165,7 +180,7 @@ export const CommentsSidebar = ({
                 <div className="text-xs text-gray-400 mb-1">
                   {user?.fullName || user?.username || "You"}
                 </div>
-                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-white">
+                <div className="rounded-[8px] bg-[#242528] p-1.5 md:p-2 text-xs md:text-sm text-[#bfc1c4] shadow-[0px_1px_1px_#0e0f10,_0px_0px_1px_#0e0f10]">
                   {c.text}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">Sending…</div>
@@ -180,7 +195,7 @@ export const CommentsSidebar = ({
                 <div className="text-xs text-gray-400 mb-1">
                   {getDisplayName(c)}
                 </div>
-                <div className="rounded-md border border-gray-600 bg-[#161a1d] p-1.5 md:p-2 text-xs md:text-sm text-white">
+                <div className="rounded-md border border-gray-600 bg-[#242528] p-1.5 md:p-2 text-xs md:text-sm text-white">
                   {c.text}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">

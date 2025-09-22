@@ -10,21 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Calendar,
-  CheckSquare,
-  Paperclip,
-  Tag,
-  User,
-  Plus,
-  List as ListIcon,
-  X,
-} from "lucide-react";
+import { CheckSquare, Paperclip, Tag, User, Plus, X } from "lucide-react";
 import DatesDropdown from "./DatesModal";
 import {
   getLabelColorClass,
   getLabelHoverColorClass,
 } from "@/shared/constants";
+import { clockIconLight, clockIconDark } from "@/assets";
 import { useQueryClient } from "@tanstack/react-query";
 import { boardKeys } from "@/features/caspi-playground/board/hooks";
 import { useCreateChecklist, useUpdateCard } from "../hooks/useCardMutations";
@@ -32,10 +24,10 @@ import { ChecklistSection } from "./ChecklistSection";
 import { MembersPopover } from "./MembersPopover";
 import { AttachmentPopover } from "./AttachmentPopover";
 import { DateSection } from "./DateSection";
+import { LabelsPopover } from "./LabelsPopover";
 import { addMembersIconDark, addMembersIconLight } from "@/assets";
 import { useTheme } from "@/hooks/useTheme";
-
-type Label = { color: string; name?: string | null };
+import type { LabelDto, ColorType } from "@ronmordo/contracts";
 
 export const MainContent = ({
   labels,
@@ -45,14 +37,16 @@ export const MainContent = ({
   cardId,
   startDate,
   dueDate,
+  isCompleted = false,
 }: {
-  labels: Label[];
+  labels: LabelDto[];
   description?: string | null;
   boardId: string;
   listId: string;
   cardId: string;
   startDate?: string | null;
   dueDate?: string | null;
+  isCompleted?: boolean;
 }) => {
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
@@ -68,6 +62,25 @@ export const MainContent = ({
   const updateCardMut = useUpdateCard(boardId, listId, cardId);
   const createChecklistMut = useCreateChecklist(boardId, listId, cardId);
   const { theme } = useTheme();
+  const isLight = theme === "light";
+
+  // Label handling functions
+  const handleLabelToggle = (color: ColorType) => {
+    console.log("Toggle label color:", color);
+    // TODO: Implement label toggle logic
+    // This should add/remove a label with the specified color to/from the card
+  };
+
+  const handleCreateLabel = () => {
+    console.log("Create new label");
+    // TODO: Implement create label logic
+  };
+
+  const handleEditLabel = (color: ColorType) => {
+    console.log("Edit label color:", color);
+    // TODO: Implement edit label logic
+    // This should open an edit dialog for the label with the specified color
+  };
 
   const startEdit = () => {
     setDescDraft(description || "");
@@ -112,7 +125,7 @@ export const MainContent = ({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-sm border-1 border-[#46474b] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-sm border-1 border-[#3c3d40] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
               >
                 <Plus className="size-4" />
                 <span>Add</span>
@@ -136,7 +149,19 @@ export const MainContent = ({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  <Calendar className="size-5 mt-0.5" />
+                  {isLight ? (
+                    <img
+                      src={clockIconLight}
+                      alt="Clock"
+                      className="size-5 mt-0.5"
+                    />
+                  ) : (
+                    <img
+                      src={clockIconDark}
+                      alt="Clock"
+                      className="size-5 mt-0.5"
+                    />
+                  )}
                   <div>
                     <div className="font-medium">Dates</div>
                     <div className="text-sm text-gray-400">
@@ -170,6 +195,22 @@ export const MainContent = ({
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
+          {labels.length === 0 && (
+            <LabelsPopover
+              selectedLabels={labels}
+              onLabelToggle={handleLabelToggle}
+              onCreateLabel={handleCreateLabel}
+              onEditLabel={handleEditLabel}
+            >
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-sm border border-[#3c3d40] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
+              >
+                <Tag className="size-4 text-[#a9abaf]" />
+                <span>Labels</span>
+              </button>
+            </LabelsPopover>
+          )}
           {!startDate && !dueDate && (
             <DatesDropdown
               initialStartDate={startDate}
@@ -189,9 +230,13 @@ export const MainContent = ({
             >
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-sm border border-[#46474b] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
+                className="inline-flex items-center gap-2 rounded-sm border border-[#3c3d40] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
               >
-                <Calendar className="size-4 text-[#a9abaf]" />
+                {isLight ? (
+                  <img src={clockIconLight} alt="Clock" className="size-4" />
+                ) : (
+                  <img src={clockIconDark} alt="Clock" className="size-4" />
+                )}
                 <span>Dates</span>
               </button>
             </DatesDropdown>
@@ -200,7 +245,7 @@ export const MainContent = ({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
               >
                 <CheckSquare className="size-4 text-[#a9abaf]" />
                 <span>Checklist</span>
@@ -234,7 +279,7 @@ export const MainContent = ({
                   <input
                     value={checklistTitle}
                     onChange={(e) => setChecklistTitle(e.target.value)}
-                    className="w-full h-[41px] py-1 px-3 rounded-[3px] border-1 border-[#7e8188] bg-[#242528] placeholder:text-[#96999e] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1"
+                    className="w-full h-[41px] py-1 px-3 rounded-[3px] border-1 border-[#3c3d40] bg-[#242528] placeholder:text-[#96999e] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1"
                     placeholder="Checklist"
                     autoFocus
                   />
@@ -245,7 +290,7 @@ export const MainContent = ({
                   <label className="block text-sm font-bold text-[#bfc1c4] mb-0.5 mt-3">
                     Copy items from...
                   </label>
-                  <select className="w-full h-[48px] py-1 px-[6px] rounded-[3px] border-1 border-[#7e8188] bg-[#242528] placeholder:text-[#bfc1c4] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1">
+                  <select className="w-full h-[48px] py-1 px-[6px] rounded-[3px] border-1 border-[#3c3d40] bg-[#242528] placeholder:text-[#bfc1c4] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1">
                     <option value="">(none)</option>
                   </select>
                 </div>
@@ -265,22 +310,28 @@ export const MainContent = ({
           <MembersPopover members={[]}>
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
             >
-              <img
-                src={
-                  theme === "dark" ? addMembersIconDark : addMembersIconLight
-                }
-                alt="Members"
-                className="w-4 h-4"
-              />
+              {isLight ? (
+                <img
+                  src={addMembersIconLight}
+                  alt="Members"
+                  className="w-4 h-4"
+                />
+              ) : (
+                <img
+                  src={addMembersIconDark}
+                  alt="Members"
+                  className="w-4 h-4"
+                />
+              )}
               <span>Members</span>
             </button>
           </MembersPopover>
           <AttachmentPopover>
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-sm border border-[#46474b] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
             >
               <Paperclip className="size-4 text-[#a9abaf]" />
               <span>Attachment</span>
@@ -303,23 +354,30 @@ export const MainContent = ({
                   {label.name || ""}
                 </span>
               ))}
-              <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
-                <span className="font-medium">
-                  <svg
-                    width="16"
-                    height="16"
-                    role="presentation"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 3C11.4477 3 11 3.44772 11 4V11L4 11C3.44772 11 3 11.4477 3 12C3 12.5523 3.44772 13 4 13H11V20C11 20.5523 11.4477 21 12 21C12.5523 21 13 20.5523 13 20V13H20C20.5523 13 21 12.5523 21 12C21 11.4477 20.5523 11 20 11L13 11V4C13 3.44772 12.5523 3 12 3Z"
-                      fill="currentColor"
-                    ></path>
-                  </svg>
-                </span>
-              </button>
+              <LabelsPopover
+                selectedLabels={labels}
+                onLabelToggle={handleLabelToggle}
+                onCreateLabel={handleCreateLabel}
+                onEditLabel={handleEditLabel}
+              >
+                <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
+                  <span className="font-medium">
+                    <svg
+                      width="16"
+                      height="16"
+                      role="presentation"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 3C11.4477 3 11 3.44772 11 4V11L4 11C3.44772 11 3 11.4477 3 12C3 12.5523 3.44772 13 4 13H11V20C11 20.5523 11.4477 21 12 21C12.5523 21 13 20.5523 13 20V13H20C20.5523 13 21 12.5523 21 12C21 11.4477 20.5523 11 20 11L13 11V4C13 3.44772 12.5523 3 12 3Z"
+                        fill="currentColor"
+                      ></path>
+                    </svg>
+                  </span>
+                </button>
+              </LabelsPopover>
             </div>
           </section>
 
@@ -327,6 +385,7 @@ export const MainContent = ({
             <DateSection
               startDate={startDate}
               dueDate={dueDate}
+              isCompleted={isCompleted}
               onSave={async ({ startDate: s, dueDate: d }) => {
                 await updateCardMut.mutateAsync({
                   startDate: s ?? null,
@@ -344,8 +403,14 @@ export const MainContent = ({
         </div>
 
         <section className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
-            <ListIcon className="size-4" />
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#bfc1c4]">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                fillRule="evenodd"
+                d="M4 5C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H4ZM4 9C3.44772 9 3 9.44772 3 10C3 10.5523 3.44772 11 4 11H20C20.5523 11 21 10.5523 21 10C21 9.44772 20.5523 9 20 9H4ZM3 14C3 13.4477 3.44772 13 4 13H12C12.5523 13 13 13.4477 13 14C13 14.5523 12.5523 15 12 15H4C3.44772 15 3 14.5523 3 14Z"
+                clipRule="evenodd"
+              />
+            </svg>
             Description
           </div>
           {isEditingDesc ? (
@@ -353,7 +418,7 @@ export const MainContent = ({
               <textarea
                 value={descDraft}
                 onChange={(e) => setDescDraft(e.target.value)}
-                className="w-full rounded-md border border-gray-600 bg-[#22272b] p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full rounded-md bg-transparent p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
                 rows={6}
                 autoFocus
               />
@@ -382,7 +447,7 @@ export const MainContent = ({
             </div>
           ) : (
             <div
-              className="rounded-md border border-gray-600 bg-[#22272b] p-3 text-sm text-gray-400 cursor-text"
+              className="rounded-md bg-transparent p-3 text-sm text-[#bfc1c4] cursor-text"
               onClick={startEdit}
             >
               {description || "Add a more detailed description..."}

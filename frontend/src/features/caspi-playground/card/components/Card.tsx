@@ -8,9 +8,19 @@ import { useState } from "react";
 import CardModal from "./CardModal";
 import { Circle, CheckCircle2 } from "lucide-react";
 
-type Props = { card: CardDto; boardId: string };
+type Props = {
+  card: CardDto;
+  boardId: string;
+  labelsExpanded: boolean;
+  onLabelClick: () => void;
+};
 
-const Card: React.FC<Props> = ({ card, boardId }) => {
+const Card: React.FC<Props> = ({
+  card,
+  boardId,
+  labelsExpanded,
+  onLabelClick,
+}) => {
   const [openModal, setOpenModal] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -20,6 +30,11 @@ const Card: React.FC<Props> = ({ card, boardId }) => {
     e.stopPropagation();
     setIsCompleted(!isCompleted);
     console.log("Mark card complete:", card.id, "Completed:", !isCompleted);
+  };
+
+  const handleLabelClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onLabelClick();
   };
 
   const getLabelClassName = (color: string) => {
@@ -41,11 +56,18 @@ const Card: React.FC<Props> = ({ card, boardId }) => {
               {card.labels.map((label, index) => (
                 <span
                   key={label.name || `label-${index}`}
-                  className={`h-2 my-0 px-0 rounded-[4px] text-transparent text-xs font-medium cursor-pointer overflow-hidden max-w-[40px] min-w-[40px] leading-4 text-left text-ellipsis transition-opacity ${getLabelClassName(
-                    label.color
-                  )}`}
+                  className={`${
+                    labelsExpanded ? "h-4 px-2 py-0" : "h-2 px-0"
+                  } my-0 rounded-[4px] text-xs font-medium cursor-pointer overflow-hidden transition-all duration-200 ${
+                    labelsExpanded
+                      ? "max-w-none min-w-[56px] flex items-center justify-center text-center"
+                      : "max-w-[40px] min-w-[40px]"
+                  } text-ellipsis ${getLabelClassName(label.color)}`}
                   title={label.name || ""}
-                ></span>
+                  onClick={handleLabelClick}
+                >
+                  {labelsExpanded && label.name ? label.name : ""}
+                </span>
               ))}
             </div>
           )}
@@ -65,7 +87,7 @@ const Card: React.FC<Props> = ({ card, boardId }) => {
             >
               {isCompleted ? (
                 <CheckCircle2
-                  className="w-4 h-4  transition-all duration-300"
+                  className="w-4 h-4 transition-all duration-300"
                   fill="#a5cd6b"
                   stroke="#242528"
                   strokeWidth="2"
@@ -91,7 +113,7 @@ const Card: React.FC<Props> = ({ card, boardId }) => {
             </h3>
           </div>
 
-          <CardStats card={card} />
+          <CardStats card={card} isCompleted={isCompleted} />
 
           {/* Member avatar - bottom right */}
           {card.cardAssignees && card.cardAssignees.length > 0 && (
@@ -127,6 +149,8 @@ const Card: React.FC<Props> = ({ card, boardId }) => {
           onClose={() => setOpenModal(false)}
           boardId={boardId}
           card={card}
+          isCompleted={isCompleted}
+          onComplete={handleComplete}
         />
       )}
     </>

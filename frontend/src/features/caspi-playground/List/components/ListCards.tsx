@@ -4,9 +4,13 @@ import type { CardDto } from "@ronmordo/contracts";
 const ListCards = ({
   cards,
   boardId,
+  labelsExpanded,
+  onLabelClick,
 }: {
   cards: CardDto[];
   boardId: string;
+  labelsExpanded: boolean;
+  onLabelClick: () => void;
 }) => {
   return (
     <ol
@@ -20,7 +24,13 @@ const ListCards = ({
           data-testid="list-card"
         >
           <div data-testid="list-card-wrapper" className="rounded-[8px]">
-            <Card key={card.id} card={card} boardId={boardId} />
+            <Card
+              key={card.id}
+              card={card}
+              boardId={boardId}
+              labelsExpanded={labelsExpanded}
+              onLabelClick={onLabelClick}
+            />
           </div>
         </li>
       ))}

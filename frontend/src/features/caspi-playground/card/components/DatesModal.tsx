@@ -30,20 +30,37 @@ export default function DatesDropdown({
   open,
   onOpenChange,
 }: DatesDropdownProps) {
-  const initial = initialDueDate
-    ? new Date(initialDueDate)
-    : initialStartDate
+  const initialStart = initialStartDate
     ? new Date(initialStartDate)
     : undefined;
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initial);
+  const initialDue = initialDueDate ? new Date(initialDueDate) : undefined;
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(
+    initialStart
+  );
+  const [selectedDueDate, setSelectedDueDate] = useState<Date | undefined>(
+    initialDue
+  );
   const [startDateEnabled, setStartDateEnabled] = useState(!!initialStartDate);
   const [dueDateEnabled, setDueDateEnabled] = useState(!!initialDueDate);
   const [dueTime, setDueTime] = useState("12:00 PM");
   const [reminder, setReminder] = useState("1 Day before");
+  const [currentMode, setCurrentMode] = useState<"start" | "due">("due");
 
   const formatDate = (date: Date | undefined) => {
     if (!date) return "";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (currentMode === "start") {
+      setSelectedStartDate(date);
+    } else {
+      setSelectedDueDate(date);
+    }
+  };
+
+  const getCurrentSelectedDate = () => {
+    return currentMode === "start" ? selectedStartDate : selectedDueDate;
   };
 
   return (
@@ -66,8 +83,8 @@ export default function DatesDropdown({
             <div className="calendar-container">
               <Calendar
                 mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
+                selected={getCurrentSelectedDate()}
+                onSelect={handleDateSelect}
               />
             </div>
           </div>
@@ -92,13 +109,16 @@ export default function DatesDropdown({
                 </button>
                 <input
                   type="text"
+                  value={formatDate(selectedStartDate)}
                   placeholder="M/D/YYYY"
                   disabled={!startDateEnabled}
-                  className={`px-2 py-1 rounded border text-sm w-[90px] ${
+                  onClick={() => setCurrentMode("start")}
+                  className={`px-2 py-1 rounded border text-sm w-[90px] cursor-pointer ${
                     startDateEnabled
                       ? "bg-white text-black border-gray-300"
                       : "bg-gray-700 text-gray-500 border-gray-600"
                   }`}
+                  readOnly
                 />
               </div>
             </div>
@@ -121,9 +141,10 @@ export default function DatesDropdown({
                 </button>
                 <input
                   type="text"
-                  value={formatDate(selectedDate)}
+                  value={formatDate(selectedDueDate)}
                   disabled={!dueDateEnabled}
-                  className={`px-2 py-1 rounded border text-sm w-[90px] ${
+                  onClick={() => setCurrentMode("due")}
+                  className={`px-2 py-1 rounded border text-sm w-[90px] cursor-pointer ${
                     dueDateEnabled
                       ? "bg-white text-black border-gray-300"
                       : "bg-gray-700 text-gray-500 border-gray-600"
@@ -171,10 +192,32 @@ export default function DatesDropdown({
                 onClick={() => {
                   const toIso = (d?: Date) =>
                     d ? new Date(d).toISOString() : null;
+
+                  // Create due date with time if due date is enabled
+                  let dueDateWithTime = null;
+                  if (dueDateEnabled && selectedDueDate) {
+                    const [time, period] = dueTime.split(" ");
+                    const [hours, minutes] = time.split(":").map(Number);
+                    let hour24 = hours;
+
+                    if (period === "PM" && hours !== 12) {
+                      hour24 = hours + 12;
+                    } else if (period === "AM" && hours === 12) {
+                      hour24 = 0;
+                    }
+
+                    const dueDate = new Date(selectedDueDate);
+                    dueDate.setHours(hour24, minutes, 0, 0);
+                    dueDateWithTime = dueDate.toISOString();
+                  }
+
                   onSave({
-                    startDate: startDateEnabled ? toIso(selectedDate) : null,
-                    dueDate: dueDateEnabled ? toIso(selectedDate) : null,
+                    startDate: startDateEnabled
+                      ? toIso(selectedStartDate)
+                      : null,
+                    dueDate: dueDateWithTime,
                   });
+                  onOpenChange?.(false);
                 }}
               >
                 Save
@@ -182,7 +225,10 @@ export default function DatesDropdown({
               <Button
                 variant="outline"
                 className="bg-[#A1BDD914] hover:bg-[#3d474f] text-[#aab4c2] hover:text-[#aab4c2] border-transparent text-sm py-2"
-                onClick={() => onClear()}
+                onClick={() => {
+                  onClear();
+                  onOpenChange?.(false);
+                }}
               >
                 Remove
               </Button>

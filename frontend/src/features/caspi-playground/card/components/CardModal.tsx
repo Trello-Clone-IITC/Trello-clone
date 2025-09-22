@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import type { CardDto } from "@ronmordo/contracts";
+import type { CardDto, LabelDto } from "@ronmordo/contracts";
 import {
   useCardAttachments,
   useCardChecklists,
@@ -24,13 +24,23 @@ export default function CardModal({
   onClose,
   boardId,
   card,
+  isCompleted,
+  onComplete,
 }: {
   open: boolean;
   onClose: () => void;
   boardId: string;
   card: CardDto;
+  isCompleted: boolean;
+  onComplete: (e: React.MouseEvent) => void;
 }) {
-  const labels = card.labels || [];
+  // Convert card.labels (which only has color and name) to LabelDto format
+  const labels: LabelDto[] = (card.labels || []).map((label) => ({
+    id: `temp-${label.color}` as LabelDto["id"],
+    boardId: boardId as LabelDto["boardId"],
+    name: label.name,
+    color: label.color,
+  }));
   const displayTitle = card.title || "Card title";
   const displayDescription = card.description;
 
@@ -58,11 +68,11 @@ export default function CardModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-5xl p-0 bg-[#22272b] border-[#22272b] text-white flex flex-col overflow-hidden gap-0 top-[30px] left-[50%] translate-x-[-50%] translate-y-0"
+        className="sm:max-w-5xl p-0 bg-[#242528] text-white flex flex-col overflow-hidden gap-0 top-[30px] left-[50%] translate-x-[-50%] translate-y-0 rounded-[12px] border-0"
         showCloseButton={false}
       >
         {/* Cover div */}
-        <div className="bg-[#216e4e] h-[116px] rounded-t-lg w-full overflow-hidden relative">
+        <div className="bg-[#216e4e] h-[116px] rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative">
           {/* Header actions in cover */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {/* 3-dot menu */}
@@ -78,7 +88,7 @@ export default function CardModal({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-48 bg-[#22272b] border-gray-600 text-white"
+                className="w-48 bg-[#242528] border-gray-600 text-white"
               >
                 <DropdownMenuItem className="hover:bg-gray-700">
                   Join
@@ -124,7 +134,7 @@ export default function CardModal({
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_460px] -mt-px overflow-hidden">
           {/* Left side - Title + Main content */}
           <div
-            className="border border-[#2d363c] border-t-0 border-r-0 w-full overflow-y-auto"
+            className="border-t border-[#3c3d40] w-full overflow-y-auto"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr",
@@ -132,7 +142,11 @@ export default function CardModal({
               flex: "1 1 auto",
             }}
           >
-            <TitleHeader title={displayTitle} />
+            <TitleHeader
+              title={displayTitle}
+              isCompleted={isCompleted}
+              onComplete={onComplete}
+            />
 
             <MainContent
               labels={labels}
@@ -140,13 +154,14 @@ export default function CardModal({
               boardId={boardId}
               listId={card.listId}
               cardId={card.id}
-              startDate={card.startDate as any}
-              dueDate={card.dueDate as any}
+              startDate={card.startDate as string | null | undefined}
+              dueDate={card.dueDate as string | null | undefined}
+              isCompleted={isCompleted}
             />
           </div>
 
           {/* Right column - Comments & Activity */}
-          <aside className="border border-[#2d363c] border-t-0 border-l-0 h-full flex flex-col bg-[#161a1d] overflow-hidden">
+          <aside className="border-l border-t border-[#3c3d40] h-full flex flex-col bg-[#18191a] overflow-hidden">
             <CommentsSidebar
               showDetails={showDetails}
               setShowDetails={setShowDetails}

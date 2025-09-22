@@ -21,6 +21,7 @@ const Board = ({ board }: { board: BoardDto }) => {
 
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [listName, setListName] = useState("");
+  const [labelsExpanded, setLabelsExpanded] = useState(false);
   // const [lists, setLists] = useState<(ListDto & { cards?: CardDto[] })[]>(
   //   boardData.lists
   // );
@@ -44,6 +45,10 @@ const Board = ({ board }: { board: BoardDto }) => {
     emitCreateList(board.id, name, nextPosition);
     setIsCreatingList(false);
     setListName("");
+  };
+
+  const handleLabelClick = () => {
+    setLabelsExpanded(!labelsExpanded);
   };
 
   if (isLoading) {
@@ -75,7 +80,14 @@ const Board = ({ board }: { board: BoardDto }) => {
       <div className="absolute top-[-2px] right-0 bottom-0 left-0 board-scrollbar p-0 flex w-full h-full min-w-max gap-6 px-2 sm:px-4 pt-[2px] pb-[72px]">
         {lists &&
           lists.map((list) => {
-            return <List key={list.id} list={list} />;
+            return (
+              <List
+                key={list.id}
+                list={list}
+                labelsExpanded={labelsExpanded}
+                onLabelClick={handleLabelClick}
+              />
+            );
           })}
 
         <div className="w-72 flex-shrink-0">

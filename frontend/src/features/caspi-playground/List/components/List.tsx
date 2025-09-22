@@ -7,7 +7,15 @@ import { useCards } from "@/features/caspi-playground/List/hooks/useListQueries"
 import Spinner from "@/features/caspi-playground/board/components/Spinner";
 import { useRef } from "react";
 
-const List = ({ list }: { list: ListDto }) => {
+const List = ({
+  list,
+  labelsExpanded,
+  onLabelClick,
+}: {
+  list: ListDto;
+  labelsExpanded: boolean;
+  onLabelClick: () => void;
+}) => {
   const { isEditing, startEditing, stopEditing, updateTitle } = useList(
     list.id,
     list.boardId
@@ -57,7 +65,12 @@ const List = ({ list }: { list: ListDto }) => {
               data-testid="list-cards"
             />
           ) : (
-            <ListCards cards={cards} boardId={list.boardId} />
+            <ListCards
+              cards={cards}
+              boardId={list.boardId}
+              labelsExpanded={labelsExpanded}
+              onLabelClick={onLabelClick}
+            />
           )}
         </div>
 

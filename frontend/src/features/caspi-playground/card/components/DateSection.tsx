@@ -5,6 +5,7 @@ import DatesDropdown from "./DatesModal";
 interface DateSectionProps {
   startDate?: string | null;
   dueDate?: string | null;
+  isCompleted?: boolean;
   onSave: (payload: {
     startDate?: string | null;
     dueDate?: string | null;
@@ -15,6 +16,7 @@ interface DateSectionProps {
 export const DateSection: React.FC<DateSectionProps> = ({
   startDate,
   dueDate,
+  isCompleted = false,
   onSave,
   onClear,
 }) => {
@@ -70,6 +72,26 @@ export const DateSection: React.FC<DateSectionProps> = ({
     return due < now;
   };
 
+  const isDueSoon = () => {
+    if (!dueDate) return false;
+    const due = new Date(dueDate);
+    const now = new Date();
+
+    // Reset time to compare only dates
+    const dueDateOnly = new Date(
+      due.getFullYear(),
+      due.getMonth(),
+      due.getDate()
+    );
+    const todayOnly = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+    return dueDateOnly.getTime() === todayOnly.getTime();
+  };
+
   const handleSave = async (payload: {
     startDate?: string | null;
     dueDate?: string | null;
@@ -101,11 +123,19 @@ export const DateSection: React.FC<DateSectionProps> = ({
           <Calendar className="size-4 text-[#a9abaf]" />
           <span className="flex items-center gap-1">
             {formatDateRange()}
-            {isOverdue() && (
-              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
+            {isCompleted ? (
+              <span className="bg-[#94c748] text-[#1f1f21] text-xs px-1.5 py-0.5 rounded">
+                Complete
+              </span>
+            ) : isOverdue() ? (
+              <span className="bg-[#42221f] text-[#fd9891] text-xs px-1.5 py-0.5 rounded">
                 Overdue
               </span>
-            )}
+            ) : isDueSoon() ? (
+              <span className="bg-[#fbc828] text-[#1f1f21] text-xs px-1.5 py-0.5 rounded">
+                Due Soon
+              </span>
+            ) : null}
             <ChevronDown className="size-3" />
           </span>
         </button>
