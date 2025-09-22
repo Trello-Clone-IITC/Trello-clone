@@ -9,6 +9,7 @@ import { useLists } from "@/features/final-aiman/List/hooks/useListQueries";
 import { List } from "@/features/final-aiman/List/components";
 import { emitCreateList } from "@/features/final-aiman/board/socket";
 import BoardHeader from "./BoardHeader";
+import BoardLists from "./Boardlists";
 
 const Board = ({ board }: { board: BoardDto }) => {
   const boardData: BoardDto = board;
@@ -72,7 +73,7 @@ const Board = ({ board }: { board: BoardDto }) => {
         <div className="flex gap-4 p-4 overflow-x-auto min-h-screen">
           {lists &&
             lists.map((list) => {
-              return <List key={list.id} list={list} />;
+              return <BoardLists key={list.id} list={list} />;
             })}
 
           <div className="min-w-[272px]">
