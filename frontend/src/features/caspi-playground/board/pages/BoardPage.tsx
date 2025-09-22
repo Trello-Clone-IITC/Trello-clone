@@ -2,7 +2,8 @@ import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import Spinner from "@/features/caspi-playground/board/components/Spinner";
 import Board from "@/features/caspi-playground/board/components/Board";
-import { useBoard } from "@/features/caspi-playground/board/hooks";
+import BoardHeader from "../components/BoardHeader";
+import { useBoard } from "../hooks";
 import { testBoards } from "@/features/caspi-playground/board/data/testBoards";
 import {
   generateBoardFavicon,
@@ -77,7 +78,15 @@ const BoardPage = () => {
 
   if (testBoard) {
     return (
-      <div className="flex-1 h-full" style={backgroundStyle}>
+      <div className="h-full flex flex-col" style={backgroundStyle}>
+        <div className="flex-shrink-0">
+          <BoardHeader
+            boardName={testBoard.name}
+            boardId={testBoard.id}
+            background={testBoard.background}
+            theme={theme}
+          />
+        </div>
         <Board board={testBoard} />
       </div>
     );
@@ -107,7 +116,15 @@ const BoardPage = () => {
 
   // Delegate rendering to the Board component
   return (
-    <div className="flex-1 h-full" style={backgroundStyle}>
+    <div className="h-full flex flex-col" style={backgroundStyle}>
+      <div className="flex-shrink-0">
+        <BoardHeader
+          boardName={board.name}
+          boardId={board.id}
+          background={board.background}
+          theme={theme}
+        />
+      </div>
       <Board board={board} />
     </div>
   );

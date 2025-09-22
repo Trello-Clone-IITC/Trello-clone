@@ -1,7 +1,7 @@
 import { Navbar } from "@/features/navbar";
 import { Outlet } from "react-router-dom";
 
-export function CaspiBoardLayout() {
+export function BoardLayout() {
   // Transform board members data for the header
 
   return (

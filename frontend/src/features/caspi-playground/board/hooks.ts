@@ -1,6 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BoardDto, ListDto, CardDto, LabelDto } from "@ronmordo/contracts";
-import { fetchBoard, fetchBoardLabels } from "./api";
+import type {
+  BoardDto,
+  ListDto,
+  CardDto,
+  LabelDto,
+  BoardMemberDto,
+  BoardMemberWithUserDto,
+} from "@ronmordo/contracts";
+import { fetchBoard, fetchBoardLabels, fetchBoardMembers } from "./api";
 import { useBoardSocket } from "./socket";
 
 export const boardKeys = {
@@ -20,6 +27,8 @@ export const boardKeys = {
     ["board", "card", "attachments", boardId, listId, cardId] as const,
   boardLabels: (boardId: string) =>
     ["board", "board", "labels", boardId] as const,
+  boardMembers: (boardId: string) =>
+    ["board", "board", "members", boardId] as const,
   checklistItems: (
     boardId: string,
     listId: string,
@@ -50,6 +59,14 @@ export const useBoardLabels = (boardId: string) =>
   useQuery<LabelDto[]>({
     queryKey: boardKeys.boardLabels(boardId),
     queryFn: () => fetchBoardLabels(boardId),
+    enabled: !!boardId,
+    staleTime: 60_000,
+  });
+
+export const useBoardMembers = (boardId: string) =>
+  useQuery<BoardMemberWithUserDto[]>({
+    queryKey: boardKeys.boardMembers(boardId),
+    queryFn: () => fetchBoardMembers(boardId),
     enabled: !!boardId,
     staleTime: 60_000,
   });
@@ -90,6 +107,20 @@ export const useBoardRealtime = (boardId: string) => {
         boardKeys.cards(boardId, card.listId),
         (prev) => {
           if (!prev || prev.length === 0) return [card];
+          // Try to replace a matching temp card (same title + position)
+          const idx = prev.findIndex(
+            (c) =>
+              typeof c.id === "string" &&
+              c.id.startsWith("temp-") &&
+              c.title === card.title &&
+              (c as any).position === (card as any).position
+          );
+          if (idx !== -1) {
+            const next = prev.slice();
+            next[idx] = card;
+            return next;
+          }
+          // Avoid duplicate real entry
           if (prev.some((c) => c.id === card.id)) return prev;
           return [...prev, card];
         }

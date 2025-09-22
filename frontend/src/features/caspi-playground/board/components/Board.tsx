@@ -71,8 +71,8 @@ const Board = ({ board }: { board: BoardDto }) => {
   }
 
   return (
-    <div className="flex-1 h-full">
-      <div className="flex gap-6 px-2 sm:px-4 pt-[2px] pb-4 overflow-x-auto overflow-y-hidden scroll-smooth min-h-full board-scrollbar relative">
+    <div className="flex-1 mt-3 relative overflow-x-auto">
+      <div className="absolute top-[-2px] right-0 bottom-0 left-0 board-scrollbar p-0 flex w-full h-full min-w-max gap-6 px-2 sm:px-4 pt-[2px] pb-[72px]">
         {lists &&
           lists.map((list) => {
             return <List key={list.id} list={list} />;
@@ -131,7 +131,6 @@ const Board = ({ board }: { board: BoardDto }) => {
           )}
         </div>
       </div>
-      {/* <CardModal /> */}
     </div>
   );
 };
