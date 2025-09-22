@@ -15,12 +15,7 @@ type Props = {
   onLabelClick: () => void;
 };
 
-const Card: React.FC<Props> = ({
-  card,
-  boardId,
-  labelsExpanded,
-  onLabelClick,
-}) => {
+const Card = ({ card, boardId, labelsExpanded, onLabelClick }: Props) => {
   const [openModal, setOpenModal] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
