@@ -72,24 +72,14 @@ export function registerBoardNamespace(io: Server) {
       });
 
       // Lists
-      socket.on("list:create", async ({ boardId, name, position }) => {
+      socket.on("list:create", async ({ boardId, name }) => {
         try {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
           console.log("userId:", userId);
 
-          // Decide position when not provided
-          let pos = position;
-          if (pos === undefined) {
-            const lists = await listService.getAllListsByBoard(boardId);
-            const last = lists[lists.length - 1];
-            pos = last ? Number(last.position) + 1000 : 1000;
-          }
-          const created = await listService.createList(
-            { name, position: pos },
-            boardId
-          );
+          const created = await listService.createList({ name }, boardId);
           const dto = mapListToDto(created);
           emitListCreated(boardId, dto);
         } catch (e) {
@@ -119,7 +109,7 @@ export function registerBoardNamespace(io: Server) {
       });
 
       // Cards
-      socket.on("card:create", async ({ boardId, listId, title, position }) => {
+      socket.on("card:create", async ({ boardId, listId, title }) => {
         try {
           // const userId = getUserId(socket);
           const userId = await userService.getUserIdByClerkId(
@@ -128,7 +118,7 @@ export function registerBoardNamespace(io: Server) {
           console.log("userId:", userId);
 
           const created = await cardService.createCard(
-            { title, position: position ?? 1000 },
+            { title },
             listId,
             userId
           );
@@ -156,6 +146,7 @@ export function registerBoardNamespace(io: Server) {
                 ? new Date(updates.startDate)
                 : undefined,
               coverImageUrl: updates.coverImageUrl ?? undefined,
+              position: updates.position ?? undefined,
             },
             userId
           );

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ListDto } from "@ronmordo/contracts";
-import BoardLists from "../../../final-final/List/components/BoardLists";
+import BoardLists from "./BoardLists";
 import { List as ListView } from "../../../caspi-playground/List/components";
 import { useListDnd } from "../../../caspi-playground/List/hooks/useListDnd";
 
@@ -13,6 +13,7 @@ export default function ListsRow({
   lists: ListDto[];
   tail?: React.ReactNode;
 }) {
+  console.log("ListsRow component called with", lists?.length || 0, "lists");
   const {
     scrollRef,
     draggingId,
@@ -23,7 +24,6 @@ export default function ListsRow({
     Lane,
     dragPos,
     dragOffset,
-    updatePointer,
     isAutoScrolling,
   } = useListDnd(boardId);
 
@@ -42,26 +42,28 @@ export default function ListsRow({
         isAutoScrolling ? "auto-scrolling" : ""
       }`}
       style={{
-        scrollBehavior: "auto", // Changed to auto for better control
+        scrollBehavior: "smooth",
         scrollbarWidth: "thin",
         scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
         position: "relative",
-        // Add smooth scrolling via CSS
-        transition: "scroll-behavior 0.1s ease-out",
+        // Optimized for smooth scrolling
+        willChange: "scroll-position",
+        transform: "translateZ(0)", // Force hardware acceleration
       }}
     >
       {(() => {
         const items = sortedLists || [];
         const laneWidth = 272; // match list width
 
-        // Create optimistic reordered list during drag
+        // Implement optimistic reordering like pragmatic-board - target swaps with dragged
         let displayItems = [...items];
 
-        console.log("ListsRow render:", {
-          draggingId,
-          preview,
-          hasPreview: !!preview?.targetId,
-        });
+        // Keep DOM order unchanged during drag for proper drop detection
+        // Show visual feedback with shadow placement like pragmatic-board
+        displayItems = items;
+
+        // Calculate visual positions for optimistic updates
+        const visualPositions: { [key: string]: { transform: string } } = {};
 
         if (draggingId && preview?.targetId) {
           const draggedIndex = items.findIndex(
@@ -76,143 +78,169 @@ export default function ListsRow({
             targetIndex !== -1 &&
             draggedIndex !== targetIndex
           ) {
-            // Create the optimistic reordered array
-            const draggedList = items[draggedIndex];
-            const reorderedItems = items.filter(
-              (_, index) => index !== draggedIndex
-            );
+            const draggedItem = items[draggedIndex];
 
-            // Calculate the correct insertion position
-            let insertPosition = targetIndex;
-            if (preview.edge === "right") {
-              insertPosition = targetIndex + 1;
+            // Calculate the final insert position based on edge
+            let finalInsertIndex: number;
+            if (preview.edge === "left") {
+              // Insert before the target
+              finalInsertIndex =
+                draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+            } else {
+              // Insert after the target
+              finalInsertIndex =
+                draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
             }
 
-            // Adjust for the fact that we removed the dragged item
-            if (draggedIndex < targetIndex) {
-              insertPosition = insertPosition - 1;
-            }
-
-            // Insert the dragged list at the calculated position
-            reorderedItems.splice(insertPosition, 0, draggedList);
-            displayItems = reorderedItems;
-
-            // Debug logging
-            console.log("Optimistic reordering:", {
+            console.log("Visual positioning:", {
               draggedIndex,
               targetIndex,
-              insertPosition,
-              originalOrder: items.map((i) => i.id),
-              reorderedOrder: displayItems.map((i) => i.id),
+              edge: preview.edge,
+              finalInsertIndex,
+              draggedId: draggedItem.id,
+              targetId: preview.targetId,
+            });
+
+            // Calculate visual positions for all items
+            items.forEach((item, currentIndex) => {
+              if (item.id === draggingId) {
+                // Dragged item goes to final position
+                const finalPosition = finalInsertIndex * laneWidth;
+                const currentPosition = currentIndex * laneWidth;
+                const offset = finalPosition - currentPosition;
+
+                visualPositions[item.id] = {
+                  transform: `translateX(${offset}px)`,
+                };
+              } else {
+                // Other items shift to make space
+                let newIndex = currentIndex;
+
+                if (draggedIndex < finalInsertIndex) {
+                  // Moving right: items between dragged and insert position shift left
+                  if (
+                    currentIndex > draggedIndex &&
+                    currentIndex <= finalInsertIndex
+                  ) {
+                    newIndex = currentIndex - 1;
+                  }
+                } else {
+                  // Moving left: items between insert position and dragged shift right
+                  if (
+                    currentIndex >= finalInsertIndex &&
+                    currentIndex < draggedIndex
+                  ) {
+                    newIndex = currentIndex + 1;
+                  }
+                }
+
+                const finalPosition = newIndex * laneWidth;
+                const currentPosition = currentIndex * laneWidth;
+                const offset = finalPosition - currentPosition;
+
+                if (offset !== 0) {
+                  visualPositions[item.id] = {
+                    transform: `translateX(${offset}px)`,
+                  };
+                }
+              }
             });
           }
+        }
+
+        // Only log when dragging to reduce spam
+        if (draggingId) {
+          console.log(
+            "Rendering",
+            displayItems.length,
+            "lists while dragging:",
+            draggingId
+          );
         }
 
         const others = draggingId
           ? displayItems.filter((l) => l.id !== draggingId)
           : displayItems;
 
-        let insertIndex: number | null = null;
-        if (draggingId && preview) {
-          const targetIndex = others.findIndex(
-            (l) => l.id === preview.targetId
-          );
-          if (targetIndex !== -1) {
-            insertIndex =
-              preview.edge === "left" ? targetIndex : targetIndex + 1;
-          }
-        }
+        // For swapping, we don't need insertIndex - we just show a shadow on the target
+        const insertIndex: number | null = null;
 
         const children = [];
-        let processedNonDragging = 0;
-        let laneInserted = false;
 
-        // Render the optimistic reordered lists
+        // Render the lists - no insertion needed for swapping
         displayItems.forEach((l) => {
-          // Show lane where the dragged list will be inserted
-          if (
-            insertIndex !== null &&
-            !laneInserted &&
-            processedNonDragging === insertIndex
-          ) {
-            const lastNonDragging = others[others.length - 1]?.id;
-            const beforeId = others[insertIndex]?.id; // insert before this non-dragging list
-            children.push(
-              <Lane
-                key={`lane-${insertIndex}`}
-                width={laneWidth}
-                beforeListId={beforeId}
-                lastListId={lastNonDragging}
-              />
-            );
-            laneInserted = true;
-          }
-
-          // Add visual drop zone indicator
-          if (draggingId && preview?.targetId && l.id === preview.targetId) {
-            const dropZoneStyle: React.CSSProperties = {
-              position: "absolute",
-              top: 0,
-              left: preview.edge === "left" ? 0 : laneWidth,
-              width: "4px",
-              height: "100%",
-              backgroundColor: "#3b82f6",
-              borderRadius: "2px",
-              zIndex: 20,
-              boxShadow: "0 0 8px rgba(59, 130, 246, 0.6)",
-            };
-
-            children.push(
-              <div key={`drop-zone-${l.id}`} style={dropZoneStyle} />
-            );
-          }
-
-          // Calculate visual styling for the optimistic reordered list
+          // Calculate visual styling with smooth transitions like pragmatic-board
           let visualStyle: React.CSSProperties = {
-            transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
+            transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
           };
+
+          // Apply visual positioning for optimistic updates
+          if (visualPositions[l.id]) {
+            visualStyle = {
+              ...visualStyle,
+              ...visualPositions[l.id],
+            };
+          }
 
           if (draggingId && l.id === draggingId) {
             // Dragged list should be hidden (it's following the cursor)
             visualStyle = {
               ...visualStyle,
               opacity: 0,
-              transform: "scale(0.95)",
-            };
-          } else if (draggingId && preview?.targetId) {
-            // Other lists get a subtle visual indication that they're in optimistic state
-            visualStyle = {
-              ...visualStyle,
-              opacity: 0.95,
-              transform: "scale(0.98)",
             };
           }
 
           children.push(
-            <div key={l.id} className="flex-shrink-0" style={visualStyle}>
-              <BoardLists
-                list={l}
-                hideWhileDragging={l.id === draggingId}
-                onDragStart={(id) => setDraggingId(id)}
-                onDragEnd={() => {
-                  setDraggingId(null);
-                  setPreview(null);
-                }}
-                onPreview={({ sourceListId, targetListId, edge }) => {
-                  if (!draggingId && typeof sourceListId === "string")
-                    setDraggingId(sourceListId);
-                  setPreview({
-                    sourceId: sourceListId,
-                    targetId: targetListId,
-                    edge,
-                  });
-                }}
-                onDrop={handleDrop}
-              />
+            <div
+              key={l.id}
+              className="flex-shrink-0"
+              style={{ position: "relative" }}
+              data-list-id={l.id}
+            >
+              {/* Visual container that moves but doesn't affect drop detection */}
+              <div style={visualStyle}>
+                <BoardLists
+                  list={l}
+                  hideWhileDragging={l.id === draggingId}
+                  onDragStart={(id) => setDraggingId(id)}
+                  onDragEnd={() => {
+                    setDraggingId(null);
+                    setPreview(null);
+                  }}
+                  onPreview={({ sourceListId, targetListId, edge }) => {
+                    if (!draggingId && typeof sourceListId === "string")
+                      setDraggingId(sourceListId);
+
+                    // Only update preview if we have valid IDs
+                    if (sourceListId && targetListId) {
+                      console.log("Setting preview:", {
+                        sourceId: sourceListId,
+                        targetId: targetListId,
+                        edge,
+                      });
+                      setPreview({
+                        sourceId: sourceListId,
+                        targetId: targetListId,
+                        edge,
+                      });
+                    } else {
+                      // Clear preview if no valid target
+                      setPreview(null);
+                    }
+                  }}
+                  onDrop={(params) => {
+                    // Use the actual drop target, not the preview
+                    console.log("onDrop called:", {
+                      dropTarget: params.targetListId,
+                      previewTarget: preview?.targetId,
+                      usingDropTarget: true,
+                    });
+                    handleDrop(params);
+                  }}
+                />
+              </div>
             </div>
           );
-
-          if (l.id !== draggingId) processedNonDragging += 1;
         });
 
         if (
@@ -236,6 +264,61 @@ export default function ListsRow({
               {tail}
             </div>
           );
+
+        // Drop shadow preview - shows where the list will be inserted
+        if (draggingId && preview?.targetId) {
+          const draggedIndex = items.findIndex(
+            (item) => item.id === draggingId
+          );
+          const targetIndex = items.findIndex(
+            (item) => item.id === preview.targetId
+          );
+
+          if (
+            draggedIndex !== -1 &&
+            targetIndex !== -1 &&
+            draggedIndex !== targetIndex
+          ) {
+            // Calculate where the dragged list will be inserted
+            let insertIndex: number;
+            if (preview.edge === "left") {
+              // Insert before the target
+              insertIndex =
+                draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+            } else {
+              // Insert after the target
+              insertIndex =
+                draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
+            }
+
+            // Calculate the position for the drop shadow at the insertion point
+            let shadowPosition = insertIndex * laneWidth;
+
+            // Find the dragged item to show in the shadow
+            const draggedItem = items.find((x) => x.id === draggingId);
+            if (draggedItem) {
+              children.push(
+                <div
+                  key="drop-shadow"
+                  style={{
+                    position: "absolute",
+                    left: shadowPosition,
+                    top: 0,
+                    width: laneWidth,
+                    minWidth: laneWidth,
+                    height: "calc(100vh - 6rem)",
+                    pointerEvents: "none",
+                    zIndex: 10,
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                    borderRadius: "12px",
+                    animation: "pulse 1.5s ease-in-out infinite",
+                  }}
+                />
+              );
+            }
+          }
+        }
+
         // Ghost that follows the cursor
         if (draggingId && dragPos && dragOffset) {
           const dragged = items.find((x) => x.id === draggingId);
@@ -252,9 +335,11 @@ export default function ListsRow({
                   width: laneWidth,
                   minWidth: laneWidth,
                   pointerEvents: "none",
-                  opacity: 0.95,
-                  transform: "scale(1.02)",
+                  opacity: 0.9,
+                  transform: "scale(1.01) rotate(2deg)",
                   zIndex: 9999,
+                  filter: "drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))",
+                  transition: "none", // Disable transitions for smooth following
                 }}
               >
                 <ListView list={dragged} />

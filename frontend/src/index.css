@@ -1,6 +1,35 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Drop shadow pulse animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+/* Auto-scrolling animation */
+.auto-scrolling {
+  scroll-behavior: smooth;
+}
+
+/* Card drag and drop styles */
+.card-dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.card-drop-target {
+  background-color: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(0, 123, 255, 0.3);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -312,6 +341,11 @@ input[type="radio"]:active {
   /* Ensure scrollbar is always visible */
   scrollbar-gutter: stable;
   /* Position scrollbar at the very bottom edge */
+  /* Optimizations for smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  transform: translateZ(0);
 }
 
 /* Ensure scrollbar appears at the very bottom */
@@ -330,4 +364,14 @@ input[type="radio"]:active {
 
   width: 100px !important;
   border: 2px solid green !important;
+}
+
+/* Auto-scrolling state for better visual feedback */
+.auto-scrolling {
+  scroll-behavior: auto !important;
+  transition: none !important;
+}
+
+.auto-scrolling * {
+  transition: none !important;
 }

@@ -4,20 +4,46 @@ import {
 } from "@/shared/constants";
 import type { CardDto } from "@ronmordo/contracts";
 import { CardStats } from "./CardStats";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import CardModal from "./CardModal";
 import { Circle, CheckCircle2 } from "lucide-react";
 import { useAppContext } from "@/hooks/useAppContext";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 type Props = {
   card: CardDto;
   boardId: string;
+  listId: string;
+  onDragStart?: (id: string) => void;
+  onDragEnd?: () => void;
+  onPreview?: (params: {
+    sourceCardId: string;
+    targetCardId: string;
+    edge: "top" | "bottom";
+    sourceListId?: string;
+  }) => void;
+  onDrop?: (params: {
+    sourceCardId: string;
+    targetCardId: string;
+    edge: "top" | "bottom";
+    sourceListId?: string;
+  }) => void;
 };
 
-const Card = ({ card, boardId }: Props) => {
+const Card = ({
+  card,
+  boardId,
+  listId,
+  onDragStart,
+  onDragEnd,
+  onPreview,
+  onDrop,
+}: Props) => {
   const { labelsExpanded, toggleLabelsExpanded } = useAppContext();
   const [openModal, setOpenModal] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const handleCardClick = () => setOpenModal(true);
 
@@ -30,6 +56,134 @@ const Card = ({ card, boardId }: Props) => {
     e.stopPropagation();
     toggleLabelsExpanded();
   };
+
+  // Set up drag and drop
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element) return;
+
+    const cleanup = draggable({
+      element,
+      getInitialData: () => ({
+        type: "card",
+        cardId: card.id,
+        listId: listId,
+      }),
+      onDragStart: () => {
+        onDragStart?.(card.id);
+      },
+      onDrop: () => {
+        onDragEnd?.();
+      },
+    });
+
+    return cleanup;
+  }, [card.id, listId, onDragStart, onDragEnd]);
+
+  // Set up drop target
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element) return;
+
+    const cleanup = dropTargetForElements({
+      element,
+      getData: () => ({
+        type: "card",
+        cardId: card.id,
+      }),
+      canDrop: ({ source }) => source.data?.type === "card",
+      onDragEnter: ({ source }) => {
+        const sourceCardId = source.data?.cardId as string;
+        const sourceListId = source.data?.listId as string;
+        console.log("Card onDragEnter:", {
+          sourceCardId,
+          targetCardId: card.id,
+          sourceListId,
+        });
+        if (sourceCardId && sourceCardId !== card.id) {
+          onPreview?.({
+            sourceCardId,
+            targetCardId: card.id,
+            edge: "top", // Default to top, will be updated based on mouse position
+            sourceListId,
+          });
+        }
+      },
+      onDrag: ({ source, location }) => {
+        const sourceCardId = source.data?.cardId as string;
+        const sourceListId = source.data?.listId as string;
+        if (sourceCardId && sourceCardId !== card.id) {
+          // Determine edge based on mouse position relative to card center
+          // Make it more forgiving by using a larger zone for "top"
+          const rect = element.getBoundingClientRect();
+          const mouseY = location.current.input.clientY;
+          const cardCenterY = rect.top + rect.height / 2;
+
+          // Use 60% of the card height for the top zone to make it easier to hit
+          const topZoneHeight = rect.height * 0.6;
+          const edge = mouseY < rect.top + topZoneHeight ? "top" : "bottom";
+
+          console.log("Card onDrag:", {
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+            sourceListId,
+            mouseY,
+            cardTop: rect.top,
+            cardCenter: cardCenterY,
+            topZoneEnd: rect.top + topZoneHeight,
+          });
+
+          onPreview?.({
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+            sourceListId,
+          });
+        }
+      },
+      onDrop: ({ source, location }) => {
+        const sourceCardId = source.data?.cardId as string;
+        const sourceListId = source.data?.listId as string;
+        console.log("Card onDrop called:", {
+          sourceCardId,
+          targetCardId: card.id,
+          sourceListId,
+        });
+        if (sourceCardId && sourceCardId !== card.id) {
+          // Determine edge based on final mouse position
+          // Use the same forgiving logic as onDrag
+          const rect = element.getBoundingClientRect();
+          const mouseY = location.current.input.clientY;
+          const cardCenterY = rect.top + rect.height / 2;
+
+          // Use 60% of the card height for the top zone to make it easier to hit
+          const topZoneHeight = rect.height * 0.6;
+          const edge = mouseY < rect.top + topZoneHeight ? "top" : "bottom";
+
+          console.log("Card onDrop calling onDrop with:", {
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+            sourceListId,
+            mouseY,
+            cardTop: rect.top,
+            cardCenter: cardCenterY,
+            topZoneEnd: rect.top + topZoneHeight,
+          });
+
+          onDrop?.({
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+            sourceListId,
+          });
+        }
+      },
+    });
+
+    return cleanup;
+  }, [card.id, onPreview, onDrop]);
   //  CASPI CHANGED LINES 38-40
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
@@ -42,8 +196,14 @@ const Card = ({ card, boardId }: Props) => {
   return (
     <>
       <div
+        ref={cardRef}
         className="group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-sm hover:bg-[#2c2e33] transition-colors"
         onClick={handleCardClick}
+        style={{
+          // Add some padding to make drop target area larger
+          marginTop: "2px",
+          marginBottom: "2px",
+        }}
       >
         <div className="bg-[#216e4e] min-h-9 overflow-hidden rounded-t-[8px]"></div>
         <div className="z-10 min-h-[24px] px-3 pt-2 pb-1">

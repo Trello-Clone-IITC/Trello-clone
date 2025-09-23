@@ -31,10 +31,10 @@ export function useListDnd(boardId: string) {
 
     let raf: number | null = null;
     let scrollInterval: number | null = null;
-    const threshold = 200; // Much larger threshold for natural triggering
-    const maxStep = 35; // Faster scroll speed
-    const minStep = 8; // Higher minimum scroll step
-    const acceleration = 1.25; // Faster acceleration
+    const threshold = 150; // Optimized threshold for better responsiveness
+    const maxStep = 25; // Smoother scroll speed
+    const minStep = 5; // Gentler minimum scroll step
+    const acceleration = 1.15; // Smoother acceleration
     let currentStep = 0;
     let isScrolling = false;
 
@@ -56,14 +56,18 @@ export function useListDnd(boardId: string) {
           return;
         }
 
-        // Accelerate the scroll speed with smoother progression
+        // Smoother acceleration with time-based easing
         currentStep = Math.min(currentStep * acceleration, maxStep);
         const step = direction === "left" ? -currentStep : currentStep;
 
-        el.scrollLeft += step;
+        // Use requestAnimationFrame for smoother scrolling
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          el.scrollLeft += step;
+        });
 
         if (isScrolling) {
-          scrollInterval = window.setTimeout(scroll, 12); // ~83fps for smoother scrolling
+          scrollInterval = window.setTimeout(scroll, 8); // Higher frame rate for smoother scrolling
         }
       };
 
@@ -221,13 +225,18 @@ export function useListDnd(boardId: string) {
       canDrop: ({ source }) => source.data?.type === "list",
       onDrop: ({ location }) => {
         try {
-          const targets = (location?.current as any)?.dropTargets ?? [];
+          const targets =
+            (location?.current as { dropTargets?: unknown[] })?.dropTargets ??
+            [];
           // If a specific list or lane handled the drop, do nothing here
           const hasSpecificTarget =
             Array.isArray(targets) &&
-            targets.some(
-              (t: any) => t?.data?.type === "list" || t?.data?.type === "lane"
-            );
+            targets.some((t: unknown) => {
+              const target = t as { data?: { type?: string } };
+              return (
+                target?.data?.type === "list" || target?.data?.type === "lane"
+              );
+            });
           if (hasSpecificTarget) return;
           if (!preview?.sourceId || !preview?.targetId) return;
           handleDrop({
@@ -235,7 +244,9 @@ export function useListDnd(boardId: string) {
             targetListId: preview.targetId,
             edge: preview.edge,
           });
-        } catch {}
+        } catch {
+          // ignore
+        }
       },
     });
     return () => cleanup();

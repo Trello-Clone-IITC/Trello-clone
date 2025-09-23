@@ -8,11 +8,8 @@ import {
 import invariant from "tiny-invariant";
 
 // Change this to adjust where a drop is considered "left" vs "right"
-// Example: 0.6 means left edge is the first 60% of the list, right is the last 40%
-const EDGE_SPLIT = 0.6;
-
-// Minimum distance the cursor must move before triggering drag preview
-const MIN_DRAG_DISTANCE = 1;
+// 0.5 means left edge is the first 50% of the list, right is the last 50%
+const EDGE_SPLIT = 0.5;
 
 type BoardListProps = {
   list: ListDto;
@@ -39,30 +36,30 @@ export default function BoardLists({
   onDragEnd,
   hideWhileDragging,
 }: BoardListProps) {
+  // console.log("BoardLists component rendered for list:", list.id);
   const ref = useRef(null);
   const initialDragPos = useRef<{ x: number; y: number } | null>(null);
 
-  // Helper function to check if drag distance is sufficient
-  const hasMovedEnough = (clientX: number, clientY: number) => {
-    if (!initialDragPos.current) return false;
-    const dx = clientX - initialDragPos.current.x;
-    const dy = clientY - initialDragPos.current.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance >= MIN_DRAG_DISTANCE;
-  };
-
   useEffect(() => {
     const el = ref.current;
+    if (!el) {
+      console.error("Element ref is null for list:", list.id);
+      return;
+    }
     invariant(el);
 
     const cleanupDraggable = draggable({
       element: el,
-      getInitialData: () => ({ type: "list", listId: list.id }),
+      getInitialData: () => {
+        const data = { type: "list", listId: list.id };
+        return data;
+      },
       onDragStart: ({ location }) => {
         // Capture initial drag position
         const clientX = (location?.current as any)?.input?.clientX ?? 0;
         const clientY = (location?.current as any)?.input?.clientY ?? 0;
         initialDragPos.current = { x: clientX, y: clientY };
+        console.log("Drag started for list:", list.id);
         onDragStart?.(list.id);
       },
       // Defer cleanup to allow lane/list/canvas onDrop handlers to run first
@@ -75,30 +72,53 @@ export default function BoardLists({
     const cleanupDropTarget = dropTargetForElements({
       element: el,
       getData: () => ({ type: "list", listId: list.id }),
-      canDrop: ({ source }) => source.data?.type === "list",
+      canDrop: ({ source }) => {
+        const sourceType = source.data?.type;
+        const sourceListId = source.data?.listId;
+        const targetListId = list.id;
+
+        // Only accept list-to-list drags, not card-to-list drags
+        const isListDrag = sourceType === "list";
+        const isDifferentList = sourceListId && sourceListId !== targetListId;
+
+        return Boolean(isListDrag && isDifferentList);
+      },
       onDragEnter: ({ source, self, location }) => {
+        console.log("Drag entered list:", list.id);
         try {
           const srcId =
             typeof source.data?.listId === "string"
               ? (source.data.listId as string)
               : undefined;
           const tgtId: string | undefined = (self.data as any)?.listId;
-          if (!srcId || !tgtId || srcId === tgtId) return;
+
+          console.log("Drag enter details:", { srcId, tgtId, listId: list.id });
+
+          if (!srcId || !tgtId || srcId === tgtId) {
+            console.log("Drag enter rejected:", {
+              srcId,
+              tgtId,
+              sameId: srcId === tgtId,
+            });
+            return;
+          }
+
           const rect = (self.element as HTMLElement).getBoundingClientRect();
           const clientX =
             (location?.current as any)?.input?.clientX ?? rect.left;
-          const clientY =
-            (location?.current as any)?.input?.clientY ?? rect.top;
 
-          // Only trigger preview if cursor has moved enough distance
-          if (!hasMovedEnough(clientX, clientY)) return;
-
+          // Determine left/right by pointer X relative to target element
           const splitX = rect.left + rect.width * EDGE_SPLIT;
           const edge: "left" | "right" = clientX < splitX ? "left" : "right";
 
-          console.log("onDragEnter triggered:", { srcId, tgtId, edge });
-          onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge });
-        } catch {}
+          console.log("Drag enter triggered:", { srcId, tgtId, edge });
+          // Add a small delay to prevent flickering
+          setTimeout(() => {
+            onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge });
+          }, 10);
+        } catch (error) {
+          console.error("onDragEnter error:", error);
+        }
       },
       onDrag: ({ source, self, location }) => {
         try {
@@ -107,25 +127,32 @@ export default function BoardLists({
               ? (source.data.listId as string)
               : undefined;
           const tgtId: string | undefined = (self.data as any)?.listId;
-          if (!srcId || !tgtId || srcId === tgtId) return;
+
+          if (!srcId || !tgtId || srcId === tgtId) {
+            return;
+          }
+
           const rect = (self.element as HTMLElement).getBoundingClientRect();
           const clientX =
             (location?.current as any)?.input?.clientX ?? rect.left;
-          const clientY =
-            (location?.current as any)?.input?.clientY ?? rect.top;
 
-          // Only trigger preview if cursor has moved enough distance
-          if (!hasMovedEnough(clientX, clientY)) return;
+          // Track mouse position for direction checking
+          (window as any).lastMouseX = clientX;
 
+          // Determine left/right by pointer X relative to target element
           const splitX = rect.left + rect.width * EDGE_SPLIT;
           const edge: "left" | "right" = clientX < splitX ? "left" : "right";
 
-          console.log("onDrag triggered:", { srcId, tgtId, edge });
+          // Update preview continuously during drag
           onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge });
-        } catch {}
+        } catch (error) {
+          console.error("onDrag error:", error);
+        }
       },
       onDragLeave: () => {
-        // Do nothing; parent reconciles on next enter/drag
+        // Don't clear preview immediately - let onDragEnter handle it
+        console.log("Drag left list:", list.id);
+        // onPreview?.({ sourceListId: "", targetListId: "", edge: "left" });
       },
       onDrop: ({ source, self, location }) => {
         try {
@@ -154,7 +181,7 @@ export default function BoardLists({
       cleanupDraggable();
       cleanupDropTarget();
     };
-  }, [list.id, onDrop, onPreview, onDragStart, onDragEnd]);
+  }, [list.id]);
 
   return (
     <div

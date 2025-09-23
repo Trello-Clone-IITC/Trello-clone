@@ -21,35 +21,136 @@ export function useListDnd(boardId: string) {
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
 
   // Auto-scroll when dragging near container edges
   useEffect(() => {
     if (!draggingId) return;
     const el = scrollRef.current;
     if (!el) return;
+
     let raf: number | null = null;
-    const threshold = 80;
-    const maxStep = 20;
-    const onMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX;
-      let step = 0;
-      if (x < rect.left + threshold) {
-        step = -maxStep * (1 - Math.max(0, x - rect.left) / threshold);
-      } else if (x > rect.right - threshold) {
-        step = maxStep * (1 - Math.max(0, rect.right - x) / threshold);
-      }
-      if (step !== 0) {
+    let scrollInterval: number | null = null;
+    const threshold = 150; // Optimized threshold for better responsiveness
+    const maxStep = 25; // Smoother scroll speed
+    const minStep = 5; // Gentler minimum scroll step
+    const acceleration = 1.15; // Smoother acceleration
+    let currentStep = 0;
+    let isScrolling = false;
+
+    const startScrolling = (direction: "left" | "right") => {
+      if (isScrolling) return;
+      isScrolling = true;
+      setIsAutoScrolling(true);
+
+      const scroll = () => {
+        const currentScrollLeft = el.scrollLeft;
+        const maxScrollLeft = el.scrollWidth - el.clientWidth;
+
+        // Check if we can still scroll in this direction
+        if (
+          (direction === "left" && currentScrollLeft <= 0) ||
+          (direction === "right" && currentScrollLeft >= maxScrollLeft)
+        ) {
+          stopScrolling();
+          return;
+        }
+
+        // Smoother acceleration with time-based easing
+        currentStep = Math.min(currentStep * acceleration, maxStep);
+        const step = direction === "left" ? -currentStep : currentStep;
+
+        // Use requestAnimationFrame for smoother scrolling
         if (raf) cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
           el.scrollLeft += step;
         });
+
+        if (isScrolling) {
+          scrollInterval = window.setTimeout(scroll, 8); // Higher frame rate for smoother scrolling
+        }
+      };
+
+      scroll();
+    };
+
+    const stopScrolling = () => {
+      isScrolling = false;
+      currentStep = 0;
+      setIsAutoScrolling(false);
+      if (scrollInterval) {
+        clearTimeout(scrollInterval);
+        scrollInterval = null;
       }
     };
+
+    const onMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX;
+      const y = e.clientY;
+
+      // Check if mouse is within reasonable bounds (allow some margin outside screen)
+      const margin = 150; // Increased margin for multi-screen setups
+      if (y < rect.top - margin || y > rect.bottom + margin) {
+        stopScrolling();
+        return;
+      }
+
+      const leftDistance = x - rect.left;
+      const rightDistance = rect.right - x;
+
+      // More natural edge detection with progressive intensity
+      const leftIntensity = Math.max(0, (threshold - leftDistance) / threshold);
+      const rightIntensity = Math.max(
+        0,
+        (threshold - rightDistance) / threshold
+      );
+
+      // Check if we're near the edges with progressive sensitivity
+      if (
+        leftDistance < threshold &&
+        leftDistance > -margin &&
+        leftIntensity > 0.1
+      ) {
+        // Near left edge - scroll left with intensity-based speed
+        if (!isScrolling || currentStep === 0) {
+          currentStep = minStep + leftIntensity * 5; // Start with higher speed based on intensity
+        }
+        startScrolling("left");
+      } else if (
+        rightDistance < threshold &&
+        rightDistance > -margin &&
+        rightIntensity > 0.1
+      ) {
+        // Near right edge - scroll right with intensity-based speed
+        if (!isScrolling || currentStep === 0) {
+          currentStep = minStep + rightIntensity * 5; // Start with higher speed based on intensity
+        }
+        startScrolling("right");
+      } else {
+        // Not near any edge
+        stopScrolling();
+      }
+    };
+
+    // Also listen for mouse leave events to handle when mouse goes off screen
+    const onMouseLeave = () => {
+      // Don't stop immediately, let the current scroll continue for a bit
+      setTimeout(() => {
+        if (isScrolling) {
+          stopScrolling();
+        }
+      }, 200);
+    };
+
     window.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onMouseLeave);
+
     return () => {
       window.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onMouseLeave);
       if (raf) cancelAnimationFrame(raf);
+      stopScrolling();
     };
   }, [draggingId]);
 
@@ -124,13 +225,18 @@ export function useListDnd(boardId: string) {
       canDrop: ({ source }) => source.data?.type === "list",
       onDrop: ({ location }) => {
         try {
-          const targets = (location?.current as any)?.dropTargets ?? [];
+          const targets =
+            (location?.current as { dropTargets?: unknown[] })?.dropTargets ??
+            [];
           // If a specific list or lane handled the drop, do nothing here
           const hasSpecificTarget =
             Array.isArray(targets) &&
-            targets.some(
-              (t: any) => t?.data?.type === "list" || t?.data?.type === "lane"
-            );
+            targets.some((t: unknown) => {
+              const target = t as { data?: { type?: string } };
+              return (
+                target?.data?.type === "list" || target?.data?.type === "lane"
+              );
+            });
           if (hasSpecificTarget) return;
           if (!preview?.sourceId || !preview?.targetId) return;
           handleDrop({
@@ -138,7 +244,9 @@ export function useListDnd(boardId: string) {
             targetListId: preview.targetId,
             edge: preview.edge,
           });
-        } catch {}
+        } catch {
+          // ignore
+        }
       },
     });
     return () => cleanup();
@@ -265,5 +373,6 @@ export function useListDnd(boardId: string) {
     dragPos,
     dragOffset,
     updatePointer,
+    isAutoScrolling,
   } as const;
 }
