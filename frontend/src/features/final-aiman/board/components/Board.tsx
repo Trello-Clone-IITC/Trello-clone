@@ -6,15 +6,15 @@ import { Input } from "@/components/ui/input";
 import type { BoardDto } from "@ronmordo/contracts";
 import { useBoardRealtime } from "@/features/final-aiman/board/hooks";
 import { useLists } from "@/features/final-aiman/List/hooks/useListQueries";
-import { List } from "@/features/final-aiman/List/components";
 import { emitCreateList } from "@/features/final-aiman/board/socket";
 import BoardHeader from "./BoardHeader";
-import BoardLists from "./Boardlists";
+import ListsRow from "@/features/final-aiman/List/components/ListsRow";
 
 const Board = ({ board }: { board: BoardDto }) => {
   const boardData: BoardDto = board;
 
   const { data: lists, isLoading, error } = useLists(board.id);
+  
   // Wire realtime updates into the split caches
   useBoardRealtime(board.id);
 
@@ -70,13 +70,11 @@ const Board = ({ board }: { board: BoardDto }) => {
     <div className="h-screen w-full flex flex-col bg-[#2c2e24]">
       <BoardHeader boardName={boardData.name} boardId={boardData.id} />
       <div>
-        <div className="flex gap-4 p-4 overflow-x-auto min-h-screen">
-          {lists &&
-            lists.map((list) => {
-              return <BoardLists key={list.id} list={list} />;
-            })}
-
-          <div className="min-w-[272px]">
+        <ListsRow
+          boardId={board.id}
+          lists={lists ?? []}
+          tail={
+            <div className="min-w-[272px]">
             {isCreatingList ? (
               <form
                 onSubmit={handleCreateList}
@@ -126,10 +124,10 @@ const Board = ({ board }: { board: BoardDto }) => {
                 <Plus className="w-4 h-4" />
                 Add a list
               </Button>
-            )}
-          </div>
-        </div>
-        {/* <CardModal /> */}
+              )}
+            </div>
+          }
+        />
       </div>
     </div>
   );

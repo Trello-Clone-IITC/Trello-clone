@@ -80,16 +80,23 @@ export const useBoardRealtime = (boardId: string) => {
       queryClient.setQueryData<ListDto[] | undefined>(
         boardKeys.lists(boardId),
         (prev) => {
-          if (!prev) return [list];
-          if (prev.some((l) => l.id === list.id)) return prev;
-          return [...prev, list];
+          const base = prev ? [...prev] : [];
+          if (base.some((l) => l.id === list.id)) return base;
+          base.push(list);
+          base.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+          return base;
         }
       );
     },
     onListUpdated: (list) => {
       queryClient.setQueryData<ListDto[] | undefined>(
         boardKeys.lists(boardId),
-        (prev) => prev?.map((l) => (l.id === list.id ? list : l))
+        (prev) => {
+          if (!prev) return prev;
+          const next = prev.map((l) => (l.id === list.id ? list : l));
+          next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+          return next;
+        }
       );
     },
     onListDeleted: (listId) => {
