@@ -17,20 +17,50 @@ export type BoardClientEvents = {
   "board:join": (payload: { boardId: string }) => void;
   "board:leave": (payload: { boardId: string }) => void;
   // Lists CRUD
-  "list:create": (payload: { boardId: string; name: string; position?: number }) => void;
+  "list:create": (payload: {
+    boardId: string;
+    name: string;
+    position?: number;
+  }) => void;
   "list:update": (payload: {
     boardId: string;
     listId: string;
-    updates: Partial<Pick<ListDto, "name" | "position" | "isArchived" | "subscribed">>;
+    updates: Partial<
+      Pick<ListDto, "name" | "position" | "isArchived" | "subscribed">
+    >;
   }) => void;
   "list:delete": (payload: { boardId: string; listId: string }) => void;
   // Cards CRUD
-  "card:create": (payload: { boardId: string; listId: string; title: string; position?: number }) => void;
+  "card:create": (payload: {
+    boardId: string;
+    listId: string;
+    title: string;
+    position?: number;
+  }) => void;
   "card:update": (payload: {
     boardId: string;
     cardId: string;
-    updates: Partial<Pick<CardDto, "title" | "description" | "dueDate" | "startDate" | "coverImageUrl">>;
+    updates: Partial<
+      Pick<
+        CardDto,
+        | "title"
+        | "description"
+        | "dueDate"
+        | "startDate"
+        | "coverImageUrl"
+        | "position"
+      >
+    >;
   }) => void;
-  "card:delete": (payload: { boardId: string; cardId: string; listId: string }) => void;
-  "card:move": (payload: { boardId: string; cardId: string; toListId: string; position: number }) => void;
+  "card:delete": (payload: {
+    boardId: string;
+    cardId: string;
+    listId: string;
+  }) => void;
+  "card:move": (payload: {
+    boardId: string;
+    cardId: string;
+    toListId: string;
+    position: number;
+  }) => void;
 };

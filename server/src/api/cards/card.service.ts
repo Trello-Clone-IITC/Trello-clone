@@ -17,6 +17,7 @@ interface UpdateCardData {
   dueDate?: Date;
   startDate?: Date;
   coverImageUrl?: string;
+  position?: number;
 }
 
 interface SearchFilters {
@@ -302,6 +303,9 @@ const updateCard = async (
       dueDate: updateData.dueDate,
       startDate: updateData.startDate,
       coverImageUrl: updateData.coverImageUrl,
+      position: updateData.position
+        ? new Decimal(updateData.position)
+        : undefined,
       updatedAt: new Date(),
     },
     include: {

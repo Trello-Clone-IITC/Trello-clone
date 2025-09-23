@@ -5,7 +5,9 @@ import ListFooter, { type ListFooterRef } from "./ListFooter";
 import type { ListDto } from "@ronmordo/contracts";
 import { useCards } from "@/features/final-final/List/hooks/useListQueries";
 import Spinner from "@/features/final-final/board/components/Spinner";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useCardDnd } from "../hooks/useCardDnd";
 
 const List = ({ list }: { list: ListDto }) => {
   const { isEditing, startEditing, stopEditing, updateTitle } = useList(
@@ -14,6 +16,52 @@ const List = ({ list }: { list: ListDto }) => {
   );
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
   const listFooterRef = useRef<ListFooterRef>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const { handleDrop } = useCardDnd(list.boardId, list.id);
+  const [isCardDragOver, setIsCardDragOver] = useState(false);
+
+  // Add card drop target for the entire list
+  useEffect(() => {
+    const element = listRef.current;
+    if (!element) return;
+
+    const cleanup = dropTargetForElements({
+      element,
+      getData: () => ({
+        type: "list-card-drop",
+        listId: list.id,
+      }),
+      canDrop: ({ source }) => source.data?.type === "card",
+      onDragEnter: () => {
+        setIsCardDragOver(true);
+      },
+      onDragLeave: () => {
+        setIsCardDragOver(false);
+      },
+      onDrop: ({ source }) => {
+        const sourceCardId = source.data?.cardId as string;
+        const sourceListId = source.data?.listId as string;
+
+        // Only handle the drop if this is a cross-list move (different listId)
+        // or if this list is empty (no cards)
+        if (
+          sourceCardId &&
+          (sourceListId !== list.id || !cards || cards.length === 0)
+        ) {
+          handleDrop({
+            sourceCardId,
+            targetCardId: "empty",
+            edge: "bottom",
+            sourceListId,
+          });
+        }
+        setIsCardDragOver(false);
+      },
+    });
+
+    return cleanup;
+  }, [list.id, handleDrop, cards]);
+
   // Caspi Changed
   return (
     <li
@@ -22,7 +70,12 @@ const List = ({ list }: { list: ListDto }) => {
       data-list-id={list.id}
     >
       <div
-        className={`flex flex-col relative self-start justify-between w-[272px]  max-h-[75vh] pb-1 rounded-[12px] shadow-sm whitespace-normal scroll-m-[8px]`}
+        ref={listRef}
+        className={`flex flex-col relative self-start justify-between w-[272px]  max-h-[75vh] pb-1 rounded-[12px] shadow-sm whitespace-normal scroll-m-[8px] ${
+          isCardDragOver
+            ? "bg-blue-500/20 border-2 border-blue-400 border-dashed"
+            : ""
+        }`}
         data-testid="list"
       >
         <ListHeader
@@ -56,7 +109,7 @@ const List = ({ list }: { list: ListDto }) => {
             data-testid="list-cards"
           />
         ) : (
-          <ListCards cards={cards} boardId={list.boardId} />
+          <ListCards cards={cards} boardId={list.boardId} listId={list.id} />
         )}
 
         <ListFooter

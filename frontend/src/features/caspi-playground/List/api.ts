@@ -2,9 +2,7 @@ import { api } from "@/lib/axiosInstance";
 import type { ApiResponse } from "@/shared/types/apiResponse";
 import type { ListDto, CardDto } from "@ronmordo/contracts";
 
-export const fetchBoardLists = async (
-  boardId: string
-): Promise<ListDto[]> => {
+export const fetchBoardLists = async (boardId: string): Promise<ListDto[]> => {
   const { data } = await api.get<ApiResponse<ListDto[]>>(
     `/boards/${boardId}/lists`
   );
