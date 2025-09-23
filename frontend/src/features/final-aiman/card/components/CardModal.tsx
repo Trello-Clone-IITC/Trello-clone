@@ -10,7 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { CardDto } from "@ronmordo/contracts";
-import { useCardAttachments, useCardChecklists, useCardComments } from "@/features/final-aiman/card/hooks/useCardQueries";
+import {
+  useCardAttachments,
+  useCardChecklists,
+  useCardComments,
+} from "../hooks/useCardQueries";
 import { TitleHeader } from "./TitleHeader";
 import { MainContent } from "./MainContent";
 import { CommentsSidebar } from "./CommentsSidebar";

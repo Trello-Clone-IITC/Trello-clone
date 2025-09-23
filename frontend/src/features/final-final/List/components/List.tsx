@@ -3,8 +3,8 @@ import ListHeader from "./ListHeader";
 import ListCards from "./ListCards";
 import ListFooter, { type ListFooterRef } from "./ListFooter";
 import type { ListDto } from "@ronmordo/contracts";
-import { useCards } from "@/features/caspi-playground/List/hooks/useListQueries";
-import Spinner from "@/features/caspi-playground/board/components/Spinner";
+import { useCards } from "@/features/final-final/List/hooks/useListQueries";
+import Spinner from "@/features/final-final/board/components/Spinner";
 import { useRef } from "react";
 
 const List = ({ list }: { list: ListDto }) => {

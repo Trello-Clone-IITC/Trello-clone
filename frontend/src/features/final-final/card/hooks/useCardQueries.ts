@@ -15,7 +15,7 @@ import {
   fetchCardLabels,
   fetchChecklistItems,
 } from "../api";
-import { boardKeys } from "@/features/final-aiman/board/hooks";
+import { boardKeys } from "@/features/final-final/board/hooks";
 
 export const useCard = (
   boardId: string,
