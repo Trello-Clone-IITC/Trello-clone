@@ -8,21 +8,26 @@ type ThemeProviderProps = {
   storageKey?: string;
 };
 
-type ThemeProviderState = {
+type AppProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  labelsExpanded: boolean;
+  setLabelsExpanded: (expanded: boolean) => void;
+  toggleLabelsExpanded: () => void;
 };
 
-const initialState: ThemeProviderState = {
+const initialState: AppProviderState = {
   theme: "system",
   setTheme: () => null,
+  labelsExpanded: false,
+  setLabelsExpanded: () => null,
+  toggleLabelsExpanded: () => null,
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const ThemeProviderContext =
-  createContext<ThemeProviderState>(initialState);
+export const AppProviderContext = createContext<AppProviderState>(initialState);
 
-export function ThemeProvider({
+export function AppProvider({
   children,
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
@@ -31,6 +36,7 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
+  const [labelsExpanded, setLabelsExpanded] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -50,17 +56,38 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
+  const toggleLabelsExpanded = () => {
+    setLabelsExpanded(!labelsExpanded);
+  };
+
   const value = {
     theme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
     },
+    labelsExpanded,
+    setLabelsExpanded,
+    toggleLabelsExpanded,
   };
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <AppProviderContext.Provider {...props} value={value}>
       {children}
-    </ThemeProviderContext.Provider>
+    </AppProviderContext.Provider>
+  );
+}
+
+// Keep the old ThemeProvider for backward compatibility
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "vite-ui-theme",
+  ...props
+}: ThemeProviderProps) {
+  return (
+    <AppProvider defaultTheme={defaultTheme} storageKey={storageKey} {...props}>
+      {children}
+    </AppProvider>
   );
 }

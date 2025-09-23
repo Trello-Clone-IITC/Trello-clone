@@ -18,7 +18,7 @@ import {
 } from "@/shared/constants";
 import { clockIconLight, clockIconDark } from "@/assets";
 import { useQueryClient } from "@tanstack/react-query";
-import { boardKeys } from "@/features/caspi-playground/board/hooks";
+import { boardKeys } from "@/features/final-final/board/hooks";
 import { useCreateChecklist, useUpdateCard } from "../hooks/useCardMutations";
 import { ChecklistSection } from "./ChecklistSection";
 import { MembersPopover } from "./MembersPopover";

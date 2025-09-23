@@ -1,11 +1,10 @@
 import { useContext } from "react";
 import { AppProviderContext } from "@/context/ThemeContext";
 
-export const useTheme = () => {
+export function useAppContext() {
   const context = useContext(AppProviderContext);
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider");
-
+  if (context === undefined) {
+    throw new Error("useAppContext must be used within an AppProvider");
+  }
   return context;
-};
+}

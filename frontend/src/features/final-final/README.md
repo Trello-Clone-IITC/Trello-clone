@@ -1,6 +1,6 @@
 # Caspi Playground - Board Backgrounds
 
-This feature implements board backgrounds for the caspi-playground boards using the backend-defined background types.
+This feature implements board backgrounds for the final-final boards using the backend-defined background types.
 
 ## Background Types
 

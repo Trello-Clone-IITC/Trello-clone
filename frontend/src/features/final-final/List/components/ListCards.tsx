@@ -1,4 +1,4 @@
-import Card from "@/features/caspi-playground/card/components/Card";
+import Card from "@/features/final-final/card/components/Card";
 import type { CardDto } from "@ronmordo/contracts";
 import { useAppContext } from "@/hooks/useAppContext";
 

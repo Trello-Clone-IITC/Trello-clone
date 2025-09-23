@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
-import Spinner from "@/features/caspi-playground/board/components/Spinner";
-import Board from "@/features/caspi-playground/board/components/Board";
+import Spinner from "@/features/final-final/board/components/Spinner";
+import Board from "@/features/final-final/board/components/Board";
 import BoardHeader from "../components/BoardHeader";
 import { useBoard } from "../hooks";
 import {
@@ -12,7 +12,7 @@ import {
 import {
   getBackgroundPreviewUrl,
   getBoardBackgroundStyle,
-} from "@/features/caspi-playground/board/utils/backgroundUtils";
+} from "@/features/final-final/board/utils/backgroundUtils";
 import { useTheme } from "@/hooks/useTheme";
 
 const BoardPage = () => {

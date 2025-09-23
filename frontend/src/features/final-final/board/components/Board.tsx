@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { BoardDto } from "@ronmordo/contracts";
-import { useBoardRealtime } from "@/features/caspi-playground/board/hooks";
-import { useLists } from "@/features/caspi-playground/List/hooks/useListQueries";
-import { ListsRow } from "@/features/caspi-playground/List/components";
-import { emitCreateList } from "@/features/caspi-playground/board/socket";
+import { useBoardRealtime } from "@/features/final-final/board/hooks";
+import { useLists } from "@/features/final-final/List/hooks/useListQueries";
+import { ListsRow } from "@/features/final-final/List/components";
+import { emitCreateList } from "@/features/final-final/board/socket";
 import BoardFooter from "./BoardFooter";
 
 const Board = ({ board }: { board: BoardDto }) => {
