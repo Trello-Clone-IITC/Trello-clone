@@ -8,6 +8,7 @@ import { useBoardRealtime } from "@/features/caspi-playground/board/hooks";
 import { useLists } from "@/features/caspi-playground/List/hooks/useListQueries";
 import { List } from "@/features/caspi-playground/List/components";
 import { emitCreateList } from "@/features/caspi-playground/board/socket";
+import BoardFooter from "./BoardFooter";
 
 const Board = ({ board }: { board: BoardDto }) => {
   // const { boardId } = useParams<{ boardId: string }>();
@@ -76,8 +77,8 @@ const Board = ({ board }: { board: BoardDto }) => {
   }
 
   return (
-    <div className="flex-1 mt-3 relative overflow-x-auto">
-      <div className="absolute top-[-2px] right-0 bottom-0 left-0 board-scrollbar p-0 flex w-full h-full min-w-max gap-6 px-2 sm:px-4 pt-[2px] pb-[72px]">
+    <div className="flex-1 mt-3 relative">
+      <ol className="absolute top-[-2px] right-0 bot-0 left-0 pt-0.5 gap-3 2xl:pb-[105px] xl:pb-[105px] md:pb-[105px] pb-[105px] board-scrollbar overflow-x-auto overflow-y-hidden mb-0 flex px-1.5 list-none">
         {lists &&
           lists.map((list) => {
             return (
@@ -90,7 +91,7 @@ const Board = ({ board }: { board: BoardDto }) => {
             );
           })}
 
-        <div className="w-72 flex-shrink-0">
+        <div className="w-72 flex-shrink-0 ">
           {isCreatingList ? (
             <form
               onSubmit={handleCreateList}
@@ -142,7 +143,8 @@ const Board = ({ board }: { board: BoardDto }) => {
             </Button>
           )}
         </div>
-      </div>
+      </ol>
+      <BoardFooter activeTab="board" />
     </div>
   );
 };

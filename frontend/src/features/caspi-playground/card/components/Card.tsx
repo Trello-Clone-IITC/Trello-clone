@@ -31,20 +31,22 @@ const Card = ({ card, boardId, labelsExpanded, onLabelClick }: Props) => {
     e.stopPropagation();
     onLabelClick();
   };
-
+  //  CASPI CHANGED LINES 38-40
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
     const hoverClass = getLabelHoverColorClass(color);
-    return `${bgClass} ${hoverClass} text-[#1d2125]`;
+    return `${bgClass} ${hoverClass} ${
+      labelsExpanded ? "text-[#b2ebd3]" : "text-[#1d2125]"
+    }`;
   };
-
+  // Caspi Changed styling
   return (
     <>
       <div
-        className="group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-[0px_1px_1px_#091e4240,_0px_0px_1px_#091e424f] hover:bg-[#2c2e33] transition-colors"
+        className="group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-sm hover:bg-[#2c2e33] transition-colors"
         onClick={handleCardClick}
       >
-        <div className="bg-[#216e4e] h-9 overflow-hidden rounded-t-[8px]"></div>
+        <div className="bg-[#216e4e] min-h-9 overflow-hidden rounded-t-[8px]"></div>
         <div className="z-10 min-h-[24px] px-3 pt-2 pb-1">
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1">

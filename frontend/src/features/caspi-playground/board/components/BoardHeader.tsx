@@ -1,21 +1,13 @@
 import { Button } from "@/components/ui/button";
-import {
-  Zap,
-  Filter,
-  Star,
-  Users,
-  Share2,
-  MoreHorizontal,
-  ChevronDown,
-} from "lucide-react";
+import { Zap, Star, Share2, MoreHorizontal, ChevronDown } from "lucide-react";
 import { useBoardMembers } from "../hooks";
 import HeaderPopoverMenu from "./HeaderPopoverMenu";
 import ShareBoardModal from "./ShareBoardModal";
+import VisibilityPopover from "./VisibilityPopover";
 import { useState } from "react";
 import { getIconColor } from "../utils/backgroundUtils";
 import type { BoardBackground } from "@ronmordo/contracts";
 import SpaceshipIcon from "@/assets/SpaceshipIcon";
-
 interface BoardHeaderProps {
   boardName: string;
   boardId: string;
@@ -31,6 +23,7 @@ export default function BoardHeader({
 }: BoardHeaderProps) {
   const { data: membersData } = useBoardMembers(boardId);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isVisibilityPopoverOpen, setIsVisibilityPopoverOpen] = useState(false);
   const members = membersData ?? [];
 
   // Get the appropriate icon color based on background
@@ -190,7 +183,7 @@ export default function BoardHeader({
           </Button>
         </div>
       </div>
-
+      {/* מפה למטה שיניתי דברים בעיצוב CASPI */}
       {/* Right Section - All Actions */}
       <div className="flex items-center gap-3">
         {/* Board Members */}
@@ -201,13 +194,12 @@ export default function BoardHeader({
             return (
               <div
                 key={member.userId}
-                className="relative"
+                className="relative "
                 style={{ zIndex: 3 - index }}
               >
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="w-8 h-8 rounded-full p-0 hover:bg-white/20"
+                  className="w-8 h-8 rounded-full p-0  cursor-pointer hover:bg-transparent bg-transparent focus:outline-none focus:ring-0 active:ring-0"
                   title={`${member.user.fullName}`}
                 >
                   {member.user.avatarUrl ? (
@@ -217,7 +209,7 @@ export default function BoardHeader({
                       className="w-7 h-7 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-semibold">
+                    <div className="w-7 h-7 rounded-full  flex items-center   justify-center text-white text-xs font-semibold">
                       {member.user.fullName?.charAt(0)?.toUpperCase()}
                     </div>
                   )}
@@ -229,53 +221,84 @@ export default function BoardHeader({
 
         {/* Power-Ups */}
         <Button
-          variant="ghost"
           size="sm"
-          className="hover:bg-white/20 px-2 py-1"
+          className="bg-transparent hover:bg-black/16  px-2 py-1 shadow-none cursor-pointer"
         >
           <SpaceshipIcon color={iconColor} className="w-4 h-4" />
         </Button>
 
         {/* Lightning Bolt (Automation) */}
         <Button
-          variant="ghost"
           size="sm"
-          className="text-[#172b4d] hover:bg-white/20 px-2 py-1"
+          className="bg-transparent text-[#172b4d] hover:bg-black/16  px-2 py-1 shadow-none cursor-pointer"
         >
           <Zap className="w-4 h-4" />
         </Button>
 
         {/* Filter */}
         <Button
-          variant="ghost"
           size="sm"
-          className="text-[#172b4d] hover:bg-white/20 px-2 py-1"
+          className="bg-transparent text-[#172b4d] hover:bg-black/16 px-2 py-1 shadow-none cursor-pointer"
         >
-          <Filter className="w-4 h-4" />
+          <svg
+            fill="none"
+            viewBox="0 0 16 16"
+            role="presentation"
+            className="w-4 h-4"
+            style={{
+              filter:
+                "brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(85%)",
+              WebkitFilter:
+                "brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(85%)",
+            }}
+          >
+            <path
+              fill="currentcolor"
+              fillRule="evenodd"
+              d="M15 3.5H1V2h14zm-2 5.25H3v-1.5h10zM11 14H5v-1.5h6z"
+              clipRule="evenodd"
+            />
+          </svg>
         </Button>
 
         {/* Star */}
         <Button
-          variant="ghost"
           size="sm"
-          className="text-[#172b4d] hover:bg-white/20 px-2 py-1"
+          className="bg-transparent text-[#172b4d] hover:bg-black/16  px-2 py-1 shadow-none cursor-pointer"
         >
           <Star className="w-4 h-4" />
         </Button>
 
-        {/* People (Visibility) */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-[#172b4d] hover:bg-white/20 px-2 py-1"
-        >
-          <Users className="w-4 h-4" />
-        </Button>
+        {/* People (Visibility) Changed By Caspi */}
+        <VisibilityPopover onOpenChange={setIsVisibilityPopoverOpen}>
+          <Button
+            size="sm"
+            className={`px-2 py-1 shadow-none ${
+              isVisibilityPopoverOpen
+                ? "bg-[#14274a] hover:bg-[#14274a]"
+                : "bg-transparent text-[#172b4d] hover:bg-black/16 cursor-pointer"
+            }`}
+          >
+            <img
+              src="/src/assets/people-icon.svg"
+              alt="People"
+              className="w-5 h-5"
+              style={{
+                filter: isVisibilityPopoverOpen
+                  ? "brightness(0) saturate(100%) invert(100%)"
+                  : "brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(85%)",
+                WebkitFilter: isVisibilityPopoverOpen
+                  ? "brightness(0) saturate(100%) invert(100%)"
+                  : "brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(2000%) hue-rotate(200deg) brightness(90%) contrast(85%)",
+              }}
+            />
+          </Button>
+        </VisibilityPopover>
 
         {/* Share Button */}
         <Button
           size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 cursor-pointer"
           onClick={() => setIsShareModalOpen(true)}
         >
           <Share2 className="w-4 h-4 mr-1" />
@@ -285,9 +308,8 @@ export default function BoardHeader({
         {/* Three Dots Menu */}
         <HeaderPopoverMenu>
           <Button
-            variant="ghost"
             size="sm"
-            className="text-[#172b4d] hover:bg-white/20 px-2 py-1"
+            className="bg-transparent text-[#172b4d] hover:bg-black/16 px-2 py-1 shadow-none cursor-pointer"
           >
             <MoreHorizontal className="w-4 h-4" />
           </Button>

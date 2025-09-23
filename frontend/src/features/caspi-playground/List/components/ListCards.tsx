@@ -13,8 +13,9 @@ const ListCards = ({
   onLabelClick: () => void;
 }) => {
   return (
+    // Changed ol styling
     <ol
-      className="flex z-1 grow shrink basis-auto flex-col my-0 mx-1 p-1 overflow-x-hidden overflow-y-auto list-none gap-2"
+      className="flex z-1 flex-1 min-h-0 flex-col my-0 mx-1 p-1 overflow-x-hidden overflow-y-auto list-none gap-2 list-scrollbar"
       data-testid="list-cards"
     >
       {cards.map((card) => (

@@ -15,7 +15,7 @@ interface ListHeaderProps {
   onUpdateTitle: (newTitle: string) => void;
   listFooterRef: React.RefObject<ListFooterRef | null>;
 }
-
+// Caspi changed UI
 export default function ListHeader({
   list,
   isEditing,
@@ -61,10 +61,10 @@ export default function ListHeader({
 
   return (
     <div
-      className="flex flex-grow-0 flex-wrap items-start justify-between pb-0 px-[0.5rem] pt-[0.5rem] "
+      className="flex relative flex-grow-0 flex-wrap items-start justify-between p-2 pb-0 gap-y-0"
       data-testid="list-header"
     >
-      <div className="flex-1 min-h-[20px] basis-[min-content]">
+      <div className="flex-1 min-h-[20px] basis-[min-content] relative">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -80,7 +80,7 @@ export default function ListHeader({
           />
         ) : (
           <h2
-            className="text-sm font-semibold text-white leading-tight cursor-pointer"
+            className="text-sm py-1.5 pr-2 pl-3 font-semibold text-[#bfc1c4] leading-5 text-left  cursor-pointer"
             onClick={onStartEditing}
             data-testid="list-name"
             id={`list-${list.id}`}
@@ -92,9 +92,8 @@ export default function ListHeader({
 
       <ListActions list={list} listFooterRef={listFooterRef}>
         <Button
-          variant="ghost"
           size="icon"
-          className="h-6 w-6 text-gray-300 hover:bg-white/20"
+          className="h-6 w-6 text-gray-300 hover:bg-white/20 cursor-pointer bg-transparent"
           data-testid="list-edit-menu-button"
           aria-label={`More actions on ${list.name}`}
         >

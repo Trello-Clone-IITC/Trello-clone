@@ -37,3 +37,4 @@ export { default as background3Hd } from "./background-3-hd.webp";
 export { default as background3Preview } from "./background-3-preview.webp";
 export { default as background4Hd } from "./background-4-hd.webp";
 export { default as background4Preview } from "./background-4-preview.webp";
+export { default as filterIcon } from "./filter-icon.svg";
