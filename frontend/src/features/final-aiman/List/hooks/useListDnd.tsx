@@ -17,6 +17,8 @@ export function useListDnd(boardId: string) {
     targetId: string;
     edge: Edge;
   } | null>(null);
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
   // Auto-scroll when dragging near container edges
   useEffect(() => {
@@ -105,6 +107,8 @@ export function useListDnd(boardId: string) {
       // even if nothing changed or an early return occurred.
       setPreview(null);
       setDraggingId(null);
+      setDragPos(null);
+      setDragOffset(null);
     }
   };
 
@@ -155,17 +159,21 @@ export function useListDnd(boardId: string) {
         element: el,
         getData: () => ({ type: "lane" }),
         canDrop: ({ source }) => source.data?.type === "list",
-        onDragEnter: ({ source }) => {
+        onDragEnter: ({ source, location }) => {
           const srcId = typeof source.data?.listId === "string" ? (source.data.listId as string) : undefined;
           if (!draggingId && srcId) setDraggingId(srcId);
+          const client = (location?.current as any)?.input;
+          if (client) updatePointer(srcId, client.clientX, client.clientY);
           if (beforeListId)
             setPreview({ sourceId: srcId!, targetId: beforeListId, edge: "left" });
           else if (lastListId)
             setPreview({ sourceId: srcId!, targetId: lastListId, edge: "right" });
         },
-        onDrag: ({ source }) => {
+        onDrag: ({ source, location }) => {
           const srcId = typeof source.data?.listId === "string" ? (source.data.listId as string) : undefined;
           if (!draggingId && srcId) setDraggingId(srcId);
+          const client = (location?.current as any)?.input;
+          if (client) updatePointer(srcId, client.clientX, client.clientY);
           if (beforeListId)
             setPreview({ sourceId: srcId!, targetId: beforeListId, edge: "left" });
           else if (lastListId)
@@ -190,8 +198,8 @@ export function useListDnd(boardId: string) {
         style={{
           width,
           minWidth: width,
-          background: "rgba(59,130,246,0.25)",
-          border: "2px solid rgba(59,130,246,0.6)",
+          background: "rgba(0, 0, 0, 0.1)",
+          border: "none",
           position: "relative",
           pointerEvents: "auto",
           zIndex: 2,
@@ -207,6 +215,20 @@ export function useListDnd(boardId: string) {
     preview,
     setPreview,
     handleDrop,
+    dragPos,
+    dragOffset,
+    updatePointer,
     Lane,
   } as const;
 }
+  const updatePointer = (sourceId?: string, x?: number, y?: number) => {
+    if (typeof x !== "number" || typeof y !== "number") return;
+    setDragPos({ x, y });
+    if (!dragOffset && sourceId) {
+      const el = document.querySelector<HTMLElement>(`[data-list-id="${sourceId}"]`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setDragOffset({ x: x - rect.left, y: y - rect.top });
+      }
+    }
+  };

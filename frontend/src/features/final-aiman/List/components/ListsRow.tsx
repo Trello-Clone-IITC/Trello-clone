@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { ListDto } from "@ronmordo/contracts";
 import BoardLists from "./Boardlists";
+import { List as ListView } from ".";
 import { useListDnd } from "../hooks/useListDnd";
 
 export default function ListsRow({
@@ -12,7 +13,7 @@ export default function ListsRow({
   lists: ListDto[];
   tail?: React.ReactNode;
 }) {
-  const { scrollRef, draggingId, setDraggingId, preview, setPreview, handleDrop, Lane } =
+  const { scrollRef, draggingId, setDraggingId, preview, setPreview, handleDrop, Lane, dragPos, dragOffset, updatePointer } =
     useListDnd(boardId);
 
   const sortedLists = useMemo(
@@ -68,9 +69,12 @@ export default function ListsRow({
                 setDraggingId(null);
                 setPreview(null);
               }}
-              onPreview={({ sourceListId, targetListId, edge }) => {
+              onPreview={({ sourceListId, targetListId, edge, clientX, clientY }) => {
                 if (!draggingId && typeof sourceListId === "string") setDraggingId(sourceListId);
                 setPreview({ sourceId: sourceListId, targetId: targetListId, edge });
+                if (clientX != null && clientY != null) {
+                  updatePointer(sourceListId, clientX, clientY);
+                }
               }}
               onDrop={handleDrop}
             />
@@ -85,6 +89,32 @@ export default function ListsRow({
           );
         }
         if (tail) children.push(<div key="lists-tail">{tail}</div>);
+        // Ghost that follows the cursor
+        if (draggingId && dragPos && dragOffset) {
+          const dragged = items.find((x) => x.id === draggingId);
+          if (dragged) {
+            const left = dragPos.x - dragOffset.x;
+            const top = dragPos.y - dragOffset.y;
+            children.push(
+              <div
+                key="list-ghost"
+                style={{
+                  position: "fixed",
+                  left,
+                  top,
+                  width: laneWidth,
+                  minWidth: laneWidth,
+                  pointerEvents: "none",
+                  opacity: 0.95,
+                  transform: "scale(1.02)",
+                  zIndex: 9999,
+                }}
+              >
+                <ListView list={dragged} />
+              </div>
+            );
+          }
+        }
         return children;
       })()}
     </div>

@@ -22,6 +22,8 @@ type BoardListProbs = {
     sourceListId: string;
     targetListId: string;
     edge: "left" | "right";
+    clientX?: number;
+    clientY?: number;
   }) => void;
   onDragStart?: (listId: string) => void;
   onDragEnd?: () => void;
@@ -63,9 +65,10 @@ export default function BoardLists({
           if (!srcId || !tgtId || srcId === tgtId) return;
           const rect = (self.element as HTMLElement).getBoundingClientRect();
           const clientX = (location?.current as any)?.input?.clientX ?? rect.left;
+          const clientY = (location?.current as any)?.input?.clientY ?? rect.top;
           const splitX = rect.left + rect.width * EDGE_SPLIT;
           const edge: "left" | "right" = clientX < splitX ? "left" : "right";
-          onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge });
+          onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge, clientX, clientY });
         } catch {}
       },
       onDrag: ({ source, self, location }) => {
@@ -75,9 +78,10 @@ export default function BoardLists({
           if (!srcId || !tgtId || srcId === tgtId) return;
           const rect = (self.element as HTMLElement).getBoundingClientRect();
           const clientX = (location?.current as any)?.input?.clientX ?? rect.left;
+          const clientY = (location?.current as any)?.input?.clientY ?? rect.top;
           const splitX = rect.left + rect.width * EDGE_SPLIT;
           const edge: "left" | "right" = clientX < splitX ? "left" : "right";
-          onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge });
+          onPreview?.({ sourceListId: srcId, targetListId: tgtId, edge, clientX, clientY });
         } catch {}
       },
       onDragLeave: () => {
@@ -113,7 +117,7 @@ export default function BoardLists({
       ref={ref}
       style={
         hideWhileDragging
-          ? { opacity: 0, pointerEvents: "none", position: "absolute" }
+          ? { opacity: 0.6, pointerEvents: "none" }
           : undefined
       }
     >
