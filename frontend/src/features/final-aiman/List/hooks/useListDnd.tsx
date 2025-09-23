@@ -17,8 +17,6 @@ export function useListDnd(boardId: string) {
     targetId: string;
     edge: Edge;
   } | null>(null);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
   // Auto-scroll when dragging near container edges
   useEffect(() => {
@@ -107,8 +105,6 @@ export function useListDnd(boardId: string) {
       // even if nothing changed or an early return occurred.
       setPreview(null);
       setDraggingId(null);
-      setDragPos(null);
-      setDragOffset(null);
     }
   };
 
@@ -159,21 +155,17 @@ export function useListDnd(boardId: string) {
         element: el,
         getData: () => ({ type: "lane" }),
         canDrop: ({ source }) => source.data?.type === "list",
-        onDragEnter: ({ source, location }) => {
+        onDragEnter: ({ source }) => {
           const srcId = typeof source.data?.listId === "string" ? (source.data.listId as string) : undefined;
           if (!draggingId && srcId) setDraggingId(srcId);
-          const client = (location?.current as any)?.input;
-          if (client) updatePointer(srcId, client.clientX, client.clientY);
           if (beforeListId)
             setPreview({ sourceId: srcId!, targetId: beforeListId, edge: "left" });
           else if (lastListId)
             setPreview({ sourceId: srcId!, targetId: lastListId, edge: "right" });
         },
-        onDrag: ({ source, location }) => {
+        onDrag: ({ source }) => {
           const srcId = typeof source.data?.listId === "string" ? (source.data.listId as string) : undefined;
           if (!draggingId && srcId) setDraggingId(srcId);
-          const client = (location?.current as any)?.input;
-          if (client) updatePointer(srcId, client.clientX, client.clientY);
           if (beforeListId)
             setPreview({ sourceId: srcId!, targetId: beforeListId, edge: "left" });
           else if (lastListId)
@@ -207,20 +199,8 @@ export function useListDnd(boardId: string) {
       />
     );
   };
-
-  return {
-    scrollRef,
-    draggingId,
-    setDraggingId,
-    preview,
-    setPreview,
-    handleDrop,
-    dragPos,
-    dragOffset,
-    updatePointer,
-    Lane,
-  } as const;
-}
+  
+  
   const updatePointer = (sourceId?: string, x?: number, y?: number) => {
     if (typeof x !== "number" || typeof y !== "number") return;
     setDragPos({ x, y });
@@ -232,3 +212,14 @@ export function useListDnd(boardId: string) {
       }
     }
   };
+  return {
+    scrollRef,
+    draggingId,
+    setDraggingId,
+    preview,
+    setPreview,
+    handleDrop,
+    Lane,
+  } as const;
+}
+
