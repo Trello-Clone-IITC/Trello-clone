@@ -78,6 +78,20 @@ export const fetchCardLabels = async (
   return data.data;
 };
 
+export const addCardLabel = async (cardId: string, labelId: string) => {
+  const { data } = await api.post<ApiResponse<any>>(`/cards/${cardId}/labels`, {
+    labelId,
+  });
+  return data.data;
+};
+
+export const removeCardLabel = async (cardId: string, labelId: string) => {
+  const { data } = await api.delete<ApiResponse<null>>(
+    `/cards/${cardId}/labels/${labelId}`
+  );
+  return data.data;
+};
+
 export const fetchCardAttachments = async (
   _boardId: string,
   _listId: string,
@@ -89,10 +103,28 @@ export const fetchCardAttachments = async (
   return data.data;
 };
 
-export const createCardComment = async (
+export const createAttachment = async (
   cardId: string,
-  text: string
+  input: { url: string; displayText?: string | null }
+): Promise<AttachmentDto> => {
+  const { data } = await api.post<ApiResponse<AttachmentDto>>(
+    `/cards/${cardId}/attachments`,
+    { url: input.url, filename: input.displayText ?? input.url }
+  );
+  return data.data;
+};
+
+export const deleteAttachment = async (
+  cardId: string,
+  attachmentId: string
 ) => {
+  const { data } = await api.delete<ApiResponse<null>>(
+    `/cards/${cardId}/attachments/${attachmentId}`
+  );
+  return data.data;
+};
+
+export const createCardComment = async (cardId: string, text: string) => {
   const { data } = await api.post<ApiResponse<CommentDto>>(
     `/cards/${cardId}/comments`,
     { text }
@@ -100,10 +132,7 @@ export const createCardComment = async (
   return data.data;
 };
 
-export const deleteCardComment = async (
-  cardId: string,
-  commentId: string
-) => {
+export const deleteCardComment = async (cardId: string, commentId: string) => {
   const { data } = await api.delete<ApiResponse<null>>(
     `/cards/${cardId}/comments/${commentId}`
   );
@@ -134,10 +163,7 @@ export const updateChecklist = async (
   return data.data;
 };
 
-export const deleteChecklist = async (
-  cardId: string,
-  checklistId: string
-) => {
+export const deleteChecklist = async (cardId: string, checklistId: string) => {
   const { data } = await api.delete<ApiResponse<null>>(
     `/cards/${cardId}/checklists/${checklistId}`
   );
@@ -165,6 +191,29 @@ export const createChecklistItem = async (
   const { data } = await api.post<ApiResponse<ChecklistItemDto>>(
     `/cards/${cardId}/checklists/${checklistId}/checklistItems`,
     { text, position }
+  );
+  return data.data;
+};
+
+// Card assignees
+export const addCardAssignee = async (cardId: string, userId: string) => {
+  const { data } = await api.post<ApiResponse<any>>(
+    `/cards/${cardId}/assignees`,
+    { userId }
+  );
+  return data.data;
+};
+
+export const getCardAssignees = async (cardId: string) => {
+  const { data } = await api.get<ApiResponse<any[]>>(
+    `/cards/${cardId}/assignees`
+  );
+  return data.data;
+};
+
+export const removeCardAssignee = async (cardId: string, userId: string) => {
+  const { data } = await api.delete<ApiResponse<null>>(
+    `/cards/${cardId}/assignees/`
   );
   return data.data;
 };

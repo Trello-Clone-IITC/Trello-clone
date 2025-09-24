@@ -10,7 +10,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CheckSquare, Paperclip, Tag, User, Plus, X } from "lucide-react";
+import {
+  CheckSquare,
+  Paperclip,
+  Tag,
+  User,
+  Plus,
+  X,
+  Ellipsis,
+} from "lucide-react";
 import DatesDropdown from "./DatesModal";
 import {
   getLabelColorClass,
@@ -19,15 +27,30 @@ import {
 import { clockIconLight, clockIconDark } from "@/assets";
 import { useQueryClient } from "@tanstack/react-query";
 import { boardKeys } from "@/features/final-final/board/hooks";
-import { useCreateChecklist, useUpdateCard } from "../hooks/useCardMutations";
+import {
+  useCreateChecklist,
+  useUpdateCard,
+  useAssignCardMember,
+  useRemoveCardMember,
+  useCreateAttachment,
+  useDeleteAttachment,
+  useToggleCardLabel,
+} from "../hooks/useCardMutations";
 import { ChecklistSection } from "./ChecklistSection";
+import UserModal from "./UserModal";
 import { MembersPopover } from "./MembersPopover";
+import {
+  useBoardMembers,
+  useBoardLabels,
+} from "@/features/final-final/board/hooks";
 import { AttachmentPopover } from "./AttachmentPopover";
 import { DateSection } from "./DateSection";
+import { useCardAttachments, useCardLabels } from "../hooks/useCardQueries";
 import { LabelsPopover } from "./LabelsPopover";
 import { addMembersIconDark, addMembersIconLight } from "@/assets";
 import { useTheme } from "@/hooks/useTheme";
 import type { LabelDto, ColorType } from "@ronmordo/contracts";
+import { useCard } from "../hooks/useCardQueries";
 
 export const MainContent = ({
   labels,
@@ -61,13 +84,29 @@ export const MainContent = ({
   const queryClient = useQueryClient();
   const updateCardMut = useUpdateCard(boardId, listId, cardId);
   const createChecklistMut = useCreateChecklist(boardId, listId, cardId);
+  const assignMemberMut = useAssignCardMember(boardId, listId, cardId);
+  const removeMemberMut = useRemoveCardMember(boardId, listId, cardId);
+  const createAttachmentMut = useCreateAttachment(boardId, listId, cardId);
+  const deleteAttachmentMut = useDeleteAttachment(boardId, listId, cardId);
+  const { data: attachments } = useCardAttachments(
+    boardId,
+    listId,
+    cardId,
+    true
+  );
+  const { data: cardLabels } = useCardLabels(boardId, listId, cardId, true);
+  console.log(attachments);
+  const { data: boardMembers } = useBoardMembers(boardId);
+  const { data: boardLabels } = useBoardLabels(boardId);
+  const { data: card } = useCard(boardId, listId, cardId);
   const { theme } = useTheme();
   const isLight = theme === "light";
+  const userById = new Map((boardMembers ?? []).map((m) => [m.userId, m.user]));
+  const toggleLabelMut = useToggleCardLabel(boardId, listId, cardId);
 
   // Label handling functions
-  const handleLabelToggle = (color: ColorType) => {
-    // TODO: Implement label toggle logic
-    // This should add/remove a label with the specified color to/from the card
+  const handleLabelToggle = (labelId: string, isSelected: boolean) => {
+    toggleLabelMut.mutate({ labelId, add: !isSelected });
   };
 
   const handleCreateLabel = () => {
@@ -194,10 +233,11 @@ export const MainContent = ({
           </DropdownMenu>
           {labels.length === 0 && (
             <LabelsPopover
-              selectedLabels={labels}
-              onLabelToggle={handleLabelToggle}
+              availableLabels={boardLabels || []}
+              selectedLabelIds={(cardLabels || []).map((l) => l.id as string)}
+              onToggle={handleLabelToggle}
               onCreateLabel={handleCreateLabel}
-              onEditLabel={handleEditLabel}
+              onEditLabel={() => {}}
             >
               <button
                 type="button"
@@ -304,28 +344,45 @@ export const MainContent = ({
               </div>
             </PopoverContent>
           </Popover>
-          <MembersPopover members={[]}>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+          {card?.cardAssignees && card.cardAssignees.length === 0 && (
+            <MembersPopover
+              members={(boardMembers ?? []).map((m) => ({
+                id: m.userId,
+                fullName: m.user.fullName || "Member",
+                username: m.user.username || "",
+                avatarUrl: m.user.avatarUrl,
+              }))}
+              selectedIds={[]}
+              onSelect={(member) => {
+                assignMemberMut.mutate(member.id);
+              }}
             >
-              {isLight ? (
-                <img
-                  src={addMembersIconLight}
-                  alt="Members"
-                  className="w-4 h-4"
-                />
-              ) : (
-                <img
-                  src={addMembersIconDark}
-                  alt="Members"
-                  className="w-4 h-4"
-                />
-              )}
-              <span>Members</span>
-            </button>
-          </MembersPopover>
-          <AttachmentPopover>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+              >
+                {isLight ? (
+                  <img
+                    src={addMembersIconLight}
+                    alt="Members"
+                    className="w-4 h-4"
+                  />
+                ) : (
+                  <img
+                    src={addMembersIconDark}
+                    alt="Members"
+                    className="w-4 h-4"
+                  />
+                )}
+                <span>Members</span>
+              </button>
+            </MembersPopover>
+          )}
+          <AttachmentPopover
+            onInsert={({ url, displayText }) =>
+              createAttachmentMut.mutate({ url, displayText })
+            }
+          >
             <button
               type="button"
               className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
@@ -336,68 +393,132 @@ export const MainContent = ({
           </AttachmentPopover>
         </div>
 
-        <div className="flex items-start gap-6">
-          <section className="space-y-2">
-            <div className="text-sm font-medium text-gray-400">Labels</div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {labels.map((label, idx) => (
-                <span
-                  key={label.name || idx}
-                  className={`h-8 rounded-[3px] px-3 text-sm font-medium cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis transition-opacity ${getLabelClassName(
-                    label.color
-                  )}`}
-                  title={label.name || ""}
-                >
-                  {label.name || ""}
-                </span>
-              ))}
-              <LabelsPopover
-                selectedLabels={labels}
-                onLabelToggle={handleLabelToggle}
-                onCreateLabel={handleCreateLabel}
-                onEditLabel={handleEditLabel}
-              >
-                <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
-                  <span className="font-medium">
-                    <svg
-                      width="16"
-                      height="16"
-                      role="presentation"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 3C11.4477 3 11 3.44772 11 4V11L4 11C3.44772 11 3 11.4477 3 12C3 12.5523 3.44772 13 4 13H11V20C11 20.5523 11.4477 21 12 21C12.5523 21 13 20.5523 13 20V13H20C20.5523 13 21 12.5523 21 12C21 11.4477 20.5523 11 20 11L13 11V4C13 3.44772 12.5523 3 12 3Z"
-                        fill="currentColor"
-                      ></path>
-                    </svg>
-                  </span>
-                </button>
-              </LabelsPopover>
+        {card?.cardAssignees && card.cardAssignees.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-medium text-gray-400 mb-2">
+              Members
             </div>
-          </section>
+            <div className="flex items-center gap-2">
+              {(card?.cardAssignees ?? []).map((a) => {
+                return (
+                  <UserModal
+                    key={a.id}
+                    trigger={
+                      <div className="w-9 h-9 rounded-full overflow-hidden">
+                        <img
+                          src={a.avatarUrl}
+                          alt={a.fullName || ""}
+                          className="w-9 h-9 rounded-full object-cover"
+                        />
+                      </div>
+                    }
+                    user={{
+                      fullName: a.fullName,
+                      username: a.username,
+                      avatarUrl: a.avatarUrl,
+                    }}
+                    onRemove={() => removeMemberMut.mutate(a.id)}
+                  >
+                    <button
+                      onClick={() => removeMemberMut.mutate(a.id)}
+                      className="w-full text-left px-4 py-3 text-sm text-[#bfc1c4] hover:bg-[#32373c]"
+                    >
+                      Remove from card
+                    </button>
+                  </UserModal>
+                );
+              })}
+              <MembersPopover
+                members={(boardMembers ?? []).map((m) => ({
+                  id: m.userId,
+                  fullName: m.user.fullName || "Member",
+                  username: m.user.username || "",
+                  avatarUrl: m.user.avatarUrl,
+                }))}
+                selectedIds={(card?.cardAssignees ?? []).map((m) => m.id)}
+                onSelect={(member) => {
+                  assignMemberMut.mutate(member.id);
+                }}
+              >
+                <button
+                  type="button"
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-[#393b3e] text-[#a9abaf] text-lg font-bold border-none hover:bg-[#44474a] transition-colors"
+                  aria-label="Add member"
+                >
+                  +
+                </button>
+              </MembersPopover>
+            </div>
+          </div>
+        )}
 
-          {(startDate || dueDate) && (
-            <DateSection
-              startDate={startDate}
-              dueDate={dueDate}
-              isCompleted={isCompleted}
-              onSave={async ({ startDate: s, dueDate: d }) => {
-                await updateCardMut.mutateAsync({
-                  startDate: s ?? null,
-                  dueDate: d ?? null,
-                });
-              }}
-              onClear={async () => {
-                await updateCardMut.mutateAsync({
-                  startDate: null,
-                  dueDate: null,
-                });
-              }}
-            />
-          )}
-        </div>
+        {true && (
+          <div className="flex items-start gap-6">
+            <section className="space-y-2">
+              <div className="text-sm font-medium text-gray-400">Labels</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {labels.map((label, idx) => (
+                  <span
+                    key={label.name || idx}
+                    className={`h-8 rounded-[3px] px-3 text-sm font-normal cursor-pointer overflow-hidden max-w-full min-w-[48px] leading-8 text-left text-ellipsis transition-opacity ${getLabelClassName(
+                      label.color
+                    )} text-black text-opacity-100 mix-blend-normal`}
+                    title={label.name || ""}
+                  >
+                    {label.name || ""}
+                  </span>
+                ))}
+                <LabelsPopover
+                  availableLabels={boardLabels || []}
+                  selectedLabelIds={(cardLabels || []).map(
+                    (l) => l.id as string
+                  )}
+                  onToggle={handleLabelToggle}
+                  onCreateLabel={handleCreateLabel}
+                  onEditLabel={() => {}}
+                >
+                  <button className="h-8 w-8 rounded-sm flex items-center justify-center text-gray-400 hover:text-gray-300 bg-[#2c3339] p-1.5">
+                    <span className="font-medium">
+                      <svg
+                        width="16"
+                        height="16"
+                        role="presentation"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M12 3C11.4477 3 11 3.44772 11 4V11L4 11C3.44772 11 3 11.4477 3 12C3 12.5523 3.44772 13 4 13H11V20C11 20.5523 11.4477 21 12 21C12.5523 21 13 20.5523 13 20V13H20C20.5523 13 21 12.5523 21 12C21 11.4477 20.5523 11 20 11L13 11V4C13 3.44772 12.5523 3 12 3Z"
+                          fill="currentColor"
+                        ></path>
+                      </svg>
+                    </span>
+                  </button>
+                </LabelsPopover>
+              </div>
+            </section>
+
+            {(startDate || dueDate) && (
+              <DateSection
+                startDate={startDate}
+                dueDate={dueDate}
+                isCompleted={isCompleted}
+                onSave={async ({ startDate: s, dueDate: d }) => {
+                  await updateCardMut.mutateAsync({
+                    startDate: s ?? null,
+                    dueDate: d ?? null,
+                  });
+                }}
+                onClear={async () => {
+                  await updateCardMut.mutateAsync({
+                    startDate: null,
+                    dueDate: null,
+                  });
+                }}
+              />
+            )}
+          </div>
+        )}
 
         <section className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#bfc1c4]">
@@ -450,6 +571,85 @@ export const MainContent = ({
               {description || "Add a more detailed description..."}
             </div>
           )}
+        </section>
+
+        {/* Attachments */}
+        <section className="space-y-2 mt-3">
+          {attachments && attachments.length > 0 && (
+            <div className="text-sm font-medium text-gray-400">Attachments</div>
+          )}
+          <div className="space-y-2">
+            {(attachments ?? []).map((att) => (
+              <div
+                key={att.id}
+                className="flex items-center justify-between bg-[#1e2022] rounded px-3 py-2"
+              >
+                <a
+                  href={att.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#85b8ff] text-sm truncate max-w-[75%]"
+                  title={att.url}
+                >
+                  {(att as any).displayText || att.filename || att.url}
+                </a>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="w-7 h-7 rounded bg-[#2b2c2f] hover:bg-[#32373c] flex items-center justify-center"
+                      aria-label="Attachment actions"
+                    >
+                      <Ellipsis className="w-4 h-4 text-[#bfc1c4]" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-40 bg-[#2b2c2f] border-[#3c3d40] text-white"
+                  >
+                    <div className="p-1">
+                      <AttachmentPopover
+                        initialUrl={att.url}
+                        initialDisplayText={
+                          (att as any).displayText || att.filename
+                        }
+                        onInsert={({ url, displayText }) => {
+                          deleteAttachmentMut.mutate(att.id as any);
+                          createAttachmentMut.mutate({ url, displayText });
+                        }}
+                        onClose={() => {}}
+                      >
+                        <button className="w-full text-left px-2 py-1 text-sm hover:bg-[#3a3f45] rounded">
+                          Edit
+                        </button>
+                      </AttachmentPopover>
+                      <button
+                        className="w-full text-left px-2 py-1 text-sm hover:bg-[#3a3f45] rounded"
+                        onClick={() => {
+                          const text =
+                            (att as any).displayText || att.filename || att.url;
+                          window.dispatchEvent(
+                            new CustomEvent("card:addCommentPrefill", {
+                              detail: text,
+                            })
+                          );
+                        }}
+                      >
+                        Comment
+                      </button>
+                      <button
+                        className="w-full text-left px-2 py-1 text-sm text-red-400 hover:bg-[#3a3f45] rounded"
+                        onClick={() =>
+                          deleteAttachmentMut.mutate(att.id as any)
+                        }
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Checklists */}

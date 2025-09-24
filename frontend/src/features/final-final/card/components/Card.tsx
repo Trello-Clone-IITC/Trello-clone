@@ -209,6 +209,7 @@ const Card = ({
         }}
       >
         <div className="bg-[#216e4e] min-h-9 overflow-hidden rounded-t-[8px]"></div>
+        {/* TODO: ADD COLOR TO THE DIV */}
         <div className="z-10 min-h-[24px] px-3 pt-2 pb-1">
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1">
@@ -217,11 +218,13 @@ const Card = ({
                   key={label.name || `label-${index}`}
                   className={`${
                     labelsExpanded ? "h-4 px-2 py-0" : "h-2 px-0"
-                  } my-0 rounded-[4px] text-xs font-medium cursor-pointer overflow-hidden transition-all duration-200 ${
+                  } my-0 rounded-[4px] text-xs font-normal cursor-pointer overflow-hidden transition-all duration-200 ${
                     labelsExpanded
                       ? "max-w-none min-w-[56px] flex items-center justify-center text-center"
                       : "max-w-[40px] min-w-[40px]"
-                  } text-ellipsis ${getLabelClassName(label.color)}`}
+                  } text-ellipsis ${getLabelClassName(
+                    label.color
+                  )} text-black text-opacity-100 mix-blend-normal`}
                   title={label.name || ""}
                   onClick={handleLabelClick}
                 >
@@ -284,11 +287,6 @@ const Card = ({
                     className="relative"
                     title={assignee.fullName}
                   >
-                    <img
-                      src={assignee.avatarUrl}
-                      alt={assignee.fullName}
-                      className="w-6 h-6 rounded-full border-2 border-[#22272b] bg-[#dfe1e6] object-cover"
-                    />
                     {index === 2 && card.cardAssignees.length > 3 && (
                       <div className="absolute inset-0 w-6 h-6 rounded-full border-2 border-[#22272b] bg-[#dfe1e6] flex items-center justify-center text-xs font-medium text-[#5e6c84]">
                         +{card.cardAssignees.length - 3}

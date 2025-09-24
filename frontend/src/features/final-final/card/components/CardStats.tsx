@@ -181,14 +181,14 @@ export const CardStats: React.FC<CardStatsProps> = ({
           {card.cardAssignees?.slice(0, 3).map((u) => (
             <div
               key={u.id}
-              className="relative inline-flex items-center justify-center w-6 h-6 rounded-full border-2 border-[#22272b] hover:z-10 transition-transform hover:scale-110 bg-gray-500 text-white text-[10px] font-medium"
+              // className="relative inline-flex items-center justify-center w-6 h-6 rounded-full border-2 border-[#22272b] hover:z-10 transition-transform hover:scale-110 bg-gray-500 text-white text-[10px] font-medium"
               title={`${u.fullName}${u.username ? ` (${u.username})` : ""}`}
             >
               {u.avatarUrl && (
                 <img
                   src={u.avatarUrl}
                   alt={u.fullName}
-                  className="w-6 h-6 rounded-full"
+                  className="w-6 h-6 rounded-full border-2 border-[#22272b] bg-[#dfe1e6] object-cover"
                 />
               )}
             </div>

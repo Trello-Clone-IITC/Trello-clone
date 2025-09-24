@@ -44,7 +44,7 @@ export default function CardModal({
   }));
   const displayTitle = card.title || "Card title";
   const displayDescription = card.description;
-
+  console.log("card", card);
   // Lazy-load extras only when asked
   const [showDetails, setShowDetails] = useState(false);
   const enableExtras = open && showDetails;

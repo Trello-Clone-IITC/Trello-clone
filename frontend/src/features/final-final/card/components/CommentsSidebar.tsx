@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { MessageSquare } from "lucide-react";
-import BarsLoader from "@/components/ui/BarsLoader";
+import BarsLoader from "../../../../components/ui/BarsLoader";
 import type { CommentDto } from "@ronmordo/contracts";
 import { useCreateCardComment } from "../hooks/useCardMutations";
 import { useQueryClient } from "@tanstack/react-query";
@@ -88,6 +88,20 @@ export const CommentsSidebar = ({
       handleSubmit();
     }
   };
+
+  React.useEffect(() => {
+    const handler = (e: any) => {
+      if (typeof e.detail === "string") {
+        setText((prev) => (prev ? prev + " " + e.detail : e.detail));
+      }
+    };
+    window.addEventListener("card:addCommentPrefill" as any, handler as any);
+    return () =>
+      window.removeEventListener(
+        "card:addCommentPrefill" as any,
+        handler as any
+      );
+  }, []);
 
   const renderAvatar = (c: any) => {
     const avatar = isFromCurrentUser(c)

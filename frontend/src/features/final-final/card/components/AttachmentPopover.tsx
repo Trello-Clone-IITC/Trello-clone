@@ -8,14 +8,24 @@ import { X, Info, Upload } from "lucide-react";
 
 interface AttachmentPopoverProps {
   children: React.ReactNode;
+  onInsert?: (payload: { url: string; displayText?: string }) => void;
+  initialUrl?: string;
+  initialDisplayText?: string;
+  defaultOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const AttachmentPopover: React.FC<AttachmentPopoverProps> = ({
   children,
+  onInsert,
+  initialUrl,
+  initialDisplayText,
+  defaultOpen,
+  onClose,
 }) => {
-  const [open, setOpen] = useState(false);
-  const [linkText, setLinkText] = useState("");
-  const [displayText, setDisplayText] = useState("");
+  const [open, setOpen] = useState(!!defaultOpen);
+  const [linkText, setLinkText] = useState(initialUrl || "");
+  const [displayText, setDisplayText] = useState(initialDisplayText || "");
   const [activeTab, setActiveTab] = useState<"trello" | "confluence">("trello");
 
   const handleFileUpload = () => {
@@ -36,15 +46,35 @@ export const AttachmentPopover: React.FC<AttachmentPopoverProps> = ({
 
   const handleCancel = () => {
     setOpen(false);
+    onClose?.();
   };
 
   const handleInsert = () => {
-    // TODO: Implement insert logic
+    const url = linkText.trim();
+    if (!url) {
+      setOpen(false);
+      return;
+    }
+    const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    // const normalized = url;
+    onInsert?.({
+      url: normalized,
+      displayText: displayText.trim() || undefined,
+    });
     setOpen(false);
+    setLinkText("");
+    setDisplayText("");
+    onClose?.();
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) onClose?.();
+      }}
+    >
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         className="w-80 p-0 bg-[#2b2c2f] border-0 rounded-lg"

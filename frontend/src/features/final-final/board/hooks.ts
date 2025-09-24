@@ -25,6 +25,8 @@ export const boardKeys = {
     ["board", "card", "labels", boardId, listId, cardId] as const,
   cardAttachments: (boardId: string, listId: string, cardId: string) =>
     ["board", "card", "attachments", boardId, listId, cardId] as const,
+  cardAssignees: (boardId: string, listId: string, cardId: string) =>
+    ["board", "card", "assignees", boardId, listId, cardId] as const,
   boardLabels: (boardId: string) =>
     ["board", "board", "labels", boardId] as const,
   boardMembers: (boardId: string) =>

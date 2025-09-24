@@ -14,6 +14,7 @@ import commentsRouter from "../card-comments/comment.route.js";
 import attachmentsRouter from "../attachments/attachment.route.js";
 import cardWachersRouter from "../card-watchers/cart-watcher.route.js";
 import activityLogsRouter from "../activity-logs/activity-log.route.js";
+import cardAssigneeRouter from "../card-assignees/card-assignee.route.js";
 
 const router = Router({ mergeParams: true });
 
@@ -81,5 +82,7 @@ router.use(
   validateRequest({ params: CardIdParamSchema }),
   activityLogsRouter
 );
+router.use('/:cardId/assignees', validateRequest({ params: CardIdParamSchema }),
+  cardAssigneeRouter);
 
 export default router;

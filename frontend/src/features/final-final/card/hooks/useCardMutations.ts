@@ -7,6 +7,12 @@ import {
   createChecklistItem,
   updateChecklistItem,
   createCardComment,
+  addCardAssignee,
+  removeCardAssignee,
+  createAttachment,
+  deleteAttachment,
+  addCardLabel,
+  removeCardLabel,
 } from "../api";
 import type {
   ChecklistDto,
@@ -41,14 +47,12 @@ export const useUpdateCard = (
       // optimistic
       queryClient.setQueryData<any>(
         boardKeys.card(boardId, listId, cardId),
-        (c) => (c ? { ...c, ...updates } : c)
+        (c: any) => (c ? { ...c, ...updates } : c)
       );
-      queryClient.setQueryData<any[]>(
+      queryClient.setQueryData<any[] | undefined>(
         boardKeys.cards(boardId, listId),
-        (cards) =>
-          cards
-            ? cards.map((c) => (c.id === cardId ? { ...c, ...updates } : c))
-            : cards
+        (cards: any[] | undefined) =>
+          cards?.map((c) => (c.id === cardId ? { ...c, ...updates } : c))
       );
 
       return { prevCard, prevCards };
@@ -67,6 +71,160 @@ export const useUpdateCard = (
       });
       queryClient.invalidateQueries({
         queryKey: boardKeys.cards(boardId, listId),
+      });
+    },
+  });
+};
+
+export const useDeleteAttachment = (
+  boardId: string,
+  listId: string,
+  cardId: string
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (attachmentId: string) =>
+      deleteAttachment(cardId, attachmentId),
+    onMutate: async (attachmentId) => {
+      await queryClient.cancelQueries({
+        queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
+      });
+      const prev = queryClient.getQueryData<any[]>(
+        boardKeys.cardAttachments(boardId, listId, cardId)
+      );
+      queryClient.setQueryData<any[]>(
+        boardKeys.cardAttachments(boardId, listId, cardId),
+        (atts) => atts?.filter((a) => a.id !== attachmentId) || []
+      );
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c
+            ? {
+                ...c,
+                attachmentsCount: Math.max(0, (c.attachmentsCount ?? 1) - 1),
+              }
+            : c
+      );
+      return { prev };
+    },
+    onError: (_e, _id, ctx) => {
+      if (!ctx) return;
+      queryClient.setQueryData(
+        boardKeys.cardAttachments(boardId, listId, cardId),
+        ctx.prev
+      );
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c ? { ...c, attachmentsCount: (c.attachmentsCount ?? 0) + 1 } : c
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+    },
+  });
+};
+
+export const useToggleCardLabel = (
+  boardId: string,
+  listId: string,
+  cardId: string
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ labelId, add }: { labelId: string; add: boolean }) => {
+      if (add) return addCardLabel(cardId, labelId);
+      return removeCardLabel(cardId, labelId);
+    },
+    onMutate: async ({ labelId, add }) => {
+      await queryClient.cancelQueries({
+        queryKey: boardKeys.cardLabels(boardId, listId, cardId),
+      });
+      const prev =
+        queryClient.getQueryData<any[]>(
+          boardKeys.cardLabels(boardId, listId, cardId)
+        ) || [];
+      queryClient.setQueryData<any[]>(
+        boardKeys.cardLabels(boardId, listId, cardId),
+        (labels) => {
+          const list = labels || [];
+          if (add) {
+            if (list.some((l: any) => l.id === labelId)) return list;
+            // optimistic minimal label: use color/name unknown
+            return [...list, { id: labelId } as any];
+          } else {
+            return list.filter((l: any) => l.id !== labelId);
+          }
+        }
+      );
+
+      // Also update the card and cards caches so UI reflects immediately
+      const boardLabels =
+        queryClient.getQueryData<any[]>(boardKeys.boardLabels(boardId)) || [];
+      const label = boardLabels.find((l: any) => l.id === labelId);
+      const minimal = label ? { color: label.color, name: label.name } : null;
+
+      // Update single card cache
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) => {
+          if (!c) return c;
+          const existing: any[] = c.labels || [];
+          if (add && minimal) {
+            if (existing.some((x) => x.color === minimal.color)) return c;
+            return { ...c, labels: [...existing, minimal] };
+          }
+          if (!add && minimal) {
+            return {
+              ...c,
+              labels: existing.filter((x) => x.color !== minimal.color),
+            };
+          }
+          return c;
+        }
+      );
+
+      // Update cards list cache
+      queryClient.setQueryData<any[] | undefined>(
+        boardKeys.cards(boardId, listId),
+        (cards) =>
+          cards?.map((c: any) => {
+            if (c.id !== cardId) return c;
+            const existing: any[] = c.labels || [];
+            if (add && minimal) {
+              if (existing.some((x) => x.color === minimal.color)) return c;
+              return { ...c, labels: [...existing, minimal] };
+            }
+            if (!add && minimal) {
+              return {
+                ...c,
+                labels: existing.filter((x) => x.color !== minimal.color),
+              };
+            }
+            return c;
+          })
+      );
+      return { prev };
+    },
+    onError: (_e, _vars, ctx) => {
+      if (!ctx) return;
+      queryClient.setQueryData(
+        boardKeys.cardLabels(boardId, listId, cardId),
+        ctx.prev
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.cardLabels(boardId, listId, cardId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
       });
     },
   });
@@ -304,6 +462,173 @@ export const useCreateCardComment = (
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: boardKeys.cardComments(boardId, listId, cardId),
+      });
+    },
+  });
+};
+
+export const useCreateAttachment = (
+  boardId: string,
+  listId: string,
+  cardId: string
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { url: string; displayText?: string | null }) =>
+      createAttachment(cardId, input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({
+        queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
+      });
+      const prev = queryClient.getQueryData<any[]>(
+        boardKeys.cardAttachments(boardId, listId, cardId)
+      );
+      const temp = {
+        id: `temp-${Date.now()}`,
+        cardId,
+        url: input.url,
+        displayText: input.displayText ?? input.url,
+        createdAt: new Date().toISOString(),
+      } as any;
+      queryClient.setQueryData<any[]>(
+        boardKeys.cardAttachments(boardId, listId, cardId),
+        (atts) => (atts ? [temp, ...atts] : [temp])
+      );
+      // bump counter on card for UI badges
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c ? { ...c, attachmentsCount: (c.attachmentsCount ?? 0) + 1 } : c
+      );
+      return { prev };
+    },
+    onError: (_e, _vars, ctx) => {
+      if (!ctx) return;
+      queryClient.setQueryData(
+        boardKeys.cardAttachments(boardId, listId, cardId),
+        ctx.prev
+      );
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c
+            ? {
+                ...c,
+                attachmentsCount: Math.max(0, (c.attachmentsCount ?? 1) - 1),
+              }
+            : c
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+    },
+  });
+};
+
+export const useAssignCardMember = (
+  boardId: string,
+  listId: string,
+  cardId: string
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => addCardAssignee(cardId, userId),
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+      const prev = queryClient.getQueryData<any>(
+        boardKeys.card(boardId, listId, cardId)
+      );
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c
+            ? {
+                ...c,
+                cardAssignees: c.cardAssignees?.some(
+                  (a: any) => a.id === userId
+                )
+                  ? c.cardAssignees
+                  : [
+                      ...((c.cardAssignees as any[]) || []),
+                      {
+                        id: userId,
+                        fullName: "",
+                        username: "",
+                        avatarUrl: null,
+                      },
+                    ],
+              }
+            : c
+      );
+      return { prev };
+    },
+    onError: (_err, _userId, ctx) => {
+      if (!ctx) return;
+      queryClient.setQueryData(
+        boardKeys.card(boardId, listId, cardId),
+        ctx.prev
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.cards(boardId, listId),
+      });
+    },
+  });
+};
+
+export const useRemoveCardMember = (
+  boardId: string,
+  listId: string,
+  cardId: string
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => removeCardAssignee(cardId, userId),
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+      const prev = queryClient.getQueryData<any>(
+        boardKeys.card(boardId, listId, cardId)
+      );
+      queryClient.setQueryData<any>(
+        boardKeys.card(boardId, listId, cardId),
+        (c: any) =>
+          c
+            ? {
+                ...c,
+                cardAssignees: (c.cardAssignees as any[])?.filter(
+                  (a: any) => a.id !== userId
+                ),
+              }
+            : c
+      );
+      return { prev };
+    },
+    onError: (_err, _userId, ctx) => {
+      if (!ctx) return;
+      queryClient.setQueryData(
+        boardKeys.card(boardId, listId, cardId),
+        ctx.prev
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.card(boardId, listId, cardId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.cards(boardId, listId),
       });
     },
   });

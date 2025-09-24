@@ -37,7 +37,7 @@ const createCardAssignee = async (cardId: string, userId: string) => {
 const deleteCardAssignee = async (cardId: string, userId: string) => {
   await isAccessableCard(cardId, userId);
 
-  const deletedCardAssignee = await prisma.cardWatcher.delete({
+  const deletedCardAssignee = await prisma.cardAssignee.delete({
     where: {
       cardId_userId: {
         cardId,

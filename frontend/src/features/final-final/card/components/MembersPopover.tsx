@@ -19,11 +19,15 @@ interface Member {
 interface MembersPopoverProps {
   children: React.ReactNode;
   members?: Member[];
+  onSelect?: (member: Member) => void;
+  selectedIds?: string[];
 }
 
 export const MembersPopover: React.FC<MembersPopoverProps> = ({
   children,
   members = [],
+  onSelect,
+  selectedIds = [],
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,6 +37,13 @@ export const MembersPopover: React.FC<MembersPopoverProps> = ({
     (member) =>
       member.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const assignedMembers = filteredMembers.filter((m) =>
+    selectedIds.includes(m.id)
+  );
+  const unassignedMembers = filteredMembers.filter(
+    (m) => !selectedIds.includes(m.id)
   );
 
   const getInitials = (name: string) => {
@@ -93,57 +104,110 @@ export const MembersPopover: React.FC<MembersPopoverProps> = ({
 
         {/* Members List */}
         <div className="px-4 pb-4">
-          <div className="text-xs font-medium text-[#a9abaf] mb-2">
-            Board members
-          </div>
-          <div className="space-y-2">
-            {filteredMembers.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center gap-3 p-2 hover:bg-[#3a4249] rounded cursor-pointer transition-colors"
-              >
+          {/* Card members (assigned) */}
+          {assignedMembers.length > 0 && (
+            <>
+              <div className="text-xs font-medium text-[#a9abaf] mb-2">
+                Card members
+              </div>
+              <div className="space-y-2 mb-4">
+                {assignedMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 p-2 hover:bg-[#3a4249] rounded cursor-pointer transition-colors"
+                    onClick={() => onSelect?.(member)}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(
+                        member.fullName
+                      )}`}
+                    >
+                      {member.avatarUrl ? (
+                        <img
+                          src={member.avatarUrl}
+                          alt={member.fullName}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        getInitials(member.fullName)
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white font-medium truncate">
+                        {member.fullName}
+                      </div>
+                    </div>
+                    <div className="w-6 h-6 flex items-center justify-center">
+                      <img
+                        src={
+                          theme === "dark"
+                            ? addMembersIconDark
+                            : addMembersIconLight
+                        }
+                        alt="Add member"
+                        className="w-4 h-4 opacity-60 hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Board members (not yet assigned) */}
+          {unassignedMembers.length > 0 && (
+            <div className="text-xs font-medium text-[#a9abaf] mb-2">
+              Board members
+            </div>
+          )}
+          {unassignedMembers.length > 0 && (
+            <div className="space-y-2">
+              {unassignedMembers.map((member) => (
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(
-                    member.fullName
-                  )}`}
+                  key={member.id}
+                  className="flex items-center gap-3 p-2 hover:bg-[#3a4249] rounded cursor-pointer transition-colors"
+                  onClick={() => onSelect?.(member)}
                 >
-                  {member.avatarUrl ? (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(
+                      member.fullName
+                    )}`}
+                  >
+                    {member.avatarUrl ? (
+                      <img
+                        src={member.avatarUrl}
+                        alt={member.fullName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      getInitials(member.fullName)
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white font-medium truncate">
+                      {member.fullName}
+                    </div>
+                  </div>
+                  <div className="w-6 h-6 flex items-center justify-center">
                     <img
-                      src={member.avatarUrl}
-                      alt={member.fullName}
-                      className="w-8 h-8 rounded-full object-cover"
+                      src={
+                        theme === "dark"
+                          ? addMembersIconDark
+                          : addMembersIconLight
+                      }
+                      alt="Add member"
+                      className="w-4 h-4 opacity-60 hover:opacity-100 transition-opacity"
                     />
-                  ) : (
-                    getInitials(member.fullName)
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white font-medium truncate">
-                    {member.fullName}
-                  </div>
-                  <div className="text-xs text-[#96999e] truncate">
-                    @{member.username}
                   </div>
                 </div>
-                <div className="w-6 h-6 flex items-center justify-center">
-                  <img
-                    src={
-                      theme === "dark"
-                        ? addMembersIconDark
-                        : addMembersIconLight
-                    }
-                    alt="Add member"
-                    className="w-4 h-4 opacity-60 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-              </div>
-            ))}
-            {filteredMembers.length === 0 && (
-              <div className="text-sm text-[#96999e] text-center py-4">
-                No members found
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
+          {filteredMembers.length === 0 && (
+            <div className="text-sm text-[#96999e] text-center py-4">
+              No members found
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
