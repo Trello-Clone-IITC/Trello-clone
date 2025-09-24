@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MessageSquare } from "lucide-react";
+import BarsLoader from "../../../../components/ui/BarsLoader";
 import type { CommentDto } from "@ronmordo/contracts";
 import { useCreateCardComment } from "../hooks/useCardMutations";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ export const CommentsSidebar = ({
   cardId,
   checklistsCount,
   attachmentsCount,
+  commentsLoading,
 }: {
   showDetails: boolean;
   setShowDetails: (v: boolean) => void;
@@ -24,6 +26,7 @@ export const CommentsSidebar = ({
   cardId: string;
   checklistsCount: number;
   attachmentsCount: number;
+  commentsLoading?: boolean;
 }) => {
   const [text, setText] = useState("");
   const [pending, setPending] = useState<CommentDto[]>([]);
@@ -47,8 +50,8 @@ export const CommentsSidebar = ({
   };
 
   const getDisplayName = (c: any) => {
-    if (isFromCurrentUser(c)) return user?.fullName || user?.username || "You";
-    return c?.user?.fullName || c?.user?.username || "Member";
+    if (isFromCurrentUser(c)) return user?.fullName || user?.username;
+    return c?.user?.fullName || c?.user?.username;
   };
 
   const handleSubmit = async () => {
@@ -86,16 +89,25 @@ export const CommentsSidebar = ({
     }
   };
 
+  React.useEffect(() => {
+    const handler = (e: any) => {
+      if (typeof e.detail === "string") {
+        setText((prev) => (prev ? prev + " " + e.detail : e.detail));
+      }
+    };
+    window.addEventListener("card:addCommentPrefill" as any, handler as any);
+    return () =>
+      window.removeEventListener(
+        "card:addCommentPrefill" as any,
+        handler as any
+      );
+  }, []);
+
   const renderAvatar = (c: any) => {
     const avatar = isFromCurrentUser(c)
       ? user?.imageUrl
       : (c?.user?.avatarUrl as string | undefined);
-    const initials = (getDisplayName(c) || "?")
-      .split(/\s+/)
-      .map((p: string) => p[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
+
     return avatar ? (
       <img
         src={avatar}
@@ -103,14 +115,24 @@ export const CommentsSidebar = ({
         className="size-8 shrink-0 rounded-full object-cover"
       />
     ) : (
-      <div className="size-8 shrink-0 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
-        {initials}
-      </div>
+      <img
+        src={user?.imageUrl}
+        alt={`avatar ${user?.fullName || user?.username}`}
+        className="size-8 shrink-0 rounded-full object-cover"
+      />
     );
   };
 
   return (
     <>
+      <style>
+        {`
+          @keyframes bars-bounce {
+            0%, 80%, 100% { transform: scaleY(0.6); opacity: 0.6; }
+            40% { transform: scaleY(1); opacity: 1; }
+          }
+        `}
+      </style>
       <div className="flex items-center justify-between mb-2 md:mb-4 p-2 md:p-4">
         <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium text-gray-400">
           <MessageSquare className="size-3 md:size-4" />
@@ -183,11 +205,19 @@ export const CommentsSidebar = ({
                 <div className="rounded-[8px] bg-[#242528] p-1.5 md:p-2 text-xs md:text-sm text-[#bfc1c4] shadow-[0px_1px_1px_#0e0f10,_0px_0px_1px_#0e0f10]">
                   {c.text}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">Sending…</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  <BarsLoader label="Sending…" />
+                </div>
               </div>
             </div>
           ))}
+
           {/* Server comments */}
+          {commentsLoading && !comments?.length ? (
+            <div className="flex items-center justify-start text-xs text-gray-400">
+              <BarsLoader label="Loading comments…" />
+            </div>
+          ) : null}
           {comments?.map((c) => (
             <div key={c.id} className="flex gap-2 md:gap-3">
               <div className="hidden md:block">{renderAvatar(c)}</div>

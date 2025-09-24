@@ -67,8 +67,8 @@ const Board = ({ board }: { board: BoardDto }) => {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-[#2c2e24]">
-      <BoardHeader boardName={boardData.name} boardId={boardData.id} />
+    <div className="h-screen w-full flex flex-col ">
+      {/* <BoardHeader boardName={boardData.name} boardId={boardData.id} /> */}
       <div>
         <ListsRow
           boardId={board.id}

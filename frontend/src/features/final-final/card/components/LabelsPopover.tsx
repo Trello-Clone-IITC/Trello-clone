@@ -12,16 +12,15 @@ import { Separator } from "@/components/ui/separator";
 import type { LabelDto, ColorType } from "@ronmordo/contracts";
 
 // Define the 7 colors as specified using proper ColorType values
-const LABEL_COLORS: Array<{ color: ColorType; value: string; class: string }> =
-  [
-    { color: "green", value: "#216e4e", class: "bg-label-green" },
-    { color: "yellow", value: "#7f5f01", class: "bg-label-yellow" },
-    { color: "orange", value: "#9e4c00", class: "bg-label-orange" },
-    { color: "red", value: "#ae2e24", class: "bg-label-red" },
-    { color: "purple", value: "#803fa5", class: "bg-label-purple" },
-    { color: "blue", value: "#1558bc", class: "bg-label-blue" },
-    { color: "sky", value: "#206a83", class: "bg-label-sky" },
-  ];
+const COLOR_CLASS: Record<string, string> = {
+  green: "bg-label-green",
+  yellow: "bg-label-yellow",
+  orange: "bg-label-orange",
+  red: "bg-label-red",
+  purple: "bg-label-purple",
+  blue: "bg-label-blue",
+  sky: "bg-label-sky",
+};
 
 // Edit icon SVG component
 const EditIcon = () => (
@@ -45,39 +44,51 @@ const EditIcon = () => (
 
 interface LabelsPopoverProps {
   children: React.ReactNode;
-  selectedLabels: LabelDto[];
-  onLabelToggle: (color: ColorType) => void;
+  availableLabels: LabelDto[];
+  selectedLabelIds: string[];
+  onToggle: (labelId: string, isSelected: boolean) => void;
   onCreateLabel: () => void;
-  onEditLabel: (color: ColorType) => void;
+  onEditLabel: (labelId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const LabelsPopover = ({
   children,
-  selectedLabels,
-  onLabelToggle,
+  availableLabels,
+  selectedLabelIds,
+  onToggle,
   onCreateLabel,
   onEditLabel,
+  open,
+  onOpenChange,
 }: LabelsPopoverProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setIsOpen = (v: boolean) => {
+    setInternalOpen(v);
+    onOpenChange?.(v);
+  };
 
   // Filter labels based on search term
-  const filteredLabels = LABEL_COLORS.filter((label) =>
-    label.color.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLabels = (availableLabels || []).filter(
+    (l) =>
+      (l.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (l.color || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Check if a label is selected
-  const isLabelSelected = (labelColor: ColorType) => {
-    return selectedLabels.some((label) => label.color === labelColor);
+  const isLabelSelected = (labelId: string) =>
+    selectedLabelIds.includes(labelId);
+
+  const handleLabelToggle = (label: LabelDto) => {
+    onToggle(label.id as string, isLabelSelected(label.id as string));
   };
 
-  const handleLabelToggle = (labelColor: ColorType) => {
-    onLabelToggle(labelColor);
-  };
-
-  const handleEditLabel = (e: React.MouseEvent, labelColor: ColorType) => {
+  const handleEditLabel = (e: React.MouseEvent, labelId: string) => {
     e.stopPropagation();
-    onEditLabel(labelColor);
+    onEditLabel(labelId);
   };
 
   return (
@@ -122,18 +133,22 @@ export const LabelsPopover = ({
               <div className="overflow-y-auto pb-2 pt-1">
                 {filteredLabels.map((label) => (
                   <div
-                    key={label.color}
+                    key={label.id}
                     className="flex items-center gap-3 rounded cursor-pointer pb-1 pl-1"
-                    onClick={() => handleLabelToggle(label.color)}
+                    onClick={() => handleLabelToggle(label)}
                   >
                     <Checkbox
-                      checked={isLabelSelected(label.color)}
+                      checked={isLabelSelected(label.id as string)}
                       className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
-                    <div className={`h-8 rounded flex-1 ${label.class} px-3`} />
+                    <div
+                      className={`h-8 rounded flex-1 ${
+                        COLOR_CLASS[label.color as any] || "bg-label-green"
+                      } px-3`}
+                    />
                     <button
                       className="p-1 hover:bg-[#3d4449] rounded"
-                      onClick={(e) => handleEditLabel(e, label.color)}
+                      onClick={(e) => handleEditLabel(e, label.id as string)}
                     >
                       <EditIcon />
                     </button>

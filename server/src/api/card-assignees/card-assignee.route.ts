@@ -8,6 +8,6 @@ router.get("/", cardController.getCardAssignees);
 
 router.post("/", cardAssigneeController.createCardAssignee);
 
-router.delete("/:id", cardAssigneeController.deleteCardAssignee);
+router.delete("/", cardAssigneeController.deleteCardAssignee);
 
 export default router;

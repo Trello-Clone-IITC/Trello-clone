@@ -16,6 +16,8 @@ import {
   fetchChecklistItems,
 } from "../api";
 import { boardKeys } from "@/features/final-final/board/hooks";
+import { getCardAssignees } from "../api";
+import type { CardAssigneeDto } from "@ronmordo/contracts";
 
 export const useCard = (
   boardId: string,
@@ -76,6 +78,19 @@ export const useCardAttachments = (
     queryKey: boardKeys.cardAttachments(boardId, listId, cardId),
     queryFn: () => fetchCardAttachments(boardId, listId, cardId),
     enabled: !!boardId && !!listId && !!cardId && enabled === true,
+  });
+
+export const useCardAssignees = (
+  boardId: string,
+  listId: string,
+  cardId: string,
+  enabled: boolean = true
+) =>
+  useQuery<CardAssigneeDto[]>({
+    queryKey: boardKeys.cardAssignees(boardId, listId, cardId),
+    queryFn: () => getCardAssignees(cardId),
+    enabled: !!boardId && !!listId && !!cardId && enabled === true,
+    staleTime: 15_000,
   });
 
 export const useChecklistItems = (

@@ -20,6 +20,7 @@ import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Board pages
 import BoardPage from "@/features/final-aiman/board/pages/BoardPage";
+import FinalBoardPage from "@/features/final-final/board/pages/BoardPage"
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
@@ -78,6 +79,7 @@ export const AppRouter = () => {
         <Route element={<BoardLayout />}>
           <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           <Route path="/caspi/b/:boardId" element={<BoardPage />} />
+          <Route path="final/b/:boardId" element={<FinalBoardPage />} />
         </Route>
         {/* Board page with navbar but no sidebar */}
         <Route path="board/:boardId" element={<BoardPage />} />

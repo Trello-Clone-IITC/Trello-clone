@@ -17,7 +17,7 @@ import {
 } from "../hooks/useCardQueries";
 import { TitleHeader } from "./TitleHeader";
 import { MainContent } from "./MainContent";
-import { CommentsSidebar } from "./CommentsSidebar";
+import { CommentsSidebar } from "@/features/final-final/card/components/CommentsSidebar";
 import { CoverPopover } from "./CoverPopover";
 
 export default function CardModal({
@@ -44,11 +44,11 @@ export default function CardModal({
   }));
   const displayTitle = card.title || "Card title";
   const displayDescription = card.description;
-
+  console.log("card", card);
   // Lazy-load extras only when asked
   const [showDetails, setShowDetails] = useState(false);
   const enableExtras = open && showDetails;
-  const { data: comments } = useCardComments(
+  const { data: comments, isLoading: commentsLoading } = useCardComments(
     boardId,
     card.listId,
     card.id,
@@ -194,6 +194,7 @@ export default function CardModal({
               showDetails={showDetails}
               setShowDetails={setShowDetails}
               comments={comments}
+              commentsLoading={commentsLoading}
               boardId={boardId}
               listId={card.listId}
               cardId={card.id}

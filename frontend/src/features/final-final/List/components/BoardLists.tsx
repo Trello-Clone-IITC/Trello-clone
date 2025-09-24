@@ -1,5 +1,5 @@
 import type { ListDto } from "@ronmordo/contracts";
-import List from "./List";
+import { List } from "@/features/final-final/List/components";
 import { useEffect, useRef } from "react";
 // Updated imports to use final-final routes
 import {
