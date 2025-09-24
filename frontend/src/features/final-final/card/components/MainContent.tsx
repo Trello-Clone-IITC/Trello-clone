@@ -4,6 +4,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Popover,
@@ -51,6 +54,8 @@ import { addMembersIconDark, addMembersIconLight } from "@/assets";
 import { useTheme } from "@/hooks/useTheme";
 import type { LabelDto, ColorType } from "@ronmordo/contracts";
 import { useCard } from "../hooks/useCardQueries";
+import AddChecklistForm from "./AddChecklistForm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export const MainContent = ({
   labels,
@@ -81,6 +86,9 @@ export const MainContent = ({
   const [descDraft, setDescDraft] = useState(description || "");
   const [addingChecklist, setAddingChecklist] = useState(false);
   const [checklistTitle, setChecklistTitle] = useState("Checklist");
+  const [checklistMenuOpen, setChecklistMenuOpen] = useState(false);
+  const [addChecklistDialogOpen, setAddChecklistDialogOpen] = useState(false);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const queryClient = useQueryClient();
   const updateCardMut = useUpdateCard(boardId, listId, cardId);
   const createChecklistMut = useCreateChecklist(boardId, listId, cardId);
@@ -157,7 +165,7 @@ export const MainContent = ({
     <div className="px-6 pb-6 pt-4 overflow-hidden">
       <main className="space-y-6">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          <DropdownMenu>
+          <DropdownMenu open={addMenuOpen} onOpenChange={setAddMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
@@ -175,59 +183,190 @@ export const MainContent = ({
                 <h3 className="font-semibold">Add to card</h3>
               </div>
               <div className="p-1">
-                <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  <Tag className="size-5 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Labels</div>
-                    <div className="text-sm text-gray-400">
-                      Organize, categorize, and prioritize
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-start gap-3 p-3">
+                    <Tag className="size-5 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Labels</div>
+                      <div className="text-sm text-gray-400">
+                        Organize, categorize, and prioritize
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  {isLight ? (
-                    <img
-                      src={clockIconLight}
-                      alt="Clock"
-                      className="size-5 mt-0.5"
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent
+                    className="p-2 bg-[#22272b] border-gray-600 text-white"
+                    side="right"
+                    align="start"
+                  >
+                    <LabelsPopover
+                      availableLabels={boardLabels || []}
+                      selectedLabelIds={(cardLabels || []).map(
+                        (l) => l.id as string
+                      )}
+                      onToggle={handleLabelToggle}
+                      onCreateLabel={handleCreateLabel}
+                      onEditLabel={() => {}}
+                    >
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-sm border border-[#3c3d40] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
+                      >
+                        <Tag className="size-4 text-[#a9abaf]" />
+                        <span>Open labels</span>
+                      </button>
+                    </LabelsPopover>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-start gap-3 p-3">
+                    {isLight ? (
+                      <img
+                        src={clockIconLight}
+                        alt="Clock"
+                        className="size-5 mt-0.5"
+                      />
+                    ) : (
+                      <img
+                        src={clockIconDark}
+                        alt="Clock"
+                        className="size-5 mt-0.5"
+                      />
+                    )}
+                    <div>
+                      <div className="font-medium">Dates</div>
+                      <div className="text-sm text-gray-400">
+                        Start dates, due dates, and reminders
+                      </div>
+                    </div>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent
+                    className="p-2 bg-[#22272b] border-gray-600 text-white"
+                    side="right"
+                    align="start"
+                  >
+                    <DatesDropdown
+                      initialStartDate={startDate}
+                      initialDueDate={dueDate}
+                      onSave={async ({ startDate: s, dueDate: d }) => {
+                        await updateCardMut.mutateAsync({
+                          startDate: s ?? null,
+                          dueDate: d ?? null,
+                        });
+                      }}
+                      onClear={async () => {
+                        await updateCardMut.mutateAsync({
+                          startDate: null,
+                          dueDate: null,
+                        });
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-sm border border-[#3c3d40] hover:bg-[#303134] text-[#a9abaf] px-2.5 py-1.5 text-sm font-medium"
+                      >
+                        {isLight ? (
+                          <img
+                            src={clockIconLight}
+                            alt="Clock"
+                            className="size-4"
+                          />
+                        ) : (
+                          <img
+                            src={clockIconDark}
+                            alt="Clock"
+                            className="size-4"
+                          />
+                        )}
+                        <span>Open dates</span>
+                      </button>
+                    </DatesDropdown>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-start gap-3 p-3">
+                    <CheckSquare className="size-5 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Checklist</div>
+                      <div className="text-sm text-gray-400">Add subtasks</div>
+                    </div>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="p-0 bg-transparent border-0">
+                    <AddChecklistForm
+                      title={checklistTitle}
+                      onTitleChange={setChecklistTitle}
+                      onAdd={() => {
+                        addChecklist();
+                        setAddMenuOpen(false);
+                      }}
+                      onClose={() => setAddMenuOpen(false)}
                     />
-                  ) : (
-                    <img
-                      src={clockIconDark}
-                      alt="Clock"
-                      className="size-5 mt-0.5"
-                    />
-                  )}
-                  <div>
-                    <div className="font-medium">Dates</div>
-                    <div className="text-sm text-gray-400">
-                      Start dates, due dates, and reminders
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-start gap-3 p-3">
+                    <User className="size-5 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Members</div>
+                      <div className="text-sm text-gray-400">
+                        Assign members
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  <CheckSquare className="size-5 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Checklist</div>
-                    <div className="text-sm text-gray-400">Add subtasks</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  <User className="size-5 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Members</div>
-                    <div className="text-sm text-gray-400">Assign members</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-3 p-3">
-                  <Paperclip className="size-5 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Attachment</div>
-                    <div className="text-sm text-gray-400">
-                      Attach links, pages, work items, and more
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent
+                    className="p-2 bg-[#22272b] border-gray-600 text-white"
+                    side="right"
+                    align="start"
+                  >
+                    <MembersPopover
+                      members={(boardMembers ?? []).map((m) => ({
+                        id: m.userId,
+                        fullName: m.user.fullName || "Member",
+                        username: m.user.username || "",
+                        avatarUrl: m.user.avatarUrl,
+                      }))}
+                      selectedIds={(card?.cardAssignees ?? []).map((m) => m.id)}
+                      onSelect={(member) => {
+                        assignMemberMut.mutate(member.id);
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+                      >
+                        <span>Open members</span>
+                      </button>
+                    </MembersPopover>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="flex items-start gap-3 p-3">
+                    <Paperclip className="size-5 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Attachment</div>
+                      <div className="text-sm text-gray-400">
+                        Attach links, pages, work items, and more
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuItem>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent
+                    className="p-2 bg-[#22272b] border-gray-600 text-white"
+                    side="right"
+                    align="start"
+                  >
+                    <AttachmentPopover
+                      onInsert={({ url, displayText }) =>
+                        createAttachmentMut.mutate({ url, displayText })
+                      }
+                    >
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+                      >
+                        <span>Open attachment</span>
+                      </button>
+                    </AttachmentPopover>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -289,59 +428,16 @@ export const MainContent = ({
               </button>
             </PopoverTrigger>
             <PopoverContent
-              className="w-80 p-0 bg-[#2b2c2f] border-0 rounded-lg"
+              className="border-0 p-0 bg-transparent"
               align="start"
               side="bottom"
             >
-              {/* Header */}
-              <div className="flex items-center justify-center p-4 relative">
-                <h3 className="text-[#a9abaf] font-medium text-sm">
-                  Add checklist
-                </h3>
-                <button
-                  onClick={() => setAddingChecklist(false)}
-                  className="absolute right-4 w-6 h-6 flex items-center justify-center hover:bg-gray-600 transition-colors rounded"
-                >
-                  <X className="w-4 h-4 text-[#a9abaf]" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="pt-0 px-3 pb-3">
-                {/* Title Input */}
-                <div className="font-bold mt-3 mb-1 text-xs leading-4 flex flex-col">
-                  <label className="block text-sm font-medium text-[#a9abaf] mb-2">
-                    Title
-                  </label>
-                  <input
-                    value={checklistTitle}
-                    onChange={(e) => setChecklistTitle(e.target.value)}
-                    className="w-full h-[41px] py-1 px-3 rounded-[3px] border-1 border-[#3c3d40] bg-[#242528] placeholder:text-[#96999e] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1"
-                    placeholder="Checklist"
-                    autoFocus
-                  />
-                </div>
-
-                {/* Copy Items Dropdown */}
-                <div>
-                  <label className="block text-sm font-bold text-[#bfc1c4] mb-0.5 mt-3">
-                    Copy items from...
-                  </label>
-                  <select className="w-full h-[48px] py-1 px-[6px] rounded-[3px] border-1 border-[#3c3d40] bg-[#242528] placeholder:text-[#bfc1c4] text-[#bfc1c4] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:border-[#85b8ff] focus-visible:border-1">
-                    <option value="">(none)</option>
-                  </select>
-                </div>
-
-                {/* Add Button */}
-                <div className="flex justify-start">
-                  <button
-                    onClick={addChecklist}
-                    className="bg-[#669df1] hover:bg-[#8fb8f6] text-[#a9abaf] rounded text-sm font-medium  mt-3.5 px-6 py-1.5"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
+              <AddChecklistForm
+                title={checklistTitle}
+                onTitleChange={setChecklistTitle}
+                onAdd={addChecklist}
+                onClose={() => setAddingChecklist(false)}
+              />
             </PopoverContent>
           </Popover>
           {card?.cardAssignees && card.cardAssignees.length === 0 && (
@@ -655,6 +751,22 @@ export const MainContent = ({
         {/* Checklists */}
         <ChecklistSection boardId={boardId} listId={listId} cardId={cardId} />
       </main>
+      <Dialog
+        open={addChecklistDialogOpen}
+        onOpenChange={setAddChecklistDialogOpen}
+      >
+        <DialogContent className="p-0 bg-transparent border-0 shadow-none">
+          <AddChecklistForm
+            title={checklistTitle}
+            onTitleChange={setChecklistTitle}
+            onAdd={async () => {
+              await addChecklist();
+              setAddChecklistDialogOpen(false);
+            }}
+            onClose={() => setAddChecklistDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

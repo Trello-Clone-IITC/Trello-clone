@@ -21,6 +21,8 @@ interface MembersPopoverProps {
   members?: Member[];
   onSelect?: (member: Member) => void;
   selectedIds?: string[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const MembersPopover: React.FC<MembersPopoverProps> = ({
@@ -28,8 +30,15 @@ export const MembersPopover: React.FC<MembersPopoverProps> = ({
   members = [],
   onSelect,
   selectedIds = [],
+  open: controlledOpen,
+  onOpenChange,
 }) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    setInternalOpen(v);
+    onOpenChange?.(v);
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const { theme } = useTheme();
 

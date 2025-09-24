@@ -13,6 +13,8 @@ interface AttachmentPopoverProps {
   initialDisplayText?: string;
   defaultOpen?: boolean;
   onClose?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const AttachmentPopover: React.FC<AttachmentPopoverProps> = ({
@@ -22,8 +24,15 @@ export const AttachmentPopover: React.FC<AttachmentPopoverProps> = ({
   initialDisplayText,
   defaultOpen,
   onClose,
+  open: controlledOpen,
+  onOpenChange,
 }) => {
-  const [open, setOpen] = useState(!!defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(!!defaultOpen);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    setInternalOpen(v);
+    onOpenChange?.(v);
+  };
   const [linkText, setLinkText] = useState(initialUrl || "");
   const [displayText, setDisplayText] = useState(initialDisplayText || "");
   const [activeTab, setActiveTab] = useState<"trello" | "confluence">("trello");

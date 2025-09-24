@@ -49,6 +49,8 @@ interface LabelsPopoverProps {
   onToggle: (labelId: string, isSelected: boolean) => void;
   onCreateLabel: () => void;
   onEditLabel: (labelId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const LabelsPopover = ({
@@ -58,9 +60,16 @@ export const LabelsPopover = ({
   onToggle,
   onCreateLabel,
   onEditLabel,
+  open,
+  onOpenChange,
 }: LabelsPopoverProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setIsOpen = (v: boolean) => {
+    setInternalOpen(v);
+    onOpenChange?.(v);
+  };
 
   // Filter labels based on search term
   const filteredLabels = (availableLabels || []).filter(
