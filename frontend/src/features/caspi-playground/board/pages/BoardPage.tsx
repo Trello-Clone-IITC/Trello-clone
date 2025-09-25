@@ -137,16 +137,18 @@ const BoardPage = () => {
         } ${theme === "light" ? "bg-white" : "bg-[#1f1f21]"}`}
       >
         <div
-          className={`$${''}{
+          className={`${
             activeComponents.inbox
-              ? "opacity-100 translate-x-0 basis-[272px] w-[272px] my-2"
+              ? bothActive
+                ? "opacity-100 translate-x-0 basis-[272px] w-[272px] my-2"
+                : "opacity-100 translate-x-0 flex-1 my-0"
               : "opacity-0 -translate-x-4 pointer-events-none basis-0 w-0 my-0"
           } flex flex-col h-full min-h-0 shrink-0 transition-all duration-200 ease-out`}
         >
-          <Inbox />
+          <Inbox fullWidth={!bothActive} />
         </div>
         <div
-          className={`$${''}{
+          className={`${
             activeComponents.board
               ? bothActive
                 ? "flex-1 h-full rounded-lg border border-[#313133] overflow-hidden my-2"

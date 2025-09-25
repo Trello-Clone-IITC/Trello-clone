@@ -56,7 +56,7 @@ export default function ListsRow({
       } left-0 gap-3 select-none touch-pan-y ${
         bottomGap
           ? "2xl:pb-[105px] xl:pb-[105px] md:pb-[105px] pb-[105px]"
-          : "pb-2"
+          : "pb-8"
       } board-scrollbar overflow-x-auto overflow-y-hidden mb-0 flex px-1.5 list-none ${
         isAutoScrolling ? "auto-scrolling" : ""
       }`}

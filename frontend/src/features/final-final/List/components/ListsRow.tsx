@@ -9,10 +9,14 @@ export default function ListsRow({
   boardId,
   lists,
   tail,
+  offsetForHeader,
+  bottomGap,
 }: {
   boardId: string;
   lists: ListDto[];
   tail?: React.ReactNode;
+  offsetForHeader?: boolean;
+  bottomGap?: boolean;
 }) {
   console.log("ListsRow component called with", lists?.length || 0, "lists");
   const {
@@ -36,27 +40,35 @@ export default function ListsRow({
     [lists]
   );
   //----------------------------------------------------------dragging sideways scroll---------------------------------
-useDragScroll(scrollRef as React.RefObject<HTMLElement>, {
-  blockSelector:
-    'button,a,input,textarea,select,[contenteditable],[draggable="true"],[data-dnd-item],[data-dnd-handle],.dnd-handle',
-});
-
-
+  useDragScroll(scrollRef as React.RefObject<HTMLElement>, {
+    blockSelector:
+      'button,a,input,textarea,select,[contenteditable],[draggable="true"],[data-dnd-item],[data-dnd-handle],.dnd-handle',
+  });
 
   return (
-      <div
-  ref={scrollRef}
-  className={`absolute bottom-[47px] right-0 left-0 top-0 
-              flex gap-3 overflow-x-auto overflow-y-hidden px-1.5 list-none select-none touch-pan-y 
-              ${isAutoScrolling ? "auto-scrolling" : ""}`}
-  style={{
-    scrollBehavior: "smooth",
-    scrollbarWidth: "thin",
-    scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
-    willChange: "scroll-position",
-    transform: "translateZ(0)", // hardware acceleration
-  }}
->
+    <div
+      ref={scrollRef}
+      className={`absolute ${
+        offsetForHeader ? "top-0 pt-2" : "top-[-2px] pt-0.5"
+      } right-0 ${
+        bottomGap ? "bottom-8" : "bottom-0"
+      } left-0 gap-3 select-none touch-pan-y ${
+        bottomGap
+          ? "2xl:pb-[105px] xl:pb-[105px] md:pb-[105px] pb-[105px]"
+          : "pb-9"
+      } board-scrollbar overflow-x-auto overflow-y-hidden mb-0 flex px-1.5 list-none ${
+        isAutoScrolling ? "auto-scrolling" : ""
+      }`}
+      style={{
+        scrollBehavior: "smooth",
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
+        position: "relative",
+        // Optimized for smooth scrolling
+        willChange: "scroll-position",
+        transform: "translateZ(0)", // Force hardware acceleration
+      }}
+    >
       {(() => {
         const items = sortedLists || [];
         const laneWidth = 272; // match list width
