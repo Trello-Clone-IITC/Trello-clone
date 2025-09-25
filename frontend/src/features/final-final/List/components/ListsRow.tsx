@@ -364,7 +364,7 @@ export default function ListsRow({
                     transition: "none", // Disable transitions for smooth following
                   }}
                 >
-                  <ListView list={dragged} />
+                  <ListView list={dragged} hideCards={true} />
                 </div>
               );
             }
