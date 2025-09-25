@@ -2,7 +2,6 @@ import type { Server, Socket } from "socket.io";
 import type { BoardClientEvents, BoardServerEvents } from "./types.js";
 import listService from "../api/lists/list.service.js";
 import cardService from "../api/cards/card.service.js";
-import { mapListToDto } from "../api/lists/list.mapper.js";
 import {
   emitCardCreated,
   emitCardDeleted,
@@ -74,14 +73,13 @@ export function registerBoardNamespace(io: Server) {
       // Lists
       socket.on("list:create", async ({ boardId, name }) => {
         try {
-          const userId = await userService.getUserIdByClerkId(
-            socket.data.auth.userId
-          );
-          console.log("userId:", userId);
+          // const userId = await userService.getUserIdByClerkId(
+          //   socket.data.auth.userId
+          // );
+          // console.log("userId:", userId);
 
-          const created = await listService.createList({ name }, boardId);
-          const dto = mapListToDto(created);
-          emitListCreated(boardId, dto);
+          const listDto = await listService.createList({ name }, boardId);
+          emitListCreated(boardId, listDto);
         } catch (e) {
           // ignore for now or add error channel
         }
@@ -89,10 +87,8 @@ export function registerBoardNamespace(io: Server) {
 
       socket.on("list:update", async ({ boardId, listId, updates }) => {
         try {
-          const updated = await listService.updateList(listId, updates);
-          if (!updated) return;
-          const dto = mapListToDto(updated);
-          emitListUpdated(boardId, dto);
+          const updatedListDto = await listService.updateList(listId, updates);
+          emitListUpdated(boardId, updatedListDto);
         } catch (e) {
           // ignore
         }
@@ -115,7 +111,7 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
 
           const created = await cardService.createCard(
             { title },
@@ -134,17 +130,15 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
 
           const updated = await cardService.updateCard(
             cardId,
             {
               title: updates.title,
               description: updates.description ?? undefined,
-              dueDate: updates.dueDate ? new Date(updates.dueDate) : undefined,
-              startDate: updates.startDate
-                ? new Date(updates.startDate)
-                : undefined,
+              dueDate: updates.dueDate ? updates.dueDate : undefined,
+              startDate: updates.startDate ? updates.startDate : undefined,
               coverImageUrl: updates.coverImageUrl ?? undefined,
               position: updates.position ?? undefined,
             },
@@ -163,7 +157,7 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
           await cardService.deleteCard(cardId, userId);
           emitCardDeleted(boardId, cardId, listId);
         } catch (e) {
@@ -173,7 +167,7 @@ export function registerBoardNamespace(io: Server) {
 
       socket.on(
         "card:move",
-        async ({ boardId, cardId, toListId, position }) => {
+        async ({ boardId, cardId, fromListId, toListId, position }) => {
           try {
             // We need fromListId for the client UI to remove from source list; get card first
             // const userId = getUserId(socket);
@@ -181,9 +175,7 @@ export function registerBoardNamespace(io: Server) {
             const userId = await userService.getUserIdByClerkId(
               socket.data.auth.userId
             );
-            console.log("userId:", userId);
-            const existing = await cardService.getCardById(cardId, userId);
-            const fromListId = existing.listId;
+
             const moved = await cardService.moveCard(
               cardId,
               toListId,

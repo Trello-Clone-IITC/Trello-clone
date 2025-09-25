@@ -2,10 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import listWatchersService from "./list-watchers.service.js";
-// import type { ListWatcherDto } from "@ronmordo/contracts";
-// import { mapListWatcherToDto } from "./list-watcher.mapper.js";
-// import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
-// import { getAuth } from "@clerk/express";
 import { userService } from "../users/user.service.js";
 
 const addListWatcher = async (

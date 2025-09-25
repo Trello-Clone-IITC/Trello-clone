@@ -3,10 +3,8 @@ import cardService from "./card.service.js";
 import { AppError } from "../../utils/appError.js";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type {
-  ActivityLogDto,
   CardDto,
   ChecklistDto,
-  CommentDto,
   CardAssigneeDto,
   LabelDto,
   CardWatcherDto,
@@ -15,13 +13,10 @@ import type {
   CommentWithUserDto,
 } from "@ronmordo/contracts";
 import {
-  mapChecklistToDto,
-  mapCommentToDto,
   mapCardAssigneeToDto,
   mapCardWatcherToDto,
   mapAttachmentToDto,
 } from "./card.mapper.js";
-import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 import { userService } from "../users/user.service.js";
 
 export const cardController = {
@@ -64,7 +59,7 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
+      const { id, listId } = req.params;
       const userId =
         (await userService.getUserIdByRequest(req)) ||
         "96099bc0-34b7-4be5-b410-4d624cd99da5";
@@ -73,19 +68,14 @@ export const cardController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.getCardById(id, userId);
+      const card = await cardService.getCardById(id, listId, userId);
 
       res.status(200).json({
         success: true,
         data: card,
       });
     } catch (error) {
-      console.log("Failed to get card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card", 500));
+      next(error);
     }
   },
 
@@ -113,12 +103,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      console.log("Failed to update card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to update card", 500));
+      next(error);
     }
   },
 
@@ -146,12 +131,7 @@ export const cardController = {
         message: "Card deleted successfully",
       });
     } catch (error) {
-      console.log("Failed to delete card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to delete card", 500));
+      next(error);
     }
   },
 
@@ -182,12 +162,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      console.log("Failed to move card errror:", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to move card", 500));
+      next(error);
     }
   },
 
@@ -212,10 +187,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to toggle card archive status", 500));
+      next(error);
     }
   },
 
@@ -251,10 +223,7 @@ export const cardController = {
         data: cards,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to search cards", 500));
+      next(error);
     }
   },
 
@@ -279,10 +248,7 @@ export const cardController = {
         data: activities,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card activity", 500));
+      next(error);
     }
   },
 
@@ -303,16 +269,13 @@ export const cardController = {
       }
 
       const checklists = await cardService.getCardChecklists(cardId, userId);
-      const checklistsDto = checklists.map(mapChecklistToDto);
+
       res.status(200).json({
         success: true,
-        data: checklistsDto,
+        data: checklists,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card checklists", 500));
+      next(error);
     }
   },
 
@@ -337,11 +300,7 @@ export const cardController = {
         data: comments,
       });
     } catch (error) {
-      console.log("Failed to get card comments:---", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card comments", 500));
+      next(error);
     }
   },
 
@@ -365,10 +324,7 @@ export const cardController = {
         data: assigneesDto,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card assignees", 500));
+      next(error);
     }
   },
 
@@ -379,7 +335,6 @@ export const cardController = {
   ) => {
     try {
       const { cardId } = req.params;
-      console.log(req.params);
 
       const userId =
         (await userService.getUserIdByRequest(req)) ||
@@ -415,7 +370,7 @@ export const cardController = {
         data: watchersDto,
       });
     } catch (error) {
-      next(new AppError("Failed to get card watchers", 500));
+      next(error);
     }
   },
 

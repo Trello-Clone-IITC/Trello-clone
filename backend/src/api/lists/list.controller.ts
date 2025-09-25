@@ -8,9 +8,9 @@ import type {
   IdParam,
   ListDto,
   ListWatcherDto,
+  UserDto,
 } from "@ronmordo/contracts";
 import { mapListToDto } from "./list.mapper.js";
-import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
 import { userService } from "../users/user.service.js";
 
 const createList = async (
@@ -26,11 +26,9 @@ const createList = async (
 
     const list = await listService.createList(req.body, boardId);
 
-    const listDto: ListDto = mapListToDto(list);
-
     res.status(201).json({
       success: true,
-      data: listDto,
+      data: list,
     });
   } catch (error) {
     next(error);
@@ -44,17 +42,21 @@ const getList = async (
 ) => {
   try {
     const { listId } = req.params;
-    const list = await listService.getListById(listId);
+
+    const userId = await userService.getUserIdByRequest(req);
+    if (!userId) {
+      throw new AppError("UnAutherized", 403);
+    }
+
+    const list = await listService.getListById(listId, userId);
 
     if (!list) {
       return next(new AppError("List not found", 404));
     }
 
-    const listDto: ListDto = mapListToDto(list);
-
     res.status(200).json({
       success: true,
-      data: listDto,
+      data: list,
     });
   } catch (error) {
     if (error instanceof AppError) {
@@ -76,17 +78,10 @@ const updateList = async (
     const updateData = { ...req.body };
 
     const list = await listService.updateList(listId, updateData);
-    console.log("list", list);
-
-    if (!list) {
-      return next(new AppError("List not found", 404));
-    }
-
-    const listDto: ListDto = mapListToDto(list);
 
     res.status(200).json({
       success: true,
-      data: listDto,
+      data: list,
     });
   } catch (error) {
     if (error instanceof AppError) {
@@ -124,17 +119,24 @@ const deleteList = async (
 // List Watcher Management
 const getListWatchers = async (
   req: Request,
-  res: Response<ApiResponse<ListWatcherDto[]>>,
+  res: Response<
+    ApiResponse<
+      Array<
+        ListWatcherDto & {
+          user: Pick<UserDto, "id" | "avatarUrl" | "fullName" | "email">;
+        }
+      >
+    >
+  >,
   next: NextFunction
 ) => {
   try {
     const { listId } = req.params;
     const watchers = await listService.getListWatchers(listId);
-    const watchersDto = watchers.map(mapListWatcherToDto);
 
     res.status(200).json({
       success: true,
-      data: watchersDto,
+      data: watchers,
     });
   } catch (error) {
     if (error instanceof AppError) {

@@ -5,7 +5,6 @@ import { activityLogService } from "./activity-log.service.js";
 import { userService } from "../users/user.service.js";
 import { AppError } from "../../utils/appError.js";
 import cardService from "../cards/card.service.js";
-import { mapActivityLogToDto } from "./activity-log.mapper.js";
 
 const getActivityLogs = async (
   req: Request<CardIdParam | any>,
@@ -24,9 +23,7 @@ const getActivityLogs = async (
 
     const activityLogs = await Promise.all(
       cardId
-        ? (
-            await cardService.getCardActivity(cardId, userId)
-          ).map(mapActivityLogToDto)
+        ? await cardService.getCardActivity(cardId, userId)
         : await activityLogService.getGeneralActivityLogs(userId)
     );
 

@@ -60,6 +60,7 @@ export type BoardClientEvents = {
   "card:move": (payload: {
     boardId: string;
     cardId: string;
+    fromListId: string;
     toListId: string;
     position: number;
   }) => void;

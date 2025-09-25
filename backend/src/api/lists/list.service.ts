@@ -1,14 +1,25 @@
 import { prisma } from "../../lib/prismaClient.js";
 import type { List } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import type { CreateListInput, UpdateListInput } from "@ronmordo/contracts";
+import type {
+  CreateListInput,
+  ListDto,
+  ListWatcherDto,
+  ListWithCardsAndWatchersDto,
+  UpdateListInput,
+  UserDto,
+} from "@ronmordo/contracts";
 import { AppError } from "../../utils/appError.js";
 import cardService from "../cards/card.service.js";
+import { getCache, setCache } from "../../lib/cache.js";
+import { mapFullListToDto, mapListToDto } from "./list.mapper.js";
+import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
+import listController from "./list.controller.js";
 
 const createList = async (
   data: CreateListInput,
   boardId: string
-): Promise<List> => {
+): Promise<ListDto> => {
   const board = await prisma.board.findUnique({
     where: { id: boardId },
     include: {
@@ -35,64 +46,111 @@ const createList = async (
     },
   });
 
-  return list;
+  const listDto: ListDto = mapListToDto(list);
+
+  const cached = await getCache<ListDto[]>(`board:${boardId}:lists`);
+
+  await setCache<ListDto[]>(
+    `board:${boardId}:lists`,
+    cached ? [listDto, ...cached] : [listDto],
+    120
+  );
+
+  return listDto;
 };
 
-const getListById = async (id: string): Promise<List | null> => {
+const getListById = async (id: string, userId: string): Promise<ListDto> => {
   const list = await prisma.list.findUnique({
     where: { id },
     include: {
       cards: {
         orderBy: { position: "asc" },
       },
-      watchers: {
-        include: {
-          user: true,
-        },
-      },
+      watchers: true,
     },
   });
-  return list;
+
+  if (!list) {
+    throw new AppError("List not found", 404);
+  }
+
+  const listDto: ListWithCardsAndWatchersDto = await mapFullListToDto(
+    list,
+    userId
+  );
+
+  return listDto;
 };
 
-const getAllListsByBoard = async (boardId: string): Promise<List[]> => {
-  const lists = await prisma.list.findMany({
-    where: { boardId },
-    include: {
-      cards: {
-        orderBy: { position: "asc" },
-      },
-      _count: {
-        select: {
-          cards: true,
-        },
-      },
-    },
-    orderBy: { position: "asc" },
-  });
-  return lists;
-};
+// const getAllListsByBoard = async (boardId: string): Promise<ListDto[]> => {
+//   const cached = await getCache<ListDto[]>(`board:${boardId}:lists`);
+
+//   if (cached) {
+//     return cached;
+//   }
+
+//   const lists = await prisma.list.findMany({
+//     where: { boardId },
+//     include: {
+//       cards: {
+//         orderBy: { position: "asc" },
+//       },
+//       _count: {
+//         select: {
+//           cards: true,
+//         },
+//       },
+//     },
+//     orderBy: { position: "asc" },
+//   });
+
+//   return lists;
+// };
 
 const updateList = async (
   id: string,
   updates: UpdateListInput
-): Promise<List | null> => {
-  try {
-    const list = await prisma.list.update({
-      where: { id },
-      data: updates,
-    });
-    return list;
-  } catch {
-    return null;
+): Promise<ListDto> => {
+  const list = await prisma.list.update({
+    where: { id },
+    data: updates,
+  });
+
+  const listDto = mapListToDto(list);
+
+  const cached = await getCache<ListDto[]>(`board:${list.boardId}:lists`);
+
+  let updatedCache: ListDto[];
+
+  if (cached) {
+    updatedCache = cached.map((l) => (l.id === id ? listDto : l));
+  } else {
+    updatedCache = [listDto];
   }
+
+  await setCache<ListDto[]>(`board:${list.boardId}:lists`, updatedCache, 120);
+
+  return listDto;
 };
 
 const deleteList = async (id: string): Promise<boolean> => {
   try {
-    await prisma.list.delete({
+    const deletedList = await prisma.list.delete({
       where: { id },
     });
+
+    const cached = await getCache<ListDto[]>(
+      `board:${deletedList.boardId}:lists`
+    );
+
+    if (cached) {
+      await setCache<ListDto[]>(
+        `board:${deletedList.boardId}:lists`,
+        cached.filter((l) => l.id !== id),
+        120
+      );
+    }
+
     return true;
   } catch {
     return false;
@@ -157,6 +215,18 @@ const searchLists = async (
 // List Watcher Management
 
 const getListWatchers = async (listId: string) => {
+  const cached = await getCache<
+    Array<
+      ListWatcherDto & {
+        user: Pick<UserDto, "id" | "avatarUrl" | "fullName" | "email">;
+      }
+    >
+  >(`list:${listId}:watchers`);
+
+  if (cached) {
+    return cached;
+  }
+
   const watchers = await prisma.listWatcher.findMany({
     where: { listId },
     include: {
@@ -171,9 +241,21 @@ const getListWatchers = async (listId: string) => {
     },
     orderBy: { createdAt: "asc" },
   });
-  console.log("watchers", watchers);
 
-  return watchers;
+  const watchersDto = watchers.map((w) => ({
+    ...w,
+    ...mapListWatcherToDto(w),
+  }));
+
+  await setCache<
+    Array<
+      ListWatcherDto & {
+        user: Pick<UserDto, "id" | "avatarUrl" | "fullName" | "email">;
+      }
+    >
+  >(`list:${listId}:watchers`, watchersDto, 120);
+
+  return watchersDto;
 };
 
 const getCardsByList = async (listId: string, userId: string) => {
@@ -233,7 +315,7 @@ const getCardsByList = async (listId: string, userId: string) => {
 export default {
   createList,
   getListById,
-  getAllListsByBoard,
+  // getAllListsByBoard,
   updateList,
   deleteList,
   getListWithCards,
