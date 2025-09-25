@@ -58,6 +58,14 @@ const Card = ({
     e.stopPropagation();
     toggleLabelsExpanded();
   };
+  // Determine if coverImageUrl is a HEX color or a path
+  const isHexColor = (value?: string | null): boolean => {
+    if (!value) return false;
+    const v = value.trim();
+    return /^(#)?([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v);
+  };
+  const normalizeHex = (value: string): string =>
+    value.startsWith("#") ? value : `#${value}`;
   //  CASPI CHANGED LINES 38-40
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
@@ -208,8 +216,24 @@ const Card = ({
           marginBottom: "2px",
         }}
       >
-        <div className="bg-[#216e4e] min-h-9 overflow-hidden rounded-t-[8px]"></div>
-        {/* TODO: ADD COLOR TO THE DIV */}
+        {card.coverImageUrl ? (
+          isHexColor(card.coverImageUrl) ? (
+            <div
+              className="h-9 overflow-hidden rounded-t-[8px]"
+              style={{ backgroundColor: normalizeHex(card.coverImageUrl.trim()) }}
+            ></div>
+          ) : (
+            <div className="h-9 overflow-hidden rounded-t-[8px]">
+              <img
+                src={card.coverImageUrl}
+                alt=""
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )
+        ) : null}
         <div className="z-10 min-h-[24px] px-3 pt-2 pb-1">
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1">

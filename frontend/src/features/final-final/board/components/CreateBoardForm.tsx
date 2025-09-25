@@ -20,7 +20,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 import { X, Check, MoreHorizontal, ChevronLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useCreateBoard } from "../hooks/_useBoard";
+import { useCreateBoard } from "../hooks/useBoard";
 import { useUserWorkspaces } from "@/features/dashboard/hooks/useUserWorkspaces";
 import {
   upgradeIconDark,

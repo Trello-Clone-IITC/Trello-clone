@@ -6,6 +6,7 @@ import type {
   BoardMemberDto,
   BoardMemberWithUserDto,
 } from "@ronmordo/contracts";
+import type { CreateBoardInput } from "@ronmordo/contracts";
 
 export const fetchBoard = async (boardId: string): Promise<BoardDto> => {
   const { data } = await api.get<ApiResponse<BoardDto>>(`/boards/${boardId}`);
@@ -27,5 +28,12 @@ export const fetchBoardMembers = async (
   const { data } = await api.get<ApiResponse<BoardMemberWithUserDto[]>>(
     `/boards/${boardId}/boardMembers`
   );
+  return data.data;
+};
+
+export const createBoard = async (
+  input: CreateBoardInput & { allowCovers?: boolean; showComplete?: boolean }
+): Promise<BoardDto> => {
+  const { data } = await api.post<ApiResponse<BoardDto>>(`/boards`, input);
   return data.data;
 };
