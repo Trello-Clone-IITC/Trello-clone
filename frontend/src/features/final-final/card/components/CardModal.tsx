@@ -66,6 +66,7 @@ export default function CardModal({
     card.id,
     enableExtras
   );
+
   const cover = card.coverImageUrl?.trim() ?? null;
   const hasCover = Boolean(cover);
   const isHexColor = (val: string) => /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(val);
@@ -80,6 +81,7 @@ export default function CardModal({
           }
       : undefined;
 
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
@@ -88,9 +90,11 @@ export default function CardModal({
       >
         {/* Cover div */}
         <div
+
           className={`rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative ${
             hasCover ? "h-[116px]" : "bg-transparent px-4 py-4"
           }`}
+
           style={coverStyle}
         >
           {/* Header actions in cover */}
