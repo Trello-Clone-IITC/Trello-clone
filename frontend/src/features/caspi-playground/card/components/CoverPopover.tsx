@@ -10,11 +10,29 @@ import { Separator } from "@/components/ui/separator";
 interface CoverPopoverProps {
   children: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
+  boardId: string;
+  listId: string;
+  cardId: string;
+  value?: string | null;
 }
 
-export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
+import { useCardCover, isHexColor } from "../hooks/useCardCover";
+
+export const CoverPopover = ({
+  children,
+  onOpenChange,
+  boardId,
+  listId,
+  cardId,
+  value,
+}: CoverPopoverProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("#216e4e");
+  const {
+    value: selected,
+    setColor,
+    setImage,
+    clear,
+  } = useCardCover(boardId, listId, cardId, value);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -61,8 +79,14 @@ export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
               <div className="h-[62px] m-0 w-[134px] cursor-pointer p-0 outline-2 outline-[#669df1] outline-offset-2 rounded-[3px] shadow-[0px_0px_0px_4px_#18191a]">
                 {/* Card skeleton - partial cover style */}
                 <div
-                  className="w-full h-full rounded-[3px] inline-flex items-center justify-center overflow-hidden"
-                  style={{ backgroundColor: selectedColor }}
+                  className="w-full h-full rounded-[3px] inline-flex items-center justify-center overflow-hidden bg-center bg-cover"
+                  style={
+                    selected
+                      ? isHexColor(String(selected))
+                        ? { backgroundColor: String(selected) }
+                        : { backgroundImage: `url("${String(selected)}")` }
+                      : undefined
+                  }
                 >
                   {/* Green cover section at top */}
 
@@ -88,8 +112,14 @@ export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
                 </div>
               </div>
               <div
-                className="h-[62px] m-0 w-[134px] relative cursor-pointer p-0 rounded-[3px]"
-                style={{ backgroundColor: selectedColor }}
+                className="h-[62px] m-0 w-[134px] relative cursor-pointer p-0 rounded-[3px] bg-center bg-cover"
+                style={
+                  selected
+                    ? isHexColor(String(selected))
+                      ? { backgroundColor: String(selected) }
+                      : { backgroundImage: `url("${String(selected)}")` }
+                    : undefined
+                }
               >
                 <div className="absolute bottom-1 p-1.5">
                   <div className="bg-[#9cd8bf] h-1 w-[116px] rounded-[2px]"></div>
@@ -97,7 +127,10 @@ export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
                 </div>
               </div>
             </div>
-            <Button className="w-full inline-flex items-center justify-center py-1.5 px-3 rounded cursor-pointer font-medium text-[#bfc1c4] text-sm bg-[#37383b] hover:bg-[#424346] mt-1">
+            <Button
+              className="w-full inline-flex items-center justify-center py-1.5 px-3 rounded cursor-pointer font-medium text-[#bfc1c4] text-sm bg-[#37383b] hover:bg-[#424346] mt-1"
+              onClick={clear}
+            >
               Remove cover
             </Button>
           </div>
@@ -122,17 +155,17 @@ export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
               <li
                 key={index}
                 className={`list-none w-[50px] h-8 border-2 rounded ${
-                  selectedColor === color
+                  selected === color
                     ? "border-blue-500"
                     : "border-transparent hover:border-gray-500"
                 }`}
               >
                 <button
                   className="w-full h-full relative rounded cursor-pointer"
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => setColor(color)}
                   style={{ backgroundColor: color }}
                 >
-                  {selectedColor === color && (
+                  {selected === color && (
                     <div className="absolute inset-0 border-2 border-black rounded pointer-events-none"></div>
                   )}
                 </button>
@@ -169,7 +202,10 @@ export const CoverPopover = ({ children, onOpenChange }: CoverPopoverProps) => {
               "/src/assets/background-3-preview.webp",
             ].map((image, index) => (
               <li key={index} className="list-none relative">
-                <button className="w-22 h-12 rounded cursor-pointer overflow-hidden hover:opacity-80 transition-opacity">
+                <button
+                  className="w-22 h-12 rounded cursor-pointer overflow-hidden hover:opacity-80 transition-opacity"
+                  onClick={() => setImage(image)}
+                >
                   <img
                     src={image}
                     alt={`Background ${index + 1}`}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { CardDto } from "@ronmordo/contracts";
@@ -25,6 +25,7 @@ export function useCardDnd(boardId: string, listId: string) {
     null
   );
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const isProcessingDropRef = useRef(false);
 
   // Auto-scroll when dragging near container edges
   useEffect(() => {
@@ -146,194 +147,288 @@ export function useCardDnd(boardId: string, listId: string) {
     };
   }, [draggingId]);
 
-  const handleDrop = ({
-    sourceCardId,
-    targetCardId,
-    edge,
-    sourceListId,
-  }: {
-    sourceCardId?: string;
-    targetCardId?: string;
-    edge: Edge;
-    sourceListId?: string;
-  }) => {
-    try {
-      if (!sourceCardId) {
-        return;
-      }
+  const handleDrop = useCallback(
+    ({
+      sourceCardId,
+      targetCardId,
+      edge,
+      sourceListId,
+    }: {
+      sourceCardId?: string;
+      targetCardId?: string;
+      edge: Edge;
+      sourceListId?: string;
+    }) => {
+      let timeoutId: NodeJS.Timeout | null = null;
 
-      // Clear preview immediately but keep draggingId for visual positioning
-      setPreview(null);
-
-      const current =
-        queryClient.getQueryData<CardDto[] | undefined>(
-          boardKeys.cards(boardId, listId)
-        ) || [];
-
-      const currentSorted = [...current].sort(
-        (a, b) => (a.position ?? 0) - (b.position ?? 0)
-      );
-
-      console.log(
-        "Current cards before update:",
-        currentSorted.map((c) => ({
-          id: c.id,
-          position: c.position,
-          title: c.title,
-        }))
-      );
-
-      let newPosition: number;
-
-      // Handle empty list drop
-      if (targetCardId === "empty") {
-        newPosition =
-          currentSorted.length === 0
-            ? 1000
-            : (currentSorted[currentSorted.length - 1].position ?? 0) + 1000;
-      } else {
-        // Handle normal card drop
-        const others = currentSorted.filter((x) => x.id !== sourceCardId);
-        const targetIdx = others.findIndex((x) => x.id === targetCardId);
-
-        if (targetIdx === -1) {
-          console.log("Target card not found in others array:", targetCardId);
+      try {
+        if (!sourceCardId) {
+          console.log("handleDrop: No sourceCardId provided");
           return;
         }
 
-        const insIdx = edge === "top" ? targetIdx : targetIdx + 1;
-
-        if (others.length === 0) {
-          newPosition = 1000;
-          console.log("Position calculation: empty list, using 1000");
-        } else if (insIdx <= 0) {
-          newPosition = (others[0].position ?? 0) - 1000;
-          console.log("Position calculation: insert at beginning", {
-            firstCardPosition: others[0].position,
-            newPosition,
-          });
-        } else if (insIdx >= others.length) {
-          newPosition = (others[others.length - 1].position ?? 0) + 1000;
-          console.log("Position calculation: insert at end", {
-            lastCardPosition: others[others.length - 1].position,
-            newPosition,
-          });
-        } else {
-          const prev = others[insIdx - 1];
-          const next = others[insIdx];
-          newPosition = ((prev.position ?? 0) + (next.position ?? 0)) / 2;
-          console.log("Position calculation: insert between", {
-            prevCard: {
-              id: prev.id,
-              position: prev.position,
-              title: prev.title,
-            },
-            nextCard: {
-              id: next.id,
-              position: next.position,
-              title: next.title,
-            },
-            newPosition,
-            insIdx,
-            targetIdx,
-            edge,
-          });
-        }
-      }
-
-      // Check if this is a cross-list move
-      const isCrossListMove = sourceListId && sourceListId !== listId;
-
-      if (isCrossListMove) {
-        // Handle cross-list move
-        // First, get the card from the source list
-        const sourceCards =
-          queryClient.getQueryData<CardDto[] | undefined>(
-            boardKeys.cards(boardId, sourceListId)
-          ) || [];
-        const cardToMove = sourceCards.find((c) => c.id === sourceCardId);
-
-        if (!cardToMove) {
-          console.error("Card not found in source list:", sourceCardId);
+        // Prevent multiple simultaneous drop processing
+        if (isProcessingDropRef.current) {
+          console.log("handleDrop: Already processing a drop, skipping");
           return;
         }
 
-        // Remove card from source list
-        queryClient.setQueryData<CardDto[] | undefined>(
-          boardKeys.cards(boardId, sourceListId),
-          (prev) => {
-            if (!prev) return prev;
-            return prev.filter((x) => x.id !== sourceCardId);
-          }
-        );
+        // Additional check: if this is a cross-list move, verify the card is still in source list
+        if (sourceListId && sourceListId !== listId) {
+          const sourceCards =
+            queryClient.getQueryData<CardDto[] | undefined>(
+              boardKeys.cards(boardId, sourceListId)
+            ) || [];
+          const cardInSource = sourceCards.find((c) => c.id === sourceCardId);
 
-        // Add card to target list with updated listId and position
-        queryClient.setQueryData<CardDto[] | undefined>(
-          boardKeys.cards(boardId, listId),
-          (prev) => {
-            if (!prev) return prev;
-            const newCard = {
-              ...cardToMove,
-              position: newPosition,
-              listId,
-            };
-            const next = [...prev, newCard];
-            next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-            return next;
+          if (!cardInSource) {
+            console.log(
+              "handleDrop: Card no longer in source list, likely already moved, skipping"
+            );
+            return;
           }
-        );
+        }
 
-        // Emit cross-list move event
-        emitMoveCard(boardId, sourceCardId, listId, newPosition);
-      } else {
-        // Handle same-list reorder - match the visual positioning logic
-        console.log("Same-list reorder:", {
+        console.log("handleDrop called:", {
           sourceCardId,
           targetCardId,
           edge,
-          newPosition,
-          isCrossListMove: false,
+          sourceListId,
+          currentListId: listId,
           timestamp: Date.now(),
         });
 
-        queryClient.setQueryData<CardDto[] | undefined>(
-          boardKeys.cards(boardId, listId),
-          (prev) => {
-            if (!prev) return prev;
+        isProcessingDropRef.current = true;
 
-            // Use the simple approach that was working - just update position and sort
-            const updated = prev.map((x) =>
-              x.id === sourceCardId ? { ...x, position: newPosition } : x
-            );
-            updated.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+        // Safety timeout to reset processing flag in case of errors
+        timeoutId = setTimeout(() => {
+          isProcessingDropRef.current = false;
+        }, 5000);
 
-            console.log("Same-list reorder details:", {
-              sourceCardId,
-              targetCardId,
-              edge,
-              newPosition,
-              finalCards: updated.map((c, index) => ({
-                index,
-                id: c.id,
-                position: c.position,
-                title: c.title,
-              })),
-            });
+        // Clear preview immediately but keep draggingId for visual positioning
+        setPreview(null);
 
-            return updated;
-          }
+        const current =
+          queryClient.getQueryData<CardDto[] | undefined>(
+            boardKeys.cards(boardId, listId)
+          ) || [];
+
+        const currentSorted = [...current].sort(
+          (a, b) => (a.position ?? 0) - (b.position ?? 0)
         );
 
-        // Emit position update event
-        emitUpdateCard(boardId, sourceCardId, { position: newPosition });
+        console.log(
+          "Current cards before update:",
+          currentSorted.map((c) => ({
+            id: c.id,
+            position: c.position,
+            title: c.title,
+          }))
+        );
+
+        let newPosition: number;
+
+        // Handle empty list drop
+        if (targetCardId === "empty") {
+          newPosition =
+            currentSorted.length === 0
+              ? 1000
+              : (currentSorted[currentSorted.length - 1].position ?? 0) + 1000;
+        } else {
+          // Handle normal card drop
+          const others = currentSorted.filter((x) => x.id !== sourceCardId);
+          const targetIdx = others.findIndex((x) => x.id === targetCardId);
+
+          if (targetIdx === -1) {
+            console.log("Target card not found in others array:", targetCardId);
+            return;
+          }
+
+          const insIdx = edge === "top" ? targetIdx : targetIdx + 1;
+
+          if (others.length === 0) {
+            newPosition = 1000;
+            console.log("Position calculation: empty list, using 1000");
+          } else if (insIdx <= 0) {
+            newPosition = (others[0].position ?? 0) - 1000;
+            console.log("Position calculation: insert at beginning", {
+              firstCardPosition: others[0].position,
+              newPosition,
+            });
+          } else if (insIdx >= others.length) {
+            newPosition = (others[others.length - 1].position ?? 0) + 1000;
+            console.log("Position calculation: insert at end", {
+              lastCardPosition: others[others.length - 1].position,
+              newPosition,
+            });
+          } else {
+            const prev = others[insIdx - 1];
+            const next = others[insIdx];
+            newPosition = ((prev.position ?? 0) + (next.position ?? 0)) / 2;
+            console.log("Position calculation: insert between", {
+              prevCard: {
+                id: prev.id,
+                position: prev.position,
+                title: prev.title,
+              },
+              nextCard: {
+                id: next.id,
+                position: next.position,
+                title: next.title,
+              },
+              newPosition,
+              insIdx,
+              targetIdx,
+              edge,
+            });
+          }
+        }
+
+        // Check if this is a cross-list move
+        const isCrossListMove = sourceListId && sourceListId !== listId;
+
+        if (isCrossListMove) {
+          // Handle cross-list move
+          // First, get the card from the source list
+          const sourceCards =
+            queryClient.getQueryData<CardDto[] | undefined>(
+              boardKeys.cards(boardId, sourceListId)
+            ) || [];
+          const cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+
+          if (!cardToMove) {
+            console.error("Card not found in source list:", sourceCardId);
+            console.log(
+              "Available cards in source list:",
+              sourceCards.map((c) => ({ id: c.id, title: c.title }))
+            );
+
+            // Check if the card is already in the target list (might be a duplicate call)
+            const targetCards =
+              queryClient.getQueryData<CardDto[] | undefined>(
+                boardKeys.cards(boardId, listId)
+              ) || [];
+            const cardInTarget = targetCards.find((c) => c.id === sourceCardId);
+
+            if (cardInTarget) {
+              console.log("Card already exists in target list, skipping move");
+              return;
+            }
+
+            console.log("Card not found in either list, aborting move");
+            return;
+          }
+
+          // Remove card from source list first
+          queryClient.setQueryData<CardDto[] | undefined>(
+            boardKeys.cards(boardId, sourceListId),
+            (prev) => {
+              if (!prev) return prev;
+              const filtered = prev.filter((x) => x.id !== sourceCardId);
+              console.log("Removed card from source list:", {
+                sourceListId,
+                removedCardId: sourceCardId,
+                remainingCards: filtered.length,
+              });
+              return filtered;
+            }
+          );
+
+          // Add card to target list with updated listId and position
+          queryClient.setQueryData<CardDto[] | undefined>(
+            boardKeys.cards(boardId, listId),
+            (prev) => {
+              if (!prev) return prev;
+
+              // Check if card already exists in target list
+              const existingCard = prev.find((c) => c.id === sourceCardId);
+              if (existingCard) {
+                console.log(
+                  "Card already exists in target list, updating position only"
+                );
+                return prev
+                  .map((c) =>
+                    c.id === sourceCardId
+                      ? { ...c, position: newPosition, listId }
+                      : c
+                  )
+                  .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+              }
+
+              const newCard = {
+                ...cardToMove,
+                position: newPosition,
+                listId,
+              };
+              const next = [...prev, newCard];
+              next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+              console.log("Added card to target list:", {
+                targetListId: listId,
+                addedCardId: sourceCardId,
+                newPosition,
+                totalCards: next.length,
+              });
+              return next;
+            }
+          );
+
+          // Emit cross-list move event
+          emitMoveCard(boardId, sourceCardId, listId, newPosition);
+        } else {
+          // Handle same-list reorder - match the visual positioning logic
+          console.log("Same-list reorder:", {
+            sourceCardId,
+            targetCardId,
+            edge,
+            newPosition,
+            isCrossListMove: false,
+            timestamp: Date.now(),
+          });
+
+          queryClient.setQueryData<CardDto[] | undefined>(
+            boardKeys.cards(boardId, listId),
+            (prev) => {
+              if (!prev) return prev;
+
+              // Use the simple approach that was working - just update position and sort
+              const updated = prev.map((x) =>
+                x.id === sourceCardId ? { ...x, position: newPosition } : x
+              );
+              updated.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+              console.log("Same-list reorder details:", {
+                sourceCardId,
+                targetCardId,
+                edge,
+                newPosition,
+                finalCards: updated.map((c, index) => ({
+                  index,
+                  id: c.id,
+                  position: c.position,
+                  title: c.title,
+                })),
+              });
+
+              return updated;
+            }
+          );
+
+          // Emit position update event
+          emitUpdateCard(boardId, sourceCardId, { position: newPosition });
+        }
+      } catch (error) {
+        console.error("Error in handleDrop:", error);
+      } finally {
+        // Clear dragging state after data update
+        setDraggingId(null);
+        isProcessingDropRef.current = false;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
       }
-    } catch (error) {
-      console.error("Error in handleDrop:", error);
-    } finally {
-      // Clear dragging state after data update
-      setDraggingId(null);
-    }
-  };
+    },
+    [boardId, listId, queryClient, setDraggingId]
+  );
 
   // Fallback drop target on the scroll container
   useEffect(() => {
@@ -448,7 +543,7 @@ export function useCardDnd(boardId: string, listId: string) {
         },
       });
       return () => cleanup();
-    }, [beforeCardId, lastCardId, draggingId]);
+    }, [beforeCardId, lastCardId]);
 
     return (
       <div

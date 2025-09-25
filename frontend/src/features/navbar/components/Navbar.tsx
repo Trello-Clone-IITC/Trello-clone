@@ -5,6 +5,7 @@ import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
 import UserMenuPopover from "./UserMenuPopover";
 import { useTheme } from "@/hooks/useTheme";
+import { useAppContext } from "@/hooks/useAppContext";
 const AppSwitcherIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path
@@ -19,10 +20,13 @@ const AppSwitcherIcon = () => (
 export default function Navbar() {
   const { theme } = useTheme();
   const isLight = theme === "light";
+  const { navbarBorderHidden } = useAppContext();
 
   return (
     <nav
-      className={`sticky top-0 z-50 px-2 py-2 flex items-center justify-between h-[47px] border-b-1 ${
+      className={`sticky top-0 z-50 px-2 py-2 flex items-center justify-between h-[47px] ${
+        navbarBorderHidden ? "border-b-0" : "border-b-1"
+      } ${
         isLight ? "bg-white border-[#dcdfe4]" : "bg-[#1f1f21] border-[#434345]"
       }`}
     >

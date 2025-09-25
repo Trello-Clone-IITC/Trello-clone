@@ -3,15 +3,20 @@ import type { ListDto } from "@ronmordo/contracts";
 import BoardLists from "./BoardLists";
 import { List as ListView } from "../../../caspi-playground/List/components";
 import { useListDnd } from "../../../caspi-playground/List/hooks/useListDnd";
+import { useDragScroll } from "../utils/drag-scroll";
 
 export default function ListsRow({
   boardId,
   lists,
   tail,
+  offsetForHeader = false,
+  bottomGap = true,
 }: {
   boardId: string;
   lists: ListDto[];
   tail?: React.ReactNode;
+  offsetForHeader?: boolean; // ADDED THIS CASPI
+  bottomGap?: boolean; // ADDED THIS CASPI
 }) {
   console.log("ListsRow component called with", lists?.length || 0, "lists");
   const {
@@ -35,10 +40,24 @@ export default function ListsRow({
     [lists]
   );
 
+  // Enable drag-to-scroll (ignore interactive elements)
+  useDragScroll(scrollRef as unknown as React.RefObject<HTMLElement>, {
+    blockSelector:
+      'button,a,input,textarea,select,[contenteditable],[draggable="true"],[data-dnd-item],[data-dnd-handle],.dnd-handle',
+  });
+
   return (
     <div
       ref={scrollRef}
-      className={`absolute top-[-2px] right-0 bot-0 left-0 pt-0.5 gap-3 2xl:pb-[105px] xl:pb-[105px] md:pb-[105px] pb-[105px] board-scrollbar overflow-x-auto overflow-y-hidden mb-0 flex px-1.5 list-none ${
+      className={`absolute ${
+        offsetForHeader ? "top-0 pt-2" : "top-[-2px] pt-0.5"
+      } right-0 ${
+        bottomGap ? "bottom-8" : "bottom-0"
+      } left-0 gap-3 select-none touch-pan-y ${
+        bottomGap
+          ? "2xl:pb-[105px] xl:pb-[105px] md:pb-[105px] pb-[105px]"
+          : "pb-2"
+      } board-scrollbar overflow-x-auto overflow-y-hidden mb-0 flex px-1.5 list-none ${
         isAutoScrolling ? "auto-scrolling" : ""
       }`}
       style={{
@@ -55,98 +74,7 @@ export default function ListsRow({
         const items = sortedLists || [];
         const laneWidth = 272; // match list width
 
-        // Implement optimistic reordering like pragmatic-board - target swaps with dragged
-        let displayItems = [...items];
-
-        // Keep DOM order unchanged during drag for proper drop detection
-        // Show visual feedback with shadow placement like pragmatic-board
-        displayItems = items;
-
-        // Calculate visual positions for optimistic updates
-        const visualPositions: { [key: string]: { transform: string } } = {};
-
-        if (draggingId && preview?.targetId) {
-          const draggedIndex = items.findIndex(
-            (item) => item.id === draggingId
-          );
-          const targetIndex = items.findIndex(
-            (item) => item.id === preview.targetId
-          );
-
-          if (
-            draggedIndex !== -1 &&
-            targetIndex !== -1 &&
-            draggedIndex !== targetIndex
-          ) {
-            const draggedItem = items[draggedIndex];
-
-            // Calculate the final insert position based on edge
-            let finalInsertIndex: number;
-            if (preview.edge === "left") {
-              // Insert before the target
-              finalInsertIndex =
-                draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
-            } else {
-              // Insert after the target
-              finalInsertIndex =
-                draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
-            }
-
-            console.log("Visual positioning:", {
-              draggedIndex,
-              targetIndex,
-              edge: preview.edge,
-              finalInsertIndex,
-              draggedId: draggedItem.id,
-              targetId: preview.targetId,
-            });
-
-            // Calculate visual positions for all items
-            items.forEach((item, currentIndex) => {
-              if (item.id === draggingId) {
-                // Dragged item goes to final position
-                const finalPosition = finalInsertIndex * laneWidth;
-                const currentPosition = currentIndex * laneWidth;
-                const offset = finalPosition - currentPosition;
-
-                visualPositions[item.id] = {
-                  transform: `translateX(${offset}px)`,
-                };
-              } else {
-                // Other items shift to make space
-                let newIndex = currentIndex;
-
-                if (draggedIndex < finalInsertIndex) {
-                  // Moving right: items between dragged and insert position shift left
-                  if (
-                    currentIndex > draggedIndex &&
-                    currentIndex <= finalInsertIndex
-                  ) {
-                    newIndex = currentIndex - 1;
-                  }
-                } else {
-                  // Moving left: items between insert position and dragged shift right
-                  if (
-                    currentIndex >= finalInsertIndex &&
-                    currentIndex < draggedIndex
-                  ) {
-                    newIndex = currentIndex + 1;
-                  }
-                }
-
-                const finalPosition = newIndex * laneWidth;
-                const currentPosition = currentIndex * laneWidth;
-                const offset = finalPosition - currentPosition;
-
-                if (offset !== 0) {
-                  visualPositions[item.id] = {
-                    transform: `translateX(${offset}px)`,
-                  };
-                }
-              }
-            });
-          }
-        }
+        const displayItems = items;
 
         // Only log when dragging to reduce spam
         if (draggingId) {
@@ -169,26 +97,8 @@ export default function ListsRow({
 
         // Render the lists - no insertion needed for swapping
         displayItems.forEach((l) => {
-          // Calculate visual styling with smooth transitions like pragmatic-board
-          let visualStyle: React.CSSProperties = {
-            transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          };
-
-          // Apply visual positioning for optimistic updates
-          if (visualPositions[l.id]) {
-            visualStyle = {
-              ...visualStyle,
-              ...visualPositions[l.id],
-            };
-          }
-
-          if (draggingId && l.id === draggingId) {
-            // Dragged list should be hidden (it's following the cursor)
-            visualStyle = {
-              ...visualStyle,
-              opacity: 0,
-            };
-          }
+          const visualStyle: React.CSSProperties | undefined =
+            draggingId && l.id === draggingId ? { opacity: 0 } : undefined;
 
           children.push(
             <div
@@ -292,7 +202,7 @@ export default function ListsRow({
             }
 
             // Calculate the position for the drop shadow at the insertion point
-            let shadowPosition = insertIndex * laneWidth;
+            const shadowPosition = insertIndex * laneWidth;
 
             // Find the dragged item to show in the shadow
             const draggedItem = items.find((x) => x.id === draggingId);

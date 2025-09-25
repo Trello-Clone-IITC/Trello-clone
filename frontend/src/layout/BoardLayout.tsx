@@ -13,7 +13,7 @@ export function BoardLayout() {
       {/* <BoardHeader boardName={boardData.name} members={members} /> */}
 
       {/* Main content area - Outlet for board content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden min-h-0 min-w-0">
         <Outlet />
       </main>
       {/* BOARDFOOTER */}

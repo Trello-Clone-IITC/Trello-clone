@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 // import CardModal from "./components/card/components/CardModal";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
@@ -8,9 +8,16 @@ import { useBoardRealtime } from "@/features/caspi-playground/board/hooks";
 import { useLists } from "@/features/caspi-playground/List/hooks/useListQueries";
 import { ListsRow } from "@/features/caspi-playground/List/components";
 import { emitCreateList } from "@/features/caspi-playground/board/socket";
-import BoardFooter from "./BoardFooter";
+import BoardHeader from "./BoardHeader";
+import { cn } from "@/lib/utils";
 
-const Board = ({ board }: { board: BoardDto }) => {
+interface BoardProps {
+  board: BoardDto;
+  backgroundStyle?: CSSProperties;
+  bottomGap?: boolean;
+}
+
+const Board = ({ board, backgroundStyle, bottomGap = false }: BoardProps) => {
   // const { boardId } = useParams<{ boardId: string }>();
 
   const boardData: BoardDto = board;
@@ -126,9 +133,28 @@ const Board = ({ board }: { board: BoardDto }) => {
   );
 
   return (
-    <div className="flex-1 mt-3 relative">
-      <ListsRow boardId={board.id} lists={lists || []} tail={addListButton} />
-      <BoardFooter activeTab="board" />
+    <div
+      className={cn(
+        "flex-1 relative h-full min-w-0 min-h-0",
+        "overflow-hidden"
+      )}
+      style={backgroundStyle}
+    >
+      {/* Board header lives inside the same visual container so it moves with the board */}
+      <div className="sticky top-0 left-0 right-0 z-10">
+        <BoardHeader
+          boardName={board.name}
+          boardId={board.id}
+          background={board.background}
+        />
+      </div>
+      <ListsRow
+        boardId={board.id}
+        lists={lists || []}
+        tail={addListButton}
+        offsetForHeader
+        bottomGap={bottomGap}
+      />
     </div>
   );
 };
