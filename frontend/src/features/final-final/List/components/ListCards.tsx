@@ -72,15 +72,30 @@ const ListCards = ({
   boardId: string;
   listId: string;
 }) => {
-  const { draggingId, preview, handleDrop } = useCardDnd(boardId, listId);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const {
+    draggingId,
+    setDraggingId,
+    preview,
+    setPreview,
+    scrollRef,
+    handleDrop,
+    isAutoScrolling,
+  } = useCardDnd(boardId, listId);
+  // Use the hook's scrollRef so fallback drop targets work correctly
+
+  // Use a stable, de-duplicated, position-sorted array for all DnD math
+  const items = useMemo(() => {
+    const unique = (cards || []).filter(
+      (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx
+    );
+    return unique.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  }, [cards]);
 
   // Calculate visual positions for smooth drag preview
   const visualPositions = useMemo(() => {
     const positions: Record<string, React.CSSProperties> = {};
 
     if (draggingId && preview?.targetId) {
-      const items = cards;
       const draggedIndex = items.findIndex((item) => item.id === draggingId);
       const targetIndex = items.findIndex(
         (item) => item.id === preview.targetId
@@ -116,7 +131,7 @@ const ListCards = ({
           })),
         });
 
-        // Calculate visual positions for all items
+        // Calculate visual positions for all items (same-list)
         items.forEach((item, currentIndex) => {
           if (item.id === draggingId) {
             // Dragged item goes to final position
@@ -162,6 +177,20 @@ const ListCards = ({
             }
           }
         });
+      } else if (draggedIndex === -1 && targetIndex !== -1) {
+        // Cross-list hover: virtually insert the dragged card into this list
+        const cardHeight = 60;
+        const finalInsertIndex =
+          preview.edge === "top" ? targetIndex : targetIndex + 1;
+        items.forEach((item, currentIndex) => {
+          // All items at or after the insertion index shift down by one slot
+          if (currentIndex >= finalInsertIndex) {
+            positions[item.id] = {
+              transform: `translateY(${cardHeight}px)`,
+              transition: "transform 0.2s ease-out",
+            };
+          }
+        });
       }
     }
 
@@ -171,16 +200,70 @@ const ListCards = ({
   return (
     <div
       ref={scrollRef}
-      className="flex z-1 flex-1 min-h-0 flex-col my-0 mx-1 p-1 overflow-x-hidden overflow-y-auto list-none gap-2 list-scrollbar"
+      className={`flex z-1 flex-1 min-h-0 flex-col my-0 mx-1 p-1 overflow-x-hidden overflow-y-auto list-none gap-2 list-scrollbar ${
+        isAutoScrolling ? "auto-scrolling" : ""
+      }`}
       data-testid="list-cards"
+      style={{
+        scrollBehavior: "smooth",
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(255, 255, 255, 0.3) transparent",
+        willChange: "scroll-position",
+        transform: "translateZ(0)",
+      }}
     >
       {(() => {
         const children: React.ReactNode[] = [];
+        const cardHeight = 60;
 
-        // Render cards with visual positioning
-        cards.forEach((card) => {
+        // Compute in-flow placeholder index based on preview
+        let placeholderIndex: number | null = null;
+        if (draggingId && preview?.targetId) {
+          const draggedIndex = items.findIndex((it) => it.id === draggingId);
+          const targetIndex = items.findIndex(
+            (it) => it.id === preview.targetId
+          );
+          if (targetIndex !== -1) {
+            let baseIndex =
+              preview.edge === "top" ? targetIndex : targetIndex + 1;
+            // Adjust for same-list downward moves (dragged removed before insert)
+            if (draggedIndex !== -1 && draggedIndex < baseIndex) {
+              baseIndex -= 1;
+            }
+            placeholderIndex = Math.max(0, Math.min(items.length, baseIndex));
+          }
+        }
+
+        // Render cards with in-flow placeholder and skip dragged in-flow
+        items.forEach((card, index) => {
+          if (placeholderIndex !== null && index === placeholderIndex) {
+            children.push(
+              <div
+                key={`placeholder-${index}`}
+                style={{
+                  height: cardHeight,
+                  borderRadius: 8,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                  margin: "2px 0",
+                  flexShrink: 0,
+                }}
+              />
+            );
+          }
+
           const isDragging = card.id === draggingId;
-          const visualStyle = visualPositions[card.id] || {};
+          if (isDragging) return; // ghost handles the dragged card
+
+          let visualStyle: React.CSSProperties = {
+            transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          };
+          if (placeholderIndex === null && visualPositions[card.id]) {
+            visualStyle = {
+              ...visualStyle,
+              ...visualPositions[card.id],
+            };
+          }
 
           children.push(
             <div
@@ -194,11 +277,10 @@ const ListCards = ({
                   card={card}
                   boardId={boardId}
                   listId={listId}
-                  onDragStart={(cardId) => {
-                    // Handle drag start if needed
-                  }}
-                  onDragEnd={(cardId) => {
-                    // Handle drag end if needed
+                  onDragStart={(id) => setDraggingId(id)}
+                  onDragEnd={() => {
+                    setDraggingId(null);
+                    setPreview(null);
                   }}
                   onPreview={({
                     sourceCardId,
@@ -206,7 +288,17 @@ const ListCards = ({
                     edge,
                     sourceListId,
                   }) => {
-                    // This will be handled by the useCardDnd hook
+                    if (!draggingId && typeof sourceCardId === "string")
+                      setDraggingId(sourceCardId);
+                    if (sourceCardId && targetCardId) {
+                      setPreview({
+                        sourceId: sourceCardId,
+                        targetId: targetCardId,
+                        edge,
+                      });
+                    } else {
+                      setPreview(null);
+                    }
                   }}
                   onDrop={({
                     sourceCardId,
@@ -227,8 +319,26 @@ const ListCards = ({
           );
         });
 
+        if (placeholderIndex !== null && placeholderIndex === items.length) {
+          children.push(
+            <div
+              key={`placeholder-end`}
+              style={{
+                height: cardHeight,
+                borderRadius: 8,
+                backgroundColor: "rgba(0,0,0,0.3)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                margin: "2px 0",
+                flexShrink: 0,
+              }}
+            />
+          );
+        }
+
+        // Absolute shadow no longer needed; in-flow placeholder above handles spacing
+
         // Add empty list drop zone only if no cards
-        if (cards.length === 0) {
+        if (items.length === 0) {
           children.push(
             <EmptyListDropZone
               key="empty-drop-zone"

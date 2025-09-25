@@ -9,7 +9,13 @@ import { useRef, useEffect, useState } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useCardDnd } from "../hooks/useCardDnd";
 
-const List = ({ list }: { list: ListDto }) => {
+const List = ({
+  list,
+  hideCards = false,
+}: {
+  list: ListDto;
+  hideCards?: boolean;
+}) => {
   const { isEditing, startEditing, stopEditing, updateTitle } = useList(
     list.id,
     list.boardId
@@ -65,17 +71,15 @@ const List = ({ list }: { list: ListDto }) => {
   // Caspi Changed
   return (
     <li
-      className={`flex-shrink-0 self-start py-0 px-1.5 h-fit whitespace-nowrap bg-[#101204] rounded-[12px]`}
+      ref={listRef}
+      className={`flex-shrink-0 self-start py-0 px-1.5 h-fit whitespace-nowrap bg-[#101204] rounded-[12px] transition-all duration-200 ${
+        isCardDragOver ? "ring-inset ring-2 ring-blue-400" : ""
+      }`}
       data-testid="list-wrapper"
       data-list-id={list.id}
     >
       <div
-        ref={listRef}
-        className={`flex flex-col relative self-start justify-between w-[272px]  max-h-[75vh] pb-1 rounded-[12px] shadow-sm whitespace-normal scroll-m-[8px] ${
-          isCardDragOver
-            ? "bg-blue-500/20 border-2 border-blue-400 border-dashed"
-            : ""
-        }`}
+        className={`flex flex-col relative self-start justify-between w-[272px]  max-h-[75vh] pb-1 rounded-[12px] shadow-sm whitespace-normal scroll-m-[8px] transition-all duration-200`}
         data-testid="list"
       >
         <ListHeader
@@ -102,6 +106,10 @@ const List = ({ list }: { list: ListDto }) => {
             <div className="text-red-400 text-sm py-2">
               Failed to load cards
             </div>
+          </div>
+        ) : hideCards ? (
+          <div className="flex-1 min-h-[100px] flex items-center justify-center text-gray-500 text-sm">
+            List (ghost)
           </div>
         ) : !cards || cards.length === 0 ? (
           <ol

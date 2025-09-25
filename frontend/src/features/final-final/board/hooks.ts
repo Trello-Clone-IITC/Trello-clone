@@ -152,7 +152,15 @@ export const useBoardRealtime = (boardId: string) => {
       // Add to new list (card.listId is the target)
       queryClient.setQueryData<CardDto[] | undefined>(
         boardKeys.cards(boardId, card.listId),
-        (prev) => (prev ? [...prev, card] : [card])
+        (prev) => {
+          const existing = prev ?? [];
+          // Remove any existing instance of this card id to avoid duplicates
+          const without = existing.filter((c) => c.id !== card.id);
+          const next = [...without, card];
+          // Keep a stable order by position when available
+          next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+          return next;
+        }
       );
     },
   });

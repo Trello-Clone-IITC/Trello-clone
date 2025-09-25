@@ -8,9 +8,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/hooks/useTheme";
+import { useUpdateUserTheme } from "@/features/auth/hooks/useUpdateUserTheme";
 
 export function ModeToggle() {
   const { setTheme } = useTheme();
+  const { mutateAsync: updateUserTheme } = useUpdateUserTheme();
+
+  const handleChange = async (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+    try {
+      await updateUserTheme(newTheme);
+    } catch (e) {
+      // Non-blocking: ignore server error; local setting still applies
+      // Optionally add a toast here if desired
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -22,13 +34,13 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => handleChange("light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => handleChange("dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => handleChange("system")}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

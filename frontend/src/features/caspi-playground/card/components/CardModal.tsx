@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { CardDto, LabelDto } from "@ronmordo/contracts";
 import {
   useCardAttachments,
@@ -19,6 +19,7 @@ import { TitleHeader } from "./TitleHeader";
 import { MainContent } from "./MainContent";
 import { CommentsSidebar } from "./CommentsSidebar";
 import { CoverPopover } from "./CoverPopover";
+import { isHexColor } from "../hooks/useCardCover";
 
 export default function CardModal({
   open,
@@ -73,11 +74,33 @@ export default function CardModal({
         showCloseButton={false}
       >
         {/* Cover div */}
-        <div className="bg-[#216e4e] h-[116px] rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative">
+        <div
+          className={`rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative ${
+            card.coverImageUrl
+              ? "h-[116px]"
+              : "bg-transparent px-4 py-4 min-h-[64px]"
+          }`}
+          style={
+            card.coverImageUrl
+              ? isHexColor(card.coverImageUrl)
+                ? { backgroundColor: card.coverImageUrl }
+                : {
+                    backgroundImage: `url("${card.coverImageUrl}")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+              : undefined
+          }
+        >
           {/* Header actions in cover */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {/* Cover menu */}
-            <CoverPopover>
+            <CoverPopover
+              boardId={boardId}
+              listId={card.listId}
+              cardId={card.id}
+              value={card.coverImageUrl ?? null}
+            >
               <Button
                 variant="ghost"
                 size="icon"

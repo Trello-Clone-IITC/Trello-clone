@@ -7,14 +7,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAppContext } from "@/hooks/useAppContext";
 import { CreateBoardForm } from "@/features/final-final/board/components/CreateBoardForm";
 import { cn } from "@/lib/utils";
 
 export default function CreateButton() {
   const { theme } = useTheme();
+  const location = useLocation();
+  const { navbarBorderHidden } = useAppContext();
   const isLight = theme === "light";
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
+
+  // Check if we're in board view (handles both /board/ and /b/ routes)
+  const isBoardView =
+    location.pathname.startsWith("/board/") ||
+    location.pathname.startsWith("/b/");
+
+  // When only board is active (inbox closed), apply board styling
+  const isBoardOnly = isBoardView && !navbarBorderHidden;
 
   const handleCreateBoardClick = () => {
     setShowCreateBoard(true);
@@ -37,6 +49,8 @@ export default function CreateButton() {
             "flex rounded items-center gap-2 px-3 py-2 h-8 text-sm font-medium border-0 cursor-pointer",
             isOpen
               ? "bg-[#cfe1fd] text-[#1d2125]"
+              : isBoardOnly && isLight
+              ? "bg-[#3b3d41] text-white hover:bg-[#626468]"
               : isLight
               ? "bg-[#0c66e4] text-white hover:bg-[#0055cc]"
               : "bg-[#579dff] text-[#1f1f21] hover:bg-[#85b8ff]"

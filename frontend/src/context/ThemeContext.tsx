@@ -14,6 +14,8 @@ type AppProviderState = {
   labelsExpanded: boolean;
   setLabelsExpanded: (expanded: boolean) => void;
   toggleLabelsExpanded: () => void;
+  navbarBorderHidden: boolean;
+  setNavbarBorderHidden: (hidden: boolean) => void;
 };
 
 const initialState: AppProviderState = {
@@ -22,6 +24,8 @@ const initialState: AppProviderState = {
   labelsExpanded: false,
   setLabelsExpanded: () => null,
   toggleLabelsExpanded: () => null,
+  navbarBorderHidden: false,
+  setNavbarBorderHidden: () => null,
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -37,6 +41,7 @@ export function AppProvider({
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
   const [labelsExpanded, setLabelsExpanded] = useState(false);
+  const [navbarBorderHidden, setNavbarBorderHidden] = useState(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -69,6 +74,8 @@ export function AppProvider({
     labelsExpanded,
     setLabelsExpanded,
     toggleLabelsExpanded,
+    navbarBorderHidden,
+    setNavbarBorderHidden,
   };
 
   return (

@@ -4,6 +4,7 @@ import {
 } from "@/shared/constants";
 import type { CardDto } from "@ronmordo/contracts";
 import { CardStats } from "./CardStats";
+import { isHexColor } from "../hooks/useCardCover";
 import { useState, useEffect, useRef } from "react";
 import CardModal from "./CardModal";
 import { Circle, CheckCircle2 } from "lucide-react";
@@ -205,7 +206,21 @@ const Card = ({
           marginBottom: "2px",
         }}
       >
-        <div className="bg-[#216e4e] min-h-9 overflow-hidden rounded-t-[8px]"></div>
+        {card.coverImageUrl ? (
+          isHexColor(card.coverImageUrl) ? (
+            <div
+              className="min-h-9 overflow-hidden rounded-t-[8px]"
+              style={{ backgroundColor: card.coverImageUrl }}
+            />
+          ) : (
+            <div
+              className="min-h-9 overflow-hidden rounded-t-[8px] bg-center bg-cover"
+              style={{ backgroundImage: `url("${card.coverImageUrl}")` }}
+            />
+          )
+        ) : (
+          <div className="min-h-9 overflow-hidden rounded-t-[8px]"></div>
+        )}
         <div className="z-10 min-h-[24px] px-3 pt-2 pb-1">
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1">

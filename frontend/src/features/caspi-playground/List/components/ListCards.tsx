@@ -90,13 +90,16 @@ const ListCards = ({
     isAutoScrolling,
   } = useCardDnd(boardId, listId);
 
-  const sortedCards = useMemo(
-    () =>
-      (cards ? [...cards] : []).sort(
-        (a, b) => (a.position ?? 0) - (b.position ?? 0)
-      ),
-    [cards]
-  );
+  const sortedCards = useMemo(() => {
+    if (!cards) return [];
+
+    // Filter out any cards that might be duplicated during drag operations
+    const uniqueCards = cards.filter(
+      (card, index, arr) => arr.findIndex((c) => c.id === card.id) === index
+    );
+
+    return uniqueCards.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  }, [cards]);
 
   return (
     <div

@@ -10,7 +10,11 @@ export const useMe = () => {
     queryKey: ["me"],
     queryFn: async () => {
       const user = await getMe();
-      setTheme(user.theme);
+      // Prefer an explicit local preference if present; otherwise hydrate from server
+      const storedTheme = localStorage.getItem("vite-ui-theme");
+      if (!storedTheme) {
+        setTheme(user.theme);
+      }
       return user;
     },
     retry: 3,

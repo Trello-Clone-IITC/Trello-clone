@@ -5,6 +5,8 @@ import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
 import UserMenuPopover from "./UserMenuPopover";
 import { useTheme } from "@/hooks/useTheme";
+import { useAppContext } from "@/hooks/useAppContext";
+import { useLocation } from "react-router-dom";
 const AppSwitcherIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path
@@ -18,21 +20,49 @@ const AppSwitcherIcon = () => (
 
 export default function Navbar() {
   const { theme } = useTheme();
+  const location = useLocation();
   const isLight = theme === "light";
+  const { navbarBorderHidden } = useAppContext();
+
+  // Check if we're in board view (handles both /board/ and /b/ routes)
+  const isBoardView =
+    location.pathname.startsWith("/board/") ||
+    location.pathname.startsWith("/b/");
+
+  // When only board is active (inbox closed), navbar gets board styling
+  const isBoardOnly = isBoardView && !navbarBorderHidden;
 
   return (
     <nav
-      className={`sticky top-0 z-50 px-2 py-2 flex items-center justify-between h-[47px] border-b-1 ${
-        isLight ? "bg-white border-[#dcdfe4]" : "bg-[#1f1f21] border-[#434345]"
+      className={`sticky top-0 z-50 px-2 py-2 flex items-center justify-between h-[47px] ${
+        navbarBorderHidden ? "border-b-0" : "border-b-1"
       }`}
+      style={{
+        backgroundColor: isBoardOnly
+          ? isLight
+            ? "#1f1f21"
+            : "#0a0d12"
+          : isLight
+          ? "white"
+          : "#1f1f21",
+        borderColor: isBoardOnly
+          ? isLight
+            ? "#1f1f21"
+            : "#0a0d12"
+          : isLight
+          ? "#dcdfe4"
+          : "#434345",
+      }}
     >
       {/* Left Section */}
-      <div className="flex items-center gap-1 md:gap-1">
+      <div className="flex items-center">
         {/* App Switcher */}
         <Button
           size="icon"
           className={`h-8 w-8 bg-transparent shadow-none cursor-pointer  ${
-            isLight
+            isBoardOnly && isLight
+              ? "text-white hover:bg-[#37373a]"
+              : isLight
               ? "text-[#505258] hover:bg-[#dddedd]"
               : "text-[#a9abaf] hover:bg-[#37373a]"
           }`}
