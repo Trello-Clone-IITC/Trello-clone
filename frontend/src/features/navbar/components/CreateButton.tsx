@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
-import { CreateBoardForm } from "@/features/board/components/CreateBoardForm";
+import { CreateBoardForm } from "@/features/final-final/board/components/CreateBoardForm";
 import { cn } from "@/lib/utils";
 
 export default function CreateButton() {

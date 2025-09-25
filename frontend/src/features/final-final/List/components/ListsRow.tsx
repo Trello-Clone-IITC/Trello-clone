@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { ListDto } from "@ronmordo/contracts";
 import BoardLists from "./BoardLists";
 import ListView from "./List";

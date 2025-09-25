@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
-import { CreateBoardPopover } from "@/features/board/components/CreateBoardPopover";
+import { CreateBoardPopover } from "@/features/final-final/board/components/CreateBoardPopover";
 
 interface CreateNewBoardProps {
   className?: string;
