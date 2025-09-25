@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { ListDto } from "@ronmordo/contracts";
 import BoardLists from "./BoardLists";
 import ListView from "./List";
 import { useListDnd } from "../hooks/useListDnd";
+import { useDragScroll } from "../utils/drag-scroll";
 
 export default function ListsRow({
   boardId,
@@ -34,12 +35,19 @@ export default function ListsRow({
       ),
     [lists]
   );
+  //----------------------------------------------------------dragging sideways scroll---------------------------------
+useDragScroll(scrollRef as React.RefObject<HTMLElement>, {
+  blockSelector:
+    'button,a,input,textarea,select,[contenteditable],[draggable="true"],[data-dnd-item],[data-dnd-handle],.dnd-handle',
+});
+
+
 
   return (
       <div
   ref={scrollRef}
   className={`absolute bottom-[47px] right-0 left-0 top-0 
-              flex gap-3 overflow-x-auto overflow-y-hidden px-1.5 list-none
+              flex gap-3 overflow-x-auto overflow-y-hidden px-1.5 list-none select-none touch-pan-y 
               ${isAutoScrolling ? "auto-scrolling" : ""}`}
   style={{
     scrollBehavior: "smooth",

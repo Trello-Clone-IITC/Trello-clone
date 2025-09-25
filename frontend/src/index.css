@@ -29,6 +29,8 @@
   background-color: rgba(0, 123, 255, 0.1);
   border: 2px dashed rgba(0, 123, 255, 0.3);
 }
+.dragging { cursor: grabbing; cursor: auto; }
+
 
 @custom-variant dark (&:is(.dark *));
 
