@@ -66,15 +66,19 @@ export default function CardModal({
     card.id,
     enableExtras
   );
-  const cover = card.coverImageUrl ?? "#216e4e";
+  const cover = card.coverImageUrl?.trim() ?? null;
+  const hasCover = Boolean(cover);
   const isHexColor = (val: string) => /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(val);
-  const coverStyle: CSSProperties = isHexColor(cover)
-    ? { backgroundColor: cover }
-    : {
-        backgroundImage: `url("${cover}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      };
+  const coverStyle: CSSProperties | undefined =
+    hasCover && cover
+      ? isHexColor(cover)
+        ? { backgroundColor: cover }
+        : {
+            backgroundImage: `url("${cover}")`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }
+      : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -84,11 +88,17 @@ export default function CardModal({
       >
         {/* Cover div */}
         <div
-          className="h-[116px] rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative"
+          className={`rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative ${
+            hasCover ? "h-[116px]" : "bg-transparent px-4 py-4"
+          }`}
           style={coverStyle}
         >
           {/* Header actions in cover */}
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div
+            className={`flex items-center gap-2 ${
+              hasCover ? "absolute top-4 right-4" : "justify-end"
+            }`}
+          >
             {/* Cover menu */}
             <CoverPopover
               boardId={boardId}
