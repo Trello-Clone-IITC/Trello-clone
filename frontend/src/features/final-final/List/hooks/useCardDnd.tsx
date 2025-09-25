@@ -173,7 +173,7 @@ export const useCardDnd = (boardId: string, listId: string) => {
         );
 
         // Emit cross-list move event
-        emitMoveCard(boardId, sourceCardId, listId, newPosition);
+        emitMoveCard(boardId,sourceListId, sourceCardId, listId, newPosition);
       } else {
         // Handle same-list reorder - match the visual positioning logic
         console.log("Same-list reorder:", {
