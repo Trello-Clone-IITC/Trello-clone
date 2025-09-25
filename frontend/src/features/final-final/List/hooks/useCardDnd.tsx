@@ -10,6 +10,9 @@ import {
 
 type Edge = "top" | "bottom";
 
+type DndSource = { data?: { type?: string; cardId?: string } };
+type DndLocation = { current?: { input?: { clientY?: number } } };
+
 export function useCardDnd(boardId: string, listId: string) {
   const queryClient = useQueryClient();
 
@@ -133,7 +136,8 @@ export function useCardDnd(boardId: string, listId: string) {
         if (isScrolling) {
           stopScrolling();
         }
-      }, 200);
+        setPreview(null);
+      }, 120);
     };
 
     window.addEventListener("mousemove", onMove);
@@ -189,23 +193,6 @@ export function useCardDnd(boardId: string, listId: string) {
           }
         }
 
-<<<<<<< HEAD
-        console.log("handleDrop called:", {
-=======
-        // Emit cross-list move event
-        emitMoveCard(boardId,sourceListId, sourceCardId, listId, newPosition);
-      } else {
-        // Handle same-list reorder - match the visual positioning logic
-        console.log("Same-list reorder:", {
->>>>>>> origin/main
-          sourceCardId,
-          targetCardId,
-          edge,
-          sourceListId,
-          currentListId: listId,
-          timestamp: Date.now(),
-        });
-
         isProcessingDropRef.current = true;
 
         // Safety timeout to reset processing flag in case of errors
@@ -213,9 +200,7 @@ export function useCardDnd(boardId: string, listId: string) {
           isProcessingDropRef.current = false;
         }, 5000);
 
-        // Default: keep preview briefly to allow a smooth settle animation on cross-list drop
-        const CLEAR_DELAY_MS = 180;
-        let clearPreviewTimer: number | null = null;
+        // Keep preview until we decide to clear in finally (immediate vs delayed)
 
         const current =
           queryClient.getQueryData<CardDto[] | undefined>(
@@ -382,7 +367,13 @@ export function useCardDnd(boardId: string, listId: string) {
           );
 
           // Emit cross-list move event
-          emitMoveCard(boardId, sourceCardId, listId, newPosition);
+          emitMoveCard(
+            boardId,
+            sourceListId,
+            sourceCardId,
+            listId,
+            newPosition
+          );
         } else {
           // Handle same-list reorder - match the visual positioning logic
           console.log("Same-list reorder:", {
@@ -429,28 +420,15 @@ export function useCardDnd(boardId: string, listId: string) {
         console.error("Error in handleDrop:", error);
       } finally {
         // Clear state: immediate for same-list, slight delay for cross-list to show settle animation
-        const isCrossListMove =
-          preview?.sourceId && preview?.targetId ? undefined : undefined; // computed earlier in the try path; fallback immediate
-
-        if (typeof (isCrossListMove as any) === "boolean") {
-          // no-op, kept for type satisfaction
-        }
-
-        // If we last computed cross-list in the try block, we already emitted events.
-        // Use sourceListId param to decide here as well:
-        const wasCrossList =
-          typeof (arguments as any)[0]?.sourceListId === "string" &&
-          (arguments as any)[0]?.sourceListId !== listId;
+        const wasCrossList = !!(sourceListId && sourceListId !== listId);
 
         if (wasCrossList) {
-          // Cross-list: small delay to allow visual settle
           const delay = 180;
-          window.setTimeout(() => setDraggingId(null), delay);
-          if (clearPreviewTimer === null) {
-            window.setTimeout(() => setPreview(null), delay);
-          }
+          window.setTimeout(() => {
+            setDraggingId(null);
+            setPreview(null);
+          }, delay);
         } else {
-          // Same-list: clear immediately so no placeholder gap remains
           setPreview(null);
           setDraggingId(null);
         }
@@ -471,7 +449,13 @@ export function useCardDnd(boardId: string, listId: string) {
       element: el,
       getData: () => ({ type: "cards-canvas" }),
       canDrop: ({ source }) => source.data?.type === "card",
-      onDragEnter: ({ source, location }) => {
+      onDragEnter: ({
+        source,
+        location,
+      }: {
+        source: DndSource;
+        location: DndLocation;
+      }) => {
         try {
           const srcId =
             typeof source.data?.cardId === "string"
@@ -489,26 +473,44 @@ export function useCardDnd(boardId: string, listId: string) {
           );
 
           const rect = el.getBoundingClientRect();
-          const mouseY = (location as any)?.current?.input?.clientY ?? 0;
+          const mouseY = location?.current?.input?.clientY ?? 0;
           const topZone = rect.top + 40;
           const bottomZone = rect.bottom - 40;
 
-          if (mouseY <= topZone) {
-            setPreview({
-              sourceId: srcId!,
-              targetId: sorted[0].id,
-              edge: "top",
-            });
-          } else if (mouseY >= bottomZone) {
-            setPreview({
-              sourceId: srcId!,
-              targetId: sorted[sorted.length - 1].id,
-              edge: "bottom",
-            });
+          const desired =
+            mouseY <= topZone
+              ? {
+                  sourceId: srcId!,
+                  targetId: sorted[0].id,
+                  edge: "top" as const,
+                }
+              : mouseY >= bottomZone
+              ? {
+                  sourceId: srcId!,
+                  targetId: sorted[sorted.length - 1].id,
+                  edge: "bottom" as const,
+                }
+              : null;
+
+          if (
+            desired &&
+            (preview?.sourceId !== desired.sourceId ||
+              preview?.targetId !== desired.targetId ||
+              preview?.edge !== desired.edge)
+          ) {
+            setPreview(desired);
           }
-        } catch {}
+        } catch {
+          // ignore
+        }
       },
-      onDrag: ({ source, location }) => {
+      onDrag: ({
+        source,
+        location,
+      }: {
+        source: DndSource;
+        location: DndLocation;
+      }) => {
         try {
           const srcId =
             typeof source.data?.cardId === "string"
@@ -526,24 +528,39 @@ export function useCardDnd(boardId: string, listId: string) {
           );
 
           const rect = el.getBoundingClientRect();
-          const mouseY = (location as any)?.current?.input?.clientY ?? 0;
+          const mouseY = location?.current?.input?.clientY ?? 0;
           const topZone = rect.top + 40;
           const bottomZone = rect.bottom - 40;
 
-          if (mouseY <= topZone) {
-            setPreview({
-              sourceId: srcId!,
-              targetId: sorted[0].id,
-              edge: "top",
-            });
-          } else if (mouseY >= bottomZone) {
-            setPreview({
-              sourceId: srcId!,
-              targetId: sorted[sorted.length - 1].id,
-              edge: "bottom",
-            });
+          const desired =
+            mouseY <= topZone
+              ? {
+                  sourceId: srcId!,
+                  targetId: sorted[0].id,
+                  edge: "top" as const,
+                }
+              : mouseY >= bottomZone
+              ? {
+                  sourceId: srcId!,
+                  targetId: sorted[sorted.length - 1].id,
+                  edge: "bottom" as const,
+                }
+              : null;
+
+          if (
+            desired &&
+            (preview?.sourceId !== desired.sourceId ||
+              preview?.targetId !== desired.targetId ||
+              preview?.edge !== desired.edge)
+          ) {
+            setPreview(desired);
           }
-        } catch {}
+        } catch {
+          // ignore
+        }
+      },
+      onDragLeave: () => {
+        setPreview(null);
       },
       onDrop: ({ location }) => {
         try {
@@ -571,7 +588,7 @@ export function useCardDnd(boardId: string, listId: string) {
       },
     });
     return () => cleanup();
-  }, [preview, handleDrop]);
+  }, [preview, handleDrop, boardId, listId, queryClient, draggingId]);
 
   // Lane: a real drop target that maps to before/after a specific card
   const Lane = ({
@@ -628,6 +645,9 @@ export function useCardDnd(boardId: string, listId: string) {
               targetId: lastCardId,
               edge: "bottom",
             });
+        },
+        onDragLeave: () => {
+          setPreview(null);
         },
         onDrop: ({ source }) => {
           const srcId =
