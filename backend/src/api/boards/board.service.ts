@@ -57,11 +57,15 @@ const getBoardById = async (id: string, userId: string): Promise<BoardDto> => {
 
   const boardDto = mapBoardToDto(board);
 
-  await setCache<BoardDto[]>(
-    `user:${userId}:boards`,
-    cached ? [boardDto, ...cached] : [boardDto],
-    120
-  );
+  let updatedCache: BoardDto[];
+
+  if (cached) {
+    updatedCache = cached.map((b) => (b.id === id ? boardDto : b));
+  } else {
+    updatedCache = [boardDto];
+  }
+
+  await setCache<BoardDto[]>(`user:${userId}:boards`, updatedCache, 120);
 
   return boardDto;
 };
