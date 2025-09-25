@@ -97,7 +97,12 @@ export const emitCreateCard = (
 export const emitUpdateCard = (
   boardId: string,
   cardId: string,
-  updates: Partial<Pick<CardDto, "title" | "description" | "dueDate" | "startDate" | "coverImageUrl">>
+  updates: Partial<
+    Pick<
+      CardDto,
+      "title" | "description" | "dueDate" | "startDate" | "coverImageUrl" | "position"
+    >
+  >
 ) => getBoardSocket().emit("card:update", { boardId, cardId, updates });
 
 export const emitDeleteCard = (
@@ -108,7 +113,8 @@ export const emitDeleteCard = (
 
 export const emitMoveCard = (
   boardId: string,
+  fromListId: string,
   cardId: string,
   toListId: string,
   position: number
-) => getBoardSocket().emit("card:move", { boardId, cardId, toListId, position });
+) => getBoardSocket().emit("card:move", { boardId, fromListId, cardId, toListId, position });

@@ -189,7 +189,15 @@ export function useCardDnd(boardId: string, listId: string) {
           }
         }
 
+<<<<<<< HEAD
         console.log("handleDrop called:", {
+=======
+        // Emit cross-list move event
+        emitMoveCard(boardId,sourceListId, sourceCardId, listId, newPosition);
+      } else {
+        // Handle same-list reorder - match the visual positioning logic
+        console.log("Same-list reorder:", {
+>>>>>>> origin/main
           sourceCardId,
           targetCardId,
           edge,
