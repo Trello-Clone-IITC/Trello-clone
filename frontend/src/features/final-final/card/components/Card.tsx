@@ -243,9 +243,13 @@ const Card = ({
                   className={`${
                     labelsExpanded ? "h-4 px-2 py-0" : "h-2 px-0"
                   } my-0 rounded-[4px] text-xs font-normal cursor-pointer overflow-hidden transition-all duration-200 ${
+                  } my-0 rounded-[4px] text-xs font-normal cursor-pointer overflow-hidden transition-all duration-200 ${
                     labelsExpanded
                       ? "max-w-none min-w-[56px] flex items-center justify-center text-center"
                       : "max-w-[40px] min-w-[40px]"
+                  } text-ellipsis ${getLabelClassName(
+                    label.color
+                  )} text-black text-opacity-100 mix-blend-normal`}
                   } text-ellipsis ${getLabelClassName(
                     label.color
                   )} text-black text-opacity-100 mix-blend-normal`}
