@@ -7,7 +7,7 @@ export async function setCache<T>(key: string, value: T, ttlSeconds: number) {
 export async function getCache<T>(key: string): Promise<T | null> {
   const raw = await redis.get(key);
   const parsed = raw ? (JSON.parse(raw) as T) : null;
-  console.log("Redis cached data:", parsed);
+  console.log(`Redis cached data for ${key}:`, parsed);
 
   return parsed;
 }
