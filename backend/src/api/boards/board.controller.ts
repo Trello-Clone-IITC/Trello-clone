@@ -11,8 +11,6 @@ import type {
   BoardMemberWithUserDto,
 } from "@ronmordo/contracts";
 import { mapBoardToDto, mapFullBoardToDto } from "./board.mapper.js";
-import { mapListToDto } from "../lists/list.mapper.js";
-import { mapLabelToDto } from "../labels/label.mapper.js";
 import { userService } from "../users/user.service.js";
 
 const createBoard = async (
@@ -34,11 +32,7 @@ const createBoard = async (
       data: boardDto,
     });
   } catch (error) {
-    console.log(error);
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to create board", 500));
+    next(error);
   }
 };
 
@@ -82,11 +76,7 @@ const updateBoard = async (
       data: boardDto,
     });
   } catch (error) {
-    console.log("error from update board", error);
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to update board", 500));
+    next(error);
   }
 };
 
@@ -109,11 +99,7 @@ const deleteBoard = async (
       data: { message: "Board deleted successfully" },
     });
   } catch (error) {
-    console.log("error from delete board", error);
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to delete board", 500));
+    next(error);
   }
 };
 
@@ -130,10 +116,7 @@ const getAllBoards = async (
       data: boardsDto,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get boards", 500));
+    next(error);
   }
 };
 
@@ -144,20 +127,15 @@ const getBoardsByUser = async (
 ) => {
   try {
     const { userId: paramUserId } = req.params;
-    console.log("paramUserId", paramUserId);
 
     const boards = await boardService.getBoardsByUser(paramUserId);
-    console.log("boards", boards);
     const boardsDto: BoardDto[] = boards.map(mapBoardToDto);
     res.status(200).json({
       success: true,
       data: boardsDto,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get boards by user", 500));
+    next(error);
   }
 };
 
@@ -174,10 +152,7 @@ const getBoardMembers = async (
       data: members,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get board members", 500));
+    next(error);
   }
 };
 
@@ -194,10 +169,7 @@ const getBoardLists = async (
       data: lists,
     });
   } catch (error) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get board lists", 500));
+    next(error);
   }
 };
 
@@ -214,11 +186,7 @@ const getBoardLabels = async (
       data: labels,
     });
   } catch (error) {
-    console.log("error from get board labels", error);
-    if (error instanceof AppError) {
-      return next(error);
-    }
-    next(new AppError("Failed to get board labels", 500));
+    next(error);
   }
 };
 

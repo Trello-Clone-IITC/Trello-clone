@@ -199,7 +199,6 @@ const addWorkspaceMember = async (
       role: mapWorkspaceRoleDto(role),
     },
   });
-  console.log("member from service", member);
   return member;
 };
 

@@ -75,12 +75,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      console.log("Failed to get card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card", 500));
+      next(error);
     }
   },
 
@@ -108,12 +103,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      console.log("Failed to update card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to update card", 500));
+      next(error);
     }
   },
 
@@ -141,12 +131,7 @@ export const cardController = {
         message: "Card deleted successfully",
       });
     } catch (error) {
-      console.log("Failed to delete card", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to delete card", 500));
+      next(error);
     }
   },
 
@@ -177,12 +162,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      console.log("Failed to move card errror:", error);
-
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to move card", 500));
+      next(error);
     }
   },
 
@@ -207,10 +187,7 @@ export const cardController = {
         data: card,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to toggle card archive status", 500));
+      next(error);
     }
   },
 
@@ -246,10 +223,7 @@ export const cardController = {
         data: cards,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to search cards", 500));
+      next(error);
     }
   },
 
@@ -274,10 +248,7 @@ export const cardController = {
         data: activities,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card activity", 500));
+      next(error);
     }
   },
 
@@ -304,10 +275,7 @@ export const cardController = {
         data: checklists,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card checklists", 500));
+      next(error);
     }
   },
 
@@ -332,11 +300,7 @@ export const cardController = {
         data: comments,
       });
     } catch (error) {
-      console.log("Failed to get card comments:---", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card comments", 500));
+      next(error);
     }
   },
 
@@ -360,10 +324,7 @@ export const cardController = {
         data: assigneesDto,
       });
     } catch (error) {
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to get card assignees", 500));
+      next(error);
     }
   },
 
@@ -374,7 +335,6 @@ export const cardController = {
   ) => {
     try {
       const { cardId } = req.params;
-      console.log(req.params);
 
       const userId =
         (await userService.getUserIdByRequest(req)) ||
@@ -410,7 +370,7 @@ export const cardController = {
         data: watchersDto,
       });
     } catch (error) {
-      next(new AppError("Failed to get card watchers", 500));
+      next(error);
     }
   },
 

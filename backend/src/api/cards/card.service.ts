@@ -265,9 +265,6 @@ const getCardById = async (cardId: string, listId: string, userId: string) => {
     throw new AppError("Card not found", 404);
   }
 
-  // Check if user has access to the board
-  console.log("card.list.board.boardMembers", card.list.board.boardMembers);
-
   // Check if the user is a member of the board and can watch the card
 
   const userMember = card.list.board.boardMembers.find(
@@ -851,47 +848,42 @@ const getCardChecklists = async (cardId: string, userId: string) => {
 // Get card comments
 const getCardComments = async (cardId: string, userId: string) => {
   // Verify user has access to the card
-  try {
-    const card = await prisma.card.findFirst({
-      where: { id: cardId },
-      include: {
-        list: {
-          include: {
-            board: {
-              include: {
-                boardMembers: {
-                  where: { userId: userId },
-                },
+  const card = await prisma.card.findFirst({
+    where: { id: cardId },
+    include: {
+      list: {
+        include: {
+          board: {
+            include: {
+              boardMembers: {
+                where: { userId: userId },
               },
             },
           },
         },
       },
-    });
+    },
+  });
 
-    if (!card) {
-      throw new AppError("Card not found", 404);
-    }
-
-    if (card.list.board.boardMembers.length === 0) {
-      throw new AppError("Access denied", 403);
-    }
-
-    const comments = await prisma.comment.findMany({
-      where: { cardId },
-      include: {
-        user: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const commentsDto = comments.map(mapCommentToDto);
-
-    return commentsDto;
-  } catch (error) {
-    console.log("Failed to get card comments:---", error);
-    throw new AppError("Failed to get card comments", 500);
+  if (!card) {
+    throw new AppError("Card not found", 404);
   }
+
+  if (card.list.board.boardMembers.length === 0) {
+    throw new AppError("Access denied", 403);
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: { cardId },
+    include: {
+      user: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const commentsDto = comments.map(mapCommentToDto);
+
+  return commentsDto;
 };
 
 // Get card assignees
@@ -1011,7 +1003,6 @@ const getCardWatchers = async (cardId: string, userId: string) => {
 // Get card attachments
 const getCardAttachments = async (cardId: string, userId: string) => {
   // Verify user has access to the card
-  console.log(userId);
 
   const card = await prisma.card.findFirst({
     where: {

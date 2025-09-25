@@ -191,17 +191,6 @@ const updateChecklistItem = async (
   }
 
   if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
-    console.log("existingItem", existingItem);
-    console.log("checxklist", existingItem.checklist);
-    console.log("card", existingItem.checklist.card);
-    console.log("list", existingItem.checklist.card.list);
-    console.log("board", existingItem.checklist.card.list.board);
-    console.log("boardMembers", existingItem.checklist.card.list.board.boardMembers
-    );
-    
-    
-    
-    
     throw new AppError("Access denied", 403);
   }
 

@@ -73,10 +73,10 @@ export function registerBoardNamespace(io: Server) {
       // Lists
       socket.on("list:create", async ({ boardId, name }) => {
         try {
-          const userId = await userService.getUserIdByClerkId(
-            socket.data.auth.userId
-          );
-          console.log("userId:", userId);
+          // const userId = await userService.getUserIdByClerkId(
+          //   socket.data.auth.userId
+          // );
+          // console.log("userId:", userId);
 
           const listDto = await listService.createList({ name }, boardId);
           emitListCreated(boardId, listDto);
@@ -111,7 +111,7 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
 
           const created = await cardService.createCard(
             { title },
@@ -130,7 +130,7 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
 
           const updated = await cardService.updateCard(
             cardId,
@@ -159,7 +159,7 @@ export function registerBoardNamespace(io: Server) {
           const userId = await userService.getUserIdByClerkId(
             socket.data.auth.userId
           );
-          console.log("userId:", userId);
+          // console.log("userId:", userId);
           await cardService.deleteCard(cardId, userId);
           emitCardDeleted(boardId, cardId, listId);
         } catch (e) {
