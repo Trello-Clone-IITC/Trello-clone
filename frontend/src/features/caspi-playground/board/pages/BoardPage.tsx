@@ -24,7 +24,7 @@ const BoardPage = () => {
   const [activeComponents, setActiveComponents] = useState<{
     inbox: boolean;
     board: boolean;
-  }>({ inbox: true, board: true });
+  }>({ inbox: false, board: true });
 
   const handleTabChange = (
     tab: "inbox" | "planner" | "board" | "switch-boards"
