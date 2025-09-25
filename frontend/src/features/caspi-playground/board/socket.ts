@@ -114,8 +114,9 @@ export const emitDeleteCard = (
 
 export const emitMoveCard = (
   boardId: string,
+  fromListId: string,
   cardId: string,
   toListId: string,
   position: number
 ) =>
-  getBoardSocket().emit("card:move", { boardId, cardId, toListId, position });
+  getBoardSocket().emit("card:move", { boardId, fromListId, cardId, toListId, position });
