@@ -120,11 +120,15 @@ const updateList = async (
 
   const cached = await getCache<ListDto[]>(`board:${list.boardId}:lists`);
 
-  await setCache<ListDto[]>(
-    `board:${list.boardId}:lists`,
-    cached ? [listDto, ...cached] : [listDto],
-    120
-  );
+  let updatedCache: ListDto[];
+
+  if (cached) {
+    updatedCache = cached.map((l) => (l.id === id ? listDto : l));
+  } else {
+    updatedCache = [listDto];
+  }
+
+  await setCache<ListDto[]>(`board:${list.boardId}:lists`, updatedCache, 120);
 
   return listDto;
 };

@@ -11,7 +11,6 @@ import {
   type CardDto,
   CardDtoSchema,
   type ChecklistDto,
-  type CommentDto,
   type CardAssigneeDto,
   type CardWatcherDto,
   type AttachmentDto,
@@ -66,6 +65,50 @@ export function mapCardDtoToCreateInput(dto: CardDto): Prisma.CardCreateInput {
     coverImageUrl: dto.coverImageUrl ?? undefined,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
+  };
+}
+
+// Maps an Update DTO (matching UpdateCardSchema) to Prisma.CardUpdateInput
+// Dates: string ISO -> Date; nullable fields: null is preserved, undefined means no-op
+export function mapUpdateDtoToUpdateInput(dto: {
+  id?: string;
+  listId?: string;
+  title?: string;
+  description?: string | null | undefined;
+  dueDate?: string | null | undefined;
+  startDate?: string | null | undefined;
+  position?: number;
+  isWatch?: boolean; // not persisted on card entity directly
+  coverImageUrl?: string | null | undefined;
+  isArchived?: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}): Prisma.CardUpdateInput {
+  return {
+    // Connect to another list if listId provided
+    list: dto.listId ? { connect: { id: dto.listId } } : undefined,
+    title: dto.title,
+    description: dto.description === undefined ? undefined : dto.description, // allow null to clear
+    dueDate:
+      dto.dueDate === undefined
+        ? undefined
+        : dto.dueDate === null
+        ? null
+        : new Date(dto.dueDate),
+    startDate:
+      dto.startDate === undefined
+        ? undefined
+        : dto.startDate === null
+        ? null
+        : new Date(dto.startDate),
+    coverImageUrl:
+      dto.coverImageUrl === undefined ? undefined : dto.coverImageUrl, // allow null to clear
+    position:
+      dto.position === undefined ? undefined : new Prisma.Decimal(dto.position),
+    isArchived: dto.isArchived,
+    // Always bump updatedAt on updates unless explicitly managed elsewhere
+    updatedAt: new Date(),
   };
 }
 

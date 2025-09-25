@@ -137,10 +137,8 @@ export function registerBoardNamespace(io: Server) {
             {
               title: updates.title,
               description: updates.description ?? undefined,
-              dueDate: updates.dueDate ? new Date(updates.dueDate) : undefined,
-              startDate: updates.startDate
-                ? new Date(updates.startDate)
-                : undefined,
+              dueDate: updates.dueDate ? updates.dueDate : undefined,
+              startDate: updates.startDate ? updates.startDate : undefined,
               coverImageUrl: updates.coverImageUrl ?? undefined,
               position: updates.position ?? undefined,
             },

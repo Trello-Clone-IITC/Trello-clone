@@ -2,21 +2,29 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
-import type { CardDto, CreateCardInput } from "@ronmordo/contracts";
-import { mapCardToDto, mapCommentToDto } from "./card.mapper.js";
+import type {
+  CardDto,
+  CreateCardInput,
+  UpdateCardInput,
+} from "@ronmordo/contracts";
+import {
+  mapCardToDto,
+  mapCommentToDto,
+  mapUpdateDtoToUpdateInput,
+} from "./card.mapper.js";
 import type { Card } from "@prisma/client";
 import { getCache, setCache } from "../../lib/cache.js";
 import { mapChecklistToDto } from "../checklists/checklist.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
 
-interface UpdateCardData {
-  title?: string;
-  description?: string;
-  dueDate?: Date;
-  startDate?: Date;
-  coverImageUrl?: string;
-  position?: number;
-}
+// interface UpdateCardData {
+//   title?: string;
+//   description?: string;
+//   dueDate?: Date;
+//   startDate?: Date;
+//   coverImageUrl?: string;
+//   position?: number;
+// }
 
 interface SearchFilters {
   boardId?: string;
@@ -288,7 +296,7 @@ const getCardById = async (cardId: string, listId: string, userId: string) => {
 // Update a card
 const updateCard = async (
   cardId: string,
-  updateData: UpdateCardData,
+  updateData: UpdateCardInput,
   userId: string
 ) => {
   // Verify user has access to the card
@@ -320,15 +328,16 @@ const updateCard = async (
   const card = await prisma.card.update({
     where: { id: cardId },
     data: {
-      title: updateData.title,
-      description: updateData.description,
-      dueDate: updateData.dueDate,
-      startDate: updateData.startDate,
-      coverImageUrl: updateData.coverImageUrl,
-      position: updateData.position
-        ? new Decimal(updateData.position)
-        : undefined,
-      updatedAt: new Date(),
+      // title: updateData.title,
+      // description: updateData.description,
+      // dueDate: updateData.dueDate,
+      // startDate: updateData.startDate,
+      // coverImageUrl: updateData.coverImageUrl,
+      // position: updateData.position
+      //   ? new Decimal(updateData.position)
+      //   : undefined,
+      // updatedAt: new Date(),
+      ...mapUpdateDtoToUpdateInput(updateData),
     },
     include: {
       list: {
@@ -377,11 +386,15 @@ const updateCard = async (
 
   const cached = await getCache<CardDto[]>(`list:${card.listId}:cards`);
 
-  await setCache<CardDto[]>(
-    `list:${card.listId}:cards`,
-    cached ? [cardDto, ...cached] : [cardDto],
-    120
-  );
+  let updatedCache: CardDto[];
+
+  if (cached) {
+    updatedCache = cached.map((c) => (c.id === cardId ? cardDto : c));
+  } else {
+    updatedCache = [cardDto];
+  }
+
+  await setCache<CardDto[]>(`list:${card.listId}:cards`, updatedCache, 120);
 
   return cardDto;
 };
@@ -496,72 +509,72 @@ const moveCard = async (
     return await updateCardPosition(cardId, position, userId);
   }
 
+  const updatedCard = await updateCard(cardId, { listId, position }, userId);
+
   // If moving to different list, update list and position
-  const updatedCard = await prisma.card.update({
-    where: { id: cardId },
-    data: {
-      listId: listId,
-      position: new Decimal(position),
-      updatedAt: new Date(),
-    },
-    include: {
-      list: {
-        include: {
-          board: true,
-        },
-      },
-      creator: true,
-      assignees: {
-        include: {
-          user: true,
-        },
-      },
-      cardLabels: {
-        include: {
-          label: true,
-        },
-      },
-      checklists: {
-        include: {
-          items: true,
-        },
-      },
-      comments: {
-        include: {
-          user: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      attachments: true,
-    },
-  });
+  // const updatedCard = await prisma.card.update({
+  //   where: { id: cardId },
+  //   data: {
+  //     listId: listId,
+  //     position: new Decimal(position),
+  //     updatedAt: new Date(),
+  //   },
+  //   include: {
+  //     list: {
+  //       include: {
+  //         board: true,
+  //       },
+  //     },
+  //     creator: true,
+  //     assignees: {
+  //       include: {
+  //         user: true,
+  //       },
+  //     },
+  //     cardLabels: {
+  //       include: {
+  //         label: true,
+  //       },
+  //     },
+  //     checklists: {
+  //       include: {
+  //         items: true,
+  //       },
+  //     },
+  //     comments: {
+  //       include: {
+  //         user: true,
+  //       },
+  //       orderBy: { createdAt: "desc" },
+  //     },
+  //     attachments: true,
+  //   },
+  // });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: targetList.board.id,
-      cardId: updatedCard.id,
-      userId: userId,
-      action: "Moved",
-      payload: {
-        fromList: updatedCard.list.board.name,
-        toList: targetList.name,
-        position,
-      },
-    },
-  });
-
-  const cardDto = await getCardDto(updatedCard, userId);
+  // await prisma.activityLog.create({
+  //   data: {
+  //     boardId: targetList.board.id,
+  //     cardId: updatedCard.id,
+  //     userId: userId,
+  //     action: "Moved",
+  //     payload: {
+  //       fromList: updatedCard.list.board.name,
+  //       toList: targetList.name,
+  //       position,
+  //     },
+  //   },
+  // });
 
   const cached = await getCache<CardDto[]>(`list:${updatedCard.listId}:cards`);
 
   await setCache<CardDto[]>(
     `list:${updatedCard.listId}:cards`,
-    cached ? [cardDto, ...cached] : [cardDto],
+    cached ? [updatedCard, ...cached] : [updatedCard],
     120
   );
 
-  return cardDto;
+  return updatedCard;
 };
 
 // Update card position within the same list
@@ -570,56 +583,65 @@ const updateCardPosition = async (
   position: number,
   userId: string
 ) => {
-  const card = await prisma.card.update({
-    where: { id: cardId },
-    data: {
-      position: new Decimal(position),
-      updatedAt: new Date(),
-    },
-    include: {
-      list: {
-        include: {
-          board: true,
-        },
-      },
-      creator: true,
-      assignees: {
-        include: {
-          user: true,
-        },
-      },
-      cardLabels: {
-        include: {
-          label: true,
-        },
-      },
-      checklists: {
-        include: {
-          items: true,
-        },
-      },
-      comments: {
-        include: {
-          user: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      attachments: true,
-    },
-  });
+  const card = await updateCard(cardId, { position }, userId);
+  // const card = await prisma.card.update({
+  //   where: { id: cardId },
+  //   data: {
+  //     position: new Decimal(position),
+  //     updatedAt: new Date(),
+  //   },
+  //   include: {
+  //     list: {
+  //       include: {
+  //         board: true,
+  //       },
+  //     },
+  //     creator: true,
+  //     assignees: {
+  //       include: {
+  //         user: true,
+  //       },
+  //     },
+  //     cardLabels: {
+  //       include: {
+  //         label: true,
+  //       },
+  //     },
+  //     checklists: {
+  //       include: {
+  //         items: true,
+  //       },
+  //     },
+  //     comments: {
+  //       include: {
+  //         user: true,
+  //       },
+  //       orderBy: { createdAt: "desc" },
+  //     },
+  //     attachments: true,
+  //   },
+  // });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: card.list.board.id,
-      cardId: card.id,
-      userId: userId,
-      action: "Moved",
-      payload: { position },
-    },
-  });
+  // await prisma.activityLog.create({
+  //   data: {
+  //     boardId: card.list.board.id,
+  //     cardId: card.id,
+  //     userId: userId,
+  //     action: "Moved",
+  //     payload: { position },
+  //   },
+  // });
 
-  return getCardDto(card, userId);
+  const cached = await getCache<CardDto[]>(`list:${card.listId}:cards`);
+
+  await setCache<CardDto[]>(
+    `list:${card.listId}:cards`,
+    cached ? [card, ...cached] : [card],
+    120
+  );
+
+  return card;
 };
 
 // Archive/Unarchive a card
