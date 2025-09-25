@@ -16,12 +16,13 @@ import { AppError } from "../../utils/appError.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceRoleDto } from "../workspace-members/workspace-members.mapper.js";
 import { getCache, setCache } from "../../lib/cache.js";
+import redis from "../../redis.js";
 
 const createWorkspace = async (
-  workspaceDto: CreateWorkspaceInput,
+  createWorkspaceDto: CreateWorkspaceInput,
   creatorId: string
 ): Promise<WorkspaceDto> => {
-  const workspaceData = mapWorkspaceDtoToCreateInput(workspaceDto);
+  const workspaceData = mapWorkspaceDtoToCreateInput(createWorkspaceDto);
 
   const workspace = await prisma.workspace.create({
     data: {
@@ -36,14 +37,26 @@ const createWorkspace = async (
     },
   });
 
-  return mapWorkspaceToDto(workspace);
+  const workspaceDto = mapWorkspaceToDto(workspace);
+
+  await redis.del(`user:${creatorId}:workspaces`);
+
+  await getWorkspacesByUser(creatorId);
+
+  return workspaceDto;
 };
 
-const getWorkspaceById = async (id: string): Promise<WorkspaceDto> => {
-  const cached = await getCache<WorkspaceDto>(`workspace:${id}`);
+const getWorkspaceById = async (
+  id: string,
+  userId: string
+): Promise<WorkspaceDto> => {
+  const cached = await getCache<WorkspaceDto[]>(`user:${userId}:workspaces`);
 
   if (cached) {
-    return cached;
+    const workspace = cached.find((w) => w.id === id);
+    if (workspace) {
+      return workspace;
+    }
   }
 
   const workspace = await prisma.workspace.findUnique({
@@ -55,7 +68,12 @@ const getWorkspaceById = async (id: string): Promise<WorkspaceDto> => {
   }
 
   const workspaceDto = mapWorkspaceToDto(workspace);
-  setCache<WorkspaceDto>(`workspace:${id}`, workspaceDto, 120);
+
+  setCache<WorkspaceDto[]>(
+    `user:${userId}:workspaces`,
+    cached ? [workspaceDto, ...cached] : [workspaceDto],
+    120
+  );
 
   return workspaceDto;
 };
@@ -136,19 +154,36 @@ const updateWorkspace = async (
   return mapWorkspaceToDto(workspace);
 };
 
-const deleteWorkspace = (id: string) => {
-  return prisma.workspace.delete({
+const deleteWorkspace = async (id: string) => {
+  const deletedWorkspace = await prisma.workspace.delete({
     where: { id },
-  });
-};
-
-const getAllWorkspaces = async (): Promise<Workspace[]> => {
-  const workspaces = await prisma.workspace.findMany({
-    orderBy: {
-      createdAt: "desc",
+    include: {
+      workspaceMembers: {
+        select: { userId: true },
+      },
     },
   });
-  return workspaces;
+
+  const workspaceMembersId = deletedWorkspace.workspaceMembers.map(
+    (w) => w.userId
+  );
+
+  await Promise.all(
+    workspaceMembersId.map(async (m) => {
+      const cachedWorkspaces = await getCache<WorkspaceDto[]>(
+        `user:${m}:workspaces`
+      );
+      if (cachedWorkspaces) {
+        await setCache<WorkspaceDto[]>(
+          `user:${m}:workspaces`,
+          cachedWorkspaces.filter((w) => w.id !== id),
+          120
+        );
+      }
+    })
+  );
+
+  return deletedWorkspace;
 };
 
 // Workspace Member Management
@@ -293,7 +328,6 @@ export default {
   getWorkspacesByCreator,
   updateWorkspace,
   deleteWorkspace,
-  getAllWorkspaces,
   addWorkspaceMember,
   removeWorkspaceMember,
   updateWorkspaceMemberRole,

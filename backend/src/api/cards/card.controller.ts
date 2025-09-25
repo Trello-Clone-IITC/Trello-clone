@@ -5,7 +5,6 @@ import type { ApiResponse } from "../../utils/globalTypes.js";
 import type {
   CardDto,
   ChecklistDto,
-  CommentDto,
   CardAssigneeDto,
   LabelDto,
   CardWatcherDto,
@@ -14,7 +13,6 @@ import type {
   CommentWithUserDto,
 } from "@ronmordo/contracts";
 import {
-  mapCommentToDto,
   mapCardAssigneeToDto,
   mapCardWatcherToDto,
   mapAttachmentToDto,
@@ -61,7 +59,7 @@ export const cardController = {
     next: NextFunction
   ) => {
     try {
-      const { id } = req.params;
+      const { id, listId } = req.params;
       const userId =
         (await userService.getUserIdByRequest(req)) ||
         "96099bc0-34b7-4be5-b410-4d624cd99da5";
@@ -70,7 +68,7 @@ export const cardController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.getCardById(id, userId);
+      const card = await cardService.getCardById(id, listId, userId);
 
       res.status(200).json({
         success: true,

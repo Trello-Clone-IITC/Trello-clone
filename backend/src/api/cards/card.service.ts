@@ -2,11 +2,7 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
-import type {
-  CardDto,
-  ChecklistDto,
-  CreateCardInput,
-} from "@ronmordo/contracts";
+import type { CardDto, CreateCardInput } from "@ronmordo/contracts";
 import { mapCardToDto, mapCommentToDto } from "./card.mapper.js";
 import type { Card } from "@prisma/client";
 import { getCache, setCache } from "../../lib/cache.js";
@@ -189,11 +185,30 @@ const createCard = async (
     },
   });
 
-  return getCardDto(card, userId);
+  const cardDto = await getCardDto(card, userId);
+
+  const cached = await getCache<CardDto[]>(`list:${listId}:cards`);
+
+  await setCache<CardDto[]>(
+    `list:${listId}:cards`,
+    cached ? [cardDto, ...cached] : [cardDto],
+    120
+  );
+
+  return cardDto;
 };
 
 // Get a single card by ID with all related data
-const getCardById = async (cardId: string, userId: string) => {
+const getCardById = async (cardId: string, listId: string, userId: string) => {
+  const cached = await getCache<CardDto[]>(`list:${listId}:cards`);
+
+  if (cached) {
+    const cachedCard = cached.find((c) => c.id === cardId);
+    if (cachedCard) {
+      return cachedCard;
+    }
+  }
+
   const card = await prisma.card.findFirst({
     where: { id: cardId },
     include: {
@@ -262,7 +277,15 @@ const getCardById = async (cardId: string, userId: string) => {
     throw new AppError("Access denied", 403);
   }
 
-  return getCardDto(card, userId);
+  const cardDto = await getCardDto(card, userId);
+
+  await setCache<CardDto[]>(
+    `list:${listId}:cards`,
+    cached ? [cardDto, ...cached] : [cardDto],
+    120
+  );
+
+  return cardDto;
 };
 
 // Update a card
@@ -353,7 +376,17 @@ const updateCard = async (
     },
   });
 
-  return getCardDto(card, userId);
+  const cardDto = await getCardDto(card, userId);
+
+  const cached = await getCache<CardDto[]>(`list:${card.listId}:cards`);
+
+  await setCache<CardDto[]>(
+    `list:${card.listId}:cards`,
+    cached ? [cardDto, ...cached] : [cardDto],
+    120
+  );
+
+  return cardDto;
 };
 
 // Delete a card
@@ -396,9 +429,19 @@ const deleteCard = async (cardId: string, userId: string) => {
   });
 
   // Delete the card (cascade will handle related data)
-  await prisma.card.delete({
+  const deletedCard = await prisma.card.delete({
     where: { id: cardId },
   });
+
+  const cached = await getCache<CardDto[]>(`list:${deletedCard.listId}:cards`);
+
+  if (cached) {
+    await setCache<CardDto[]>(
+      `list:${deletedCard.listId}:cards`,
+      cached.filter((c) => c.id !== cardId),
+      120
+    );
+  }
 };
 
 // Move card to different list/position
@@ -511,7 +554,17 @@ const moveCard = async (
     },
   });
 
-  return getCardDto(updatedCard, userId);
+  const cardDto = await getCardDto(updatedCard, userId);
+
+  const cached = await getCache<CardDto[]>(`list:${updatedCard.listId}:cards`);
+
+  await setCache<CardDto[]>(
+    `list:${updatedCard.listId}:cards`,
+    cached ? [cardDto, ...cached] : [cardDto],
+    120
+  );
+
+  return cardDto;
 };
 
 // Update card position within the same list
@@ -767,12 +820,6 @@ const getCardActivity = async (cardId: string, userId: string) => {
 
 // Get card checklists
 const getCardChecklists = async (cardId: string, userId: string) => {
-  const cached = await getCache<ChecklistDto[]>(`card:${cardId}:checklists`);
-
-  if (cached) {
-    return cached;
-  }
-
   // Verify user has access to the card
   const card = await prisma.card.findFirst({
     where: {
@@ -797,12 +844,6 @@ const getCardChecklists = async (cardId: string, userId: string) => {
   }
 
   const checklistsDto = card.checklists.map(mapChecklistToDto);
-
-  await setCache<ChecklistDto[]>(
-    `card:${cardId}:checklists`,
-    checklistsDto,
-    60
-  );
 
   return checklistsDto;
 };

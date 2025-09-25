@@ -1,8 +1,8 @@
+import { getCache, setCache } from "../../lib/cache.js";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { mapUserToDto } from "./user.mapper.js";
 import { clerkClient, getAuth } from "@clerk/express";
-import { DUMMY_USER_ID } from "../../utils/global.dummy.js";
 import { type Request } from "express";
 
 const getMe = async (clerkUserId: string) => {
@@ -65,13 +65,19 @@ const getUserIdByClerkId = async (clerkId: string) => {
 const getUserIdByRequest = async (req: Request) => {
   let { userId: clerkId } = getAuth(req);
 
-  if (!clerkId) return null; // For testing
+  if (!clerkId) {
+    throw new AppError("User not authenticated", 401);
+  }
+
+  const cached = await getCache<string>(`user:${clerkId}:id`);
+
+  if (cached) {
+    return cached;
+  }
 
   const userId = await getUserIdByClerkId(clerkId);
 
-  if (!userId) {
-    throw new AppError("User not authenticated", 401);
-  }
+  await setCache<string>(`user:${clerkId}:id`, userId, 120);
 
   return userId;
 };

@@ -48,17 +48,13 @@ const getBoard = async (
   next: NextFunction
 ) => {
   try {
+    const userId = await userService.getUserIdByRequest(req);
     const { id } = req.params;
-    const board = await boardService.getBoardById(id);
-
-    if (!board) {
-      return next(new AppError("Board not found", 404));
-    }
-    const boardDto: BoardDto = mapBoardToDto(board);
+    const board = await boardService.getBoardById(id, userId);
 
     res.status(200).json({
       success: true,
-      data: boardDto,
+      data: board,
     });
   } catch (error) {
     next(error);

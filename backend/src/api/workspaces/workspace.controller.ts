@@ -43,7 +43,12 @@ const getWorkspace = async (
   next: NextFunction
 ) => {
   try {
-    const workspace = await workspaceService.getWorkspaceById(req.params.id);
+    const userId = await userService.getUserIdByRequest(req);
+
+    const workspace = await workspaceService.getWorkspaceById(
+      req.params.id,
+      userId
+    );
 
     return res.status(200).json({
       success: true,
@@ -107,23 +112,6 @@ const getWorkspaceBoards = async (
   }
 };
 
-const getAllWorkspaces = async (
-  _req: Request,
-  res: Response<ApiResponse<WorkspaceDto[]>>,
-  next: NextFunction
-) => {
-  try {
-    const workspaces = await workspaceService.getAllWorkspaces();
-    const workspacesDto: WorkspaceDto[] = workspaces.map(mapWorkspaceToDto);
-    return res.status(200).json({
-      success: true,
-      data: workspacesDto,
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
 const getWorkspacesByCreator = async (
   req: Request,
   res: Response<ApiResponse<WorkspaceDto[]>>,
@@ -174,11 +162,6 @@ const addWorkspaceMember = async (
   try {
     const { id } = req.params;
     const { role, userId: newMemberId } = req.body;
-    const userId =
-      (await userService.getUserIdByRequest(req)) ||
-      "8d81cbd4-4343-436a-8864-9918194f157f";
-
-    console.log("-------------------------");
 
     const member = await workspaceService.addWorkspaceMember(
       id,
@@ -227,10 +210,6 @@ const updateWorkspaceMemberRole = async (
   try {
     const { id, userId: memberId } = req.params;
     const { role } = req.body;
-
-    const userId =
-      (await userService.getUserIdByRequest(req)) ||
-      "8d81cbd4-4343-436a-8864-9918194f157f";
 
     const member = await workspaceService.updateWorkspaceMemberRole(
       id,
@@ -283,7 +262,6 @@ export default {
   updateWorkspace,
   deleteWorkspace,
   getWorkspaceBoards,
-  getAllWorkspaces,
   getWorkspacesByCreator,
   getWorkspaceMembers,
   addWorkspaceMember,

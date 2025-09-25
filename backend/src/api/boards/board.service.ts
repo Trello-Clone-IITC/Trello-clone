@@ -1,4 +1,5 @@
 import type {
+  BoardDto,
   CreateBoardInput,
   LabelDto,
   ListDto,
@@ -14,10 +15,12 @@ import {
 import {
   mapBoardDtoToCreateBoardInput,
   mapBoardDtoToUpdateBoardInput,
+  mapBoardToDto,
 } from "./board.mapper.js";
 import { getCache, setCache } from "../../lib/cache.js";
 import { mapListToDto } from "../lists/list.mapper.js";
 import { mapLabelToDto } from "../labels/label.mapper.js";
+import { AppError } from "../../utils/appError.js";
 
 const createBoard = async (
   boardData: CreateBoardInput,
@@ -34,11 +37,33 @@ const createBoard = async (
   return board;
 };
 
-const getBoardById = async (id: string): Promise<Board | null> => {
+const getBoardById = async (id: string, userId: string): Promise<BoardDto> => {
+  const cached = await getCache<BoardDto[]>(`user:${userId}:boards`);
+
+  if (cached) {
+    const cachedBoard = cached.find((b) => b.id === id);
+    if (cachedBoard) {
+      return cachedBoard;
+    }
+  }
+
   const board = await prisma.board.findUnique({
     where: { id },
   });
-  return board;
+
+  if (!board) {
+    throw new AppError("Board not found", 404);
+  }
+
+  const boardDto = mapBoardToDto(board);
+
+  await setCache<BoardDto[]>(
+    `user:${userId}:boards`,
+    cached ? [boardDto, ...cached] : [boardDto],
+    120
+  );
+
+  return boardDto;
 };
 
 const getBoardWithMembers = async (id: string) => {

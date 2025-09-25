@@ -13,5 +13,5 @@ cardService (server/src/api/cards/card.service.ts)
 - createCard({ title }, listId, userId) ----- OK
 - updateCard(cardId, { ...updates }, userId) ----- OK
 - deleteCard(cardId, userId) ------ OK
-- getCardById(cardId, userId) ------ NOT OK
+- getCardById(cardId, userId) ------ OK
 - moveCard(cardId, toListId, position, userId) ----- OK

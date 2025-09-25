@@ -26,11 +26,9 @@ const createList = async (
 
     const list = await listService.createList(req.body, boardId);
 
-    const listDto: ListDto = mapListToDto(list);
-
     res.status(201).json({
       success: true,
-      data: listDto,
+      data: list,
     });
   } catch (error) {
     next(error);
@@ -80,17 +78,10 @@ const updateList = async (
     const updateData = { ...req.body };
 
     const list = await listService.updateList(listId, updateData);
-    console.log("list", list);
-
-    if (!list) {
-      return next(new AppError("List not found", 404));
-    }
-
-    const listDto: ListDto = mapListToDto(list);
 
     res.status(200).json({
       success: true,
-      data: listDto,
+      data: list,
     });
   } catch (error) {
     if (error instanceof AppError) {

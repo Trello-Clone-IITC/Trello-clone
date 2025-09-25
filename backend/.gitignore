@@ -128,3 +128,6 @@ temp/
 # package-lock.json
 
 /generated/prisma
+
+mcpconfig.json
+mcp-proxy-server-docs.txt

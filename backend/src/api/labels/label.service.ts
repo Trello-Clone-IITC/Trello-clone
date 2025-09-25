@@ -6,7 +6,6 @@ import type {
   UpdateLabelInput,
 } from "@ronmordo/contracts";
 import { mapLabelDtoToCreateInput, mapLabelToDto } from "./label.mapper.js";
-import { getCache, setCache } from "../../lib/cache.js";
 
 const prisma = new PrismaClient();
 
@@ -94,12 +93,6 @@ const getLabelById = async (
   labelId: string,
   userId: string
 ) => {
-  const cached = await getCache<LabelDto>(`label:${labelId}`);
-
-  if (cached) {
-    return cached;
-  }
-
   const label = await prisma.label.findFirst({
     where: {
       id: labelId,
@@ -113,8 +106,6 @@ const getLabelById = async (
   }
 
   const labelDto = mapLabelToDto(label);
-
-  await setCache<LabelDto>(`label:${labelId}`, labelDto, 60);
 
   return labelDto;
 };
