@@ -62,7 +62,9 @@ const Card = ({
   const isHexColor = (value?: string | null): boolean => {
     if (!value) return false;
     const v = value.trim();
-    return /^(#)?([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v);
+    return /^(#)?([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(
+      v
+    );
   };
   const normalizeHex = (value: string): string =>
     value.startsWith("#") ? value : `#${value}`;
@@ -113,11 +115,7 @@ const Card = ({
       onDragEnter: ({ source }) => {
         const sourceCardId = source.data?.cardId as string;
         const sourceListId = source.data?.listId as string;
-        console.log("Card onDragEnter:", {
-          sourceCardId,
-          targetCardId: card.id,
-          sourceListId,
-        });
+
         if (sourceCardId && sourceCardId !== card.id) {
           onPreview?.({
             sourceCardId,
@@ -140,17 +138,6 @@ const Card = ({
           // Use 60% of the card height for the top zone to make it easier to hit
           const topZoneHeight = rect.height * 0.6;
           const edge = mouseY < rect.top + topZoneHeight ? "top" : "bottom";
-
-          console.log("Card onDrag:", {
-            sourceCardId,
-            targetCardId: card.id,
-            edge,
-            sourceListId,
-            mouseY,
-            cardTop: rect.top,
-            cardCenter: cardCenterY,
-            topZoneEnd: rect.top + topZoneHeight,
-          });
 
           onPreview?.({
             sourceCardId,
@@ -220,7 +207,9 @@ const Card = ({
           isHexColor(card.coverImageUrl) ? (
             <div
               className="h-9 overflow-hidden rounded-t-[8px]"
-              style={{ backgroundColor: normalizeHex(card.coverImageUrl.trim()) }}
+              style={{
+                backgroundColor: normalizeHex(card.coverImageUrl.trim()),
+              }}
             ></div>
           ) : (
             <div className="h-9 overflow-hidden rounded-t-[8px]">

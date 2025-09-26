@@ -22,7 +22,7 @@
     "@faker-js/faker": "^10.0.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
     "@prisma/client": "^6.16.2",
-    "@ronmordo/contracts": "^2.2.13",
+    "@ronmordo/contracts": "^2.2.14",
     "@scalar/express-api-reference": "^0.8.18",
     "axios": "^1.12.1",
     "cookie-parser": "^1.4.7",

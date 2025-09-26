@@ -106,47 +106,57 @@ export const getCardDto = async (
 // Create a new card
 const createCard = async (
   data: CreateCardInput,
-  listId: string,
-  userId: string
+  listId: string | undefined,
+  userId: string,
+  api: boolean = false
 ): Promise<CardDto> => {
   // Verify list exists and user has access
+  console.log("-------------------------", listId);
+  // if (api) {
+  //   const card = await prisma.card.create({
+  //     data: {
+  //       ...data,
+  //       inboxUserId: userId,
+  //       createdBy: userId,
+  //     },
+  //   });
+  // }
 
-  const list = await prisma.list.findFirst({
-    where: {
-      id: listId,
-      board: {
-        boardMembers: {
-          some: {
-            userId,
-          },
-        },
-      },
-    },
-    include: {
-      cards: {
-        orderBy: { position: "asc" },
-      },
-      board: true,
-    },
-  });
+  // const list = await prisma.list.findFirst({
+  //   where: {
+  //     id: listId,
+  //     board: {
+  //       boardMembers: {
+  //         some: {
+  //           userId,
+  //         },
+  //       },
+  //     },
+  //   },
+  //   include: {
+  //     cards: {
+  //       orderBy: { position: "asc" },
+  //     },
+  //     board: true,
+  //   },
+  // });
 
-  if (!list) {
-    throw new AppError("List not found", 404);
-  }
+  // if (!list) {
+  //   throw new AppError("List not found", 404);
+  // }
 
   // Get the highest position in the list and add 1000
-  const lastCard = list.cards.pop();
+  // const lastCard = list.cards.pop();
 
-  const newPosition = lastCard
-    ? lastCard.position.add(new Decimal(1000))
-    : new Decimal(1000);
-
+  // const newPosition = lastCard
+  //   ? lastCard.position.add(new Decimal(1000))
+  //   : new Decimal(1000);
+  const createData = api
+    ? { ...data, inboxUserId: userId, createdBy: userId }
+    : { ...data, listId, createdBy: userId };
   const card = await prisma.card.create({
     data: {
-      listId,
-      ...data,
-      position: newPosition,
-      createdBy: userId,
+      ...createData,
     },
     include: {
       list: {
@@ -183,15 +193,15 @@ const createCard = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: list.board.id,
-      cardId: card.id,
-      userId,
-      action: "Created",
-      payload: { title: card.title },
-    },
-  });
+  // await prisma.activityLog.create({
+  //   data: {
+  //     boardId: list.board.id,
+  //     cardId: card.id,
+  //     userId,
+  //     action: "Created",
+  //     payload: { title: card.title },
+  //   },
+  // });
 
   const cardDto = await getCardDto(card, userId);
 
@@ -314,6 +324,7 @@ const updateCard = async (
   updateData: UpdateCardInput,
   userId: string
 ) => {
+  console.log("UPDATED DATA $$$$$$$$", updateData);
   // Verify user has access to the card
   // const existingCard = await prisma.card.findFirst({
   //   where: { id: cardId },
@@ -339,7 +350,7 @@ const updateCard = async (
   // if (existingCard.list.board.boardMembers.length === 0) {
   //   throw new AppError("Access denied", 403);
   // }
-
+  console.log("before updating");
   const card = await prisma.card.update({
     where: { id: cardId },
     data: {
@@ -385,17 +396,17 @@ const updateCard = async (
       attachments: true,
     },
   });
-
+  console.log("After updating");
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: card.list ? card.list.board.id : "Inbox",
-      cardId: card.id,
-      userId: userId,
-      action: "Updated",
-      payload: { ...updateData },
-    },
-  });
+  // await prisma.activityLog.create({
+  //   data: {
+  //     boardId: card.list ? card.list.board.id : undefined,
+  //     cardId: card.id,
+  //     userId: userId,
+  //     action: "Updated",
+  //     payload: { ...updateData },
+  //   },
+  // });
 
   const cardDto = await getCardDto(card, userId);
 

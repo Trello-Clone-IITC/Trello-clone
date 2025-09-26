@@ -105,7 +105,7 @@ export function registerBoardNamespace(io: Server) {
       });
 
       // Cards
-      socket.on("card:create", async ({ boardId, listId, title }) => {
+      socket.on("card:create", async ({ boardId, listId, title, position }) => {
         try {
           // const userId = getUserId(socket);
           const userId = await userService.getUserIdByClerkId(
@@ -114,7 +114,7 @@ export function registerBoardNamespace(io: Server) {
           // console.log("userId:", userId);
 
           const created = await cardService.createCard(
-            { title },
+            { title, position },
             listId,
             userId
           );

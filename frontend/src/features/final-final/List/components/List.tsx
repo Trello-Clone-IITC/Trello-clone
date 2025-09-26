@@ -22,7 +22,7 @@ const List = ({
   );
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
   const listFooterRef = useRef<ListFooterRef>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLLIElement>(null);
   const { handleDrop } = useCardDnd(list.boardId, list.id);
   const [isCardDragOver, setIsCardDragOver] = useState(false);
 
@@ -90,10 +90,6 @@ const List = ({
         <ListHeader
           list={list}
           boardId={list.boardId}
-          nextPosition={
-            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ??
-              0) + 1000
-          }
           isEditing={isEditing}
           onStartEditing={startEditing}
           onStopEditing={stopEditing}
@@ -129,10 +125,6 @@ const List = ({
           ref={listFooterRef}
           listId={list.id}
           boardId={list.boardId}
-          nextPosition={
-            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ??
-              0) + 1000
-          }
         />
       </div>
     </li>

@@ -8,7 +8,6 @@ import type { ListFooterRef } from "./ListFooter";
 interface ListHeaderProps {
   list: ListDto;
   boardId: string;
-  nextPosition: number;
   isEditing: boolean;
   onStartEditing: () => void;
   onStopEditing: () => void;

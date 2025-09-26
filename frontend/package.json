@@ -27,7 +27,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@reduxjs/toolkit": "^2.8.2",
-    "@ronmordo/contracts": "^2.2.13",
+    "@ronmordo/contracts": "^2.2.14",
     "@scalar/api-reference-react": "^0.7.45",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.84.2",

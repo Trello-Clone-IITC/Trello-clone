@@ -88,7 +88,18 @@ export const emitCreateCard = (
   listId: string,
   title: string,
   position?: number
-) => getBoardSocket().emit("card:create", { boardId, listId, title, position });
+) => {
+  console.log("emitCreateCard called with:", {
+    boardId,
+    listId,
+    title,
+    position,
+  });
+  const socket = getBoardSocket();
+  console.log("Socket instance:", socket);
+  console.log("Socket connected:", socket.connected);
+  socket.emit("card:create", { boardId, listId, title, position });
+};
 
 export const emitUpdateCard = (
   boardId: string,
@@ -114,10 +125,10 @@ export const emitDeleteCard = (
 
 export const emitMoveCard = (
   boardId: string,
-  fromListId: string,
   cardId: string,
-  toListId: string,
-  position: number
+  position: number,
+  fromListId: string | null,
+  toListId: string | null
 ) =>
   getBoardSocket().emit("card:move", {
     boardId,

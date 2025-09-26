@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axiosInstance";
 import type { CardDto } from "@ronmordo/contracts";
+import { useMe } from "@/features/auth/hooks/useMe";
+import { calculatePosition } from "@/features/final-final/shared/utils/positionUtils";
 
 const INBOX_QUERY_KEY = ["inbox-cards"];
 
 export function useInbox() {
+  const { data: user } = useMe();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,12 +54,22 @@ export function useInbox() {
       title: string;
       description?: string;
     }) => {
+      // Calculate position using centralized utility
+      const currentCards =
+        queryClient.getQueryData<CardDto[]>(INBOX_QUERY_KEY) || [];
+      const position = calculatePosition({
+        sourceId: "new-inbox-card", // Dummy ID for new card
+        targetId: "empty", // Add to end
+        edge: "bottom",
+        items: currentCards,
+      });
+
       const response = await api.post<{ success: boolean; data: CardDto }>(
         "/cards",
         {
           title,
           description,
-          inboxUserId: "current-user", // This will be handled by backend auth
+          position,
         }
       );
       return response.data.data;
@@ -152,7 +165,7 @@ export function useInbox() {
         `/cards/${cardId}`,
         {
           listId: null,
-          inboxUserId: "current-user", // This will be handled by backend auth
+          inboxUserId: user?.id, // This will be handled by backend auth
           position,
         }
       );

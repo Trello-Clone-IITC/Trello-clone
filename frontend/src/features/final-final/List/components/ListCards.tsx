@@ -4,6 +4,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import { useCardDnd } from "../hooks/useCardDnd";
 import { useMemo, useEffect, useRef } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { sortByPosition } from "@/features/final-final/shared/utils/positionUtils";
 
 const EmptyListDropZone = ({
   onDrop,
@@ -88,7 +89,7 @@ const ListCards = ({
     const unique = (cards || []).filter(
       (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx
     );
-    return unique.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    return sortByPosition(unique);
   }, [cards]);
 
   // Calculate visual positions for smooth drag preview

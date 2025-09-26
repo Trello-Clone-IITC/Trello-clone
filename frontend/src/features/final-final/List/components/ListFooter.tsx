@@ -1,15 +1,18 @@
 import React, { useState, useImperativeHandle, forwardRef } from "react";
 import { Plus, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { emitCreateCard } from "@/features/final-final/board/socket";
+import {
+  emitCreateCard,
+  getBoardSocket,
+} from "@/features/final-final/board/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { boardKeys } from "@/features/final-final/board/hooks";
 import type { CardDto } from "@ronmordo/contracts";
+import { calculatePosition } from "@/features/final-final/shared/utils/positionUtils";
 
 interface ListFooterProps {
   listId: string;
   boardId: string;
-  nextPosition: number;
 }
 
 export interface ListFooterRef {
@@ -17,7 +20,7 @@ export interface ListFooterRef {
 }
 
 const ListFooter = forwardRef<ListFooterRef, ListFooterProps>(
-  ({ listId, boardId, nextPosition }, ref) => {
+  ({ listId, boardId }, ref) => {
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [title, setTitle] = useState("");
     const queryClient = useQueryClient();
@@ -31,6 +34,19 @@ const ListFooter = forwardRef<ListFooterRef, ListFooterProps>(
     const handleAddCard = () => {
       const trimmed = title.trim();
       if (!trimmed) return;
+
+      // Calculate position using centralized utility
+      const currentCards =
+        queryClient.getQueryData<CardDto[] | undefined>(
+          boardKeys.cards(boardId, listId)
+        ) || [];
+      const position = calculatePosition({
+        sourceId: "new-card", // Dummy ID for new card
+        targetId: "empty", // Add to end
+        edge: "bottom",
+        items: currentCards,
+      });
+
       // Optimistic insert into the cards cache
       const tempCard: CardDto = {
         id: `temp-${Date.now()}-${Math.random()
@@ -39,7 +55,7 @@ const ListFooter = forwardRef<ListFooterRef, ListFooterProps>(
         listId,
         title: trimmed,
         description: null,
-        position: nextPosition,
+        position: position,
         isWatch: false,
         cardAssignees: [],
         attachmentsCount: 0,
@@ -62,8 +78,16 @@ const ListFooter = forwardRef<ListFooterRef, ListFooterProps>(
         (prev) => (prev ? [...prev, tempCard] : [tempCard])
       );
 
-      // Emit to server
-      emitCreateCard(boardId, listId, trimmed, nextPosition);
+      // Emit socket event for real-time collaboration
+      console.log("Emitting createCard socket event:", {
+        boardId,
+        listId,
+        title: trimmed,
+        position,
+      });
+
+      emitCreateCard(boardId, listId, trimmed, position);
+
       setTitle("");
       setIsAddingCard(false);
     };

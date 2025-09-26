@@ -71,6 +71,7 @@ export const MainContent = ({
   startDate,
   dueDate,
   isCompleted = false,
+  isInbox = false,
 }: {
   labels: LabelDto[];
   description?: string | null;
@@ -80,6 +81,7 @@ export const MainContent = ({
   startDate?: string | null;
   dueDate?: string | null;
   isCompleted?: boolean;
+  isInbox?: boolean;
 }) => {
   const getLabelClassName = (color: string) => {
     const bgClass = getLabelColorClass(color);
@@ -189,7 +191,7 @@ export const MainContent = ({
           />
 
           {/* Quick action buttons */}
-          {labels.length === 0 && (
+          {!isInbox && labels.length === 0 && (
             <LabelsPopover
               availableLabels={boardLabels || []}
               selectedLabelIds={(cardLabels || []).map((l) => l.id as string)}
@@ -262,40 +264,42 @@ export const MainContent = ({
             </PopoverContent>
           </Popover>
 
-          {card?.cardAssignees && card.cardAssignees.length === 0 && (
-            <MembersPopover
-              members={(boardMembers ?? []).map((m) => ({
-                id: m.userId,
-                fullName: m.user.fullName || "Member",
-                username: m.user.username || "",
-                avatarUrl: m.user.avatarUrl,
-              }))}
-              selectedIds={[]}
-              onSelect={(member) => {
-                assignMemberMut.mutate(member.id);
-              }}
-            >
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+          {!isInbox &&
+            card?.cardAssignees &&
+            card.cardAssignees.length === 0 && (
+              <MembersPopover
+                members={(boardMembers ?? []).map((m) => ({
+                  id: m.userId,
+                  fullName: m.user.fullName || "Member",
+                  username: m.user.username || "",
+                  avatarUrl: m.user.avatarUrl,
+                }))}
+                selectedIds={[]}
+                onSelect={(member) => {
+                  assignMemberMut.mutate(member.id);
+                }}
               >
-                {isLight ? (
-                  <img
-                    src={addMembersIconLight}
-                    alt="Members"
-                    className="w-4 h-4"
-                  />
-                ) : (
-                  <img
-                    src={addMembersIconDark}
-                    alt="Members"
-                    className="w-4 h-4"
-                  />
-                )}
-                <span>Members</span>
-              </button>
-            </MembersPopover>
-          )}
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
+                >
+                  {isLight ? (
+                    <img
+                      src={addMembersIconLight}
+                      alt="Members"
+                      className="w-4 h-4"
+                    />
+                  ) : (
+                    <img
+                      src={addMembersIconDark}
+                      alt="Members"
+                      className="w-4 h-4"
+                    />
+                  )}
+                  <span>Members</span>
+                </button>
+              </MembersPopover>
+            )}
 
           <AttachmentPopover
             onInsert={({ url, displayText }) =>

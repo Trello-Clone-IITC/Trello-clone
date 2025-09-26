@@ -33,7 +33,7 @@ export type BoardClientEvents = {
     boardId: string;
     listId: string;
     title: string;
-    position?: number;
+    position: number;
   }) => void;
   "card:update": (payload: {
     boardId: string;

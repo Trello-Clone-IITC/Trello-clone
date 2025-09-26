@@ -27,6 +27,7 @@ export default function CardModal({
   card,
   isCompleted,
   onComplete,
+  isInbox = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,6 +35,7 @@ export default function CardModal({
   card: CardDto;
   isCompleted: boolean;
   onComplete: (e: React.MouseEvent) => void;
+  isInbox?: boolean;
 }) {
   // Convert card.labels (which only has color and name) to LabelDto format
   const labels: LabelDto[] = (card.labels || []).map((label) => ({
@@ -81,7 +83,6 @@ export default function CardModal({
           }
       : undefined;
 
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
@@ -90,11 +91,9 @@ export default function CardModal({
       >
         {/* Cover div */}
         <div
-
           className={`rounded-t-lg w-full border-b border-[#3c3d40] overflow-hidden relative ${
             hasCover ? "h-[116px]" : "bg-transparent px-4 py-4"
           }`}
-
           style={coverStyle}
         >
           {/* Header actions in cover */}
@@ -217,6 +216,7 @@ export default function CardModal({
               startDate={card.startDate as string | null | undefined}
               dueDate={card.dueDate as string | null | undefined}
               isCompleted={isCompleted}
+              isInbox={isInbox}
             />
           </div>
 

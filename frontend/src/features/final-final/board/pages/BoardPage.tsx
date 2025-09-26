@@ -186,7 +186,7 @@ const BoardPage = () => {
           <Inbox
             fullWidth={!multipleActive}
             isSidebar={!inboxAndPlannerOnly}
-            isVisible={activeComponents.inbox}
+            boardId={boardId}
           />
         </div>
 

@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { CardDto } from "@ronmordo/contracts";
+import {
+  calculatePosition,
+  sortByPosition,
+} from "@/features/final-final/shared/utils/positionUtils";
 
 type Edge = "top" | "bottom";
 
@@ -61,9 +65,7 @@ export function useInboxCardDnd() {
         const current =
           queryClient.getQueryData<CardDto[] | undefined>(INBOX_QUERY_KEY) ||
           [];
-        const currentSorted = [...current].sort(
-          (a, b) => (a.position || 0) - (b.position || 0)
-        );
+        const currentSorted = sortByPosition(current);
 
         console.log(
           "Current inbox cards before update:",
@@ -74,63 +76,20 @@ export function useInboxCardDnd() {
           }))
         );
 
-        let newPosition: number;
+        // Calculate new position using centralized utility
+        const newPosition = calculatePosition({
+          sourceId: sourceCardId,
+          targetId: targetCardId,
+          edge,
+          items: currentSorted,
+        });
 
-        // Handle empty inbox drop
-        if (targetCardId === "empty") {
-          newPosition =
-            currentSorted.length === 0
-              ? 1000
-              : (currentSorted[currentSorted.length - 1].position || 0) + 1000;
-        } else {
-          // Handle normal card drop
-          const others = currentSorted.filter((x) => x.id !== sourceCardId);
-          const targetIdx = others.findIndex((x) => x.id === targetCardId);
-
-          if (targetIdx === -1) {
-            console.log("Target card not found in others array:", targetCardId);
-            return;
-          }
-
-          const insIdx = edge === "top" ? targetIdx : targetIdx + 1;
-
-          if (others.length === 0) {
-            newPosition = 1000;
-            console.log("Position calculation: empty inbox, using 1000");
-          } else if (insIdx <= 0) {
-            newPosition = (others[0].position || 0) - 1000;
-            console.log("Position calculation: insert at beginning", {
-              firstCardPosition: others[0].position,
-              newPosition,
-            });
-          } else if (insIdx >= others.length) {
-            newPosition = (others[others.length - 1].position || 0) + 1000;
-            console.log("Position calculation: insert at end", {
-              lastCardPosition: others[others.length - 1].position,
-              newPosition,
-            });
-          } else {
-            const prev = others[insIdx - 1];
-            const next = others[insIdx];
-            newPosition = ((prev.position || 0) + (next.position || 0)) / 2;
-            console.log("Position calculation: insert between", {
-              prevCard: {
-                id: prev.id,
-                position: prev.position,
-                title: prev.title,
-              },
-              nextCard: {
-                id: next.id,
-                position: next.position,
-                title: next.title,
-              },
-              newPosition,
-              insIdx,
-              targetIdx,
-              edge,
-            });
-          }
-        }
+        console.log("Position calculation result:", {
+          sourceId: sourceCardId,
+          targetId: targetCardId,
+          edge,
+          newPosition,
+        });
 
         // Handle same-inbox reorder
         console.log("Same-inbox reorder:", {
@@ -150,14 +109,14 @@ export function useInboxCardDnd() {
             const updated = prev.map((x) =>
               x.id === sourceCardId ? { ...x, position: newPosition } : x
             );
-            updated.sort((a, b) => (a.position || 0) - (b.position || 0));
+            const sorted = sortByPosition(updated);
 
             console.log("Same-inbox reorder details:", {
               sourceCardId,
               targetCardId,
               edge,
               newPosition,
-              finalCards: updated.map((c, index) => ({
+              finalCards: sorted.map((c, index) => ({
                 index,
                 id: c.id,
                 position: c.position,
@@ -165,7 +124,7 @@ export function useInboxCardDnd() {
               })),
             });
 
-            return updated;
+            return sorted;
           }
         );
 
