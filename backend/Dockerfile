@@ -3,12 +3,15 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-# use a BuildKit secret so the token never lands in an image layer
+
+# Auth to GitHub Packages via BuildKit secret (token never lands in layers)
 RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
-    printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\nalways-auth=true\n" \
-      "$(cat /run/secrets/GH_PACKAGES_TOKEN)" > .npmrc \
- && npm ci \
- && rm -f .npmrc
+    sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)" \
+      && npm config set @ronmordo:registry https://npm.pkg.github.com \
+      && npm config set //npm.pkg.github.com/:_authToken "$TOKEN" \
+      && npm config set always-auth true \
+      && npm ci'
+
 
 FROM node:20-alpine AS build
 WORKDIR /app
