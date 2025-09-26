@@ -1,0 +1,111 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  id-token: write   # for AWS OIDC
+  contents: read
+
+env:
+  # === EDIT ME if your paths differ ===
+  BACKEND_WORKDIR: backend
+  FRONTEND_WORKDIR: frontend
+  FRONTEND_BUILD_DIR: dist   # change to 'build' if CRA
+  # ================================
+
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+  ECR_BACKEND: ${{ vars.ECR_BACKEND }}
+  EC2_HOST: ${{ vars.EC2_HOST }}
+  EC2_USER: ${{ vars.EC2_USER }}
+  EC2_PATH: ${{ vars.EC2_PATH }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS creds (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build backend image
+        working-directory: ${{ env.BACKEND_WORKDIR }}
+        run: |
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_BACKEND}
+          docker build -t ${IMAGE_URI}:latest -t ${IMAGE_URI}:${GITHUB_SHA::7} .
+
+      - name: Push backend image
+        run: |
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_BACKEND}
+          docker push ${IMAGE_URI}:latest
+          docker push ${IMAGE_URI}:${GITHUB_SHA::7}
+
+      - name: Build frontend
+        working-directory: ${{ env.FRONTEND_WORKDIR }}
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+        run: |
+          npm ci
+          npm run build
+          cd ${{ github.workspace }}
+          zip -r /tmp/frontend_build.zip ${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}
+
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+      - name: Upload frontend build to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i /tmp/deploy_key /tmp/frontend_build.zip ${EC2_USER}@${EC2_HOST}:/tmp/frontend_build.zip
+
+      - name: Remote deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key ${EC2_USER}@${EC2_HOST} <<'EOSSH'
+          set -e
+          # Ensure unzip + AWS CLI
+          sudo apt-get update -y
+          sudo apt-get install -y unzip curl >/dev/null 2>&1 || true
+          if ! command -v aws >/dev/null; then
+            curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip
+            unzip -q /tmp/awscliv2.zip -d /tmp
+            sudo /tmp/aws/install
+          fi
+
+          cd ${EC2_PATH}
+          mkdir -p frontend_build
+
+          # Unpack new frontend
+          rm -rf /tmp/fb && mkdir -p /tmp/fb
+          unzip -q /tmp/frontend_build.zip -d /tmp/fb
+          # move inner dist/build contents to target folder
+          shopt -s dotglob
+          if [ -d "/tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}" ]; then
+            rm -rf frontend_build/*
+            cp -r /tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}/* frontend_build/
+          else
+            # fallback if zip structure differs
+            rm -rf frontend_build/*
+            cp -r /tmp/fb/* frontend_build/
+          fi
+
+          # Login to ECR using instance role
+          aws ecr get-login-password --region ${AWS_REGION} \
+            | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+          # Pull new backend + (re)start stack
+          docker compose pull
+          docker compose up -d --remove-orphans
+          EOSSH
