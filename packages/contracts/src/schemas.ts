@@ -305,6 +305,54 @@ export const WorkspaceDtoSchema = z.object({
   allowSlackIntegration: SlackSharingSchema,
 });
 
+export const SearchResultsDtoSchema = z.object({
+  users: z
+    .array(
+      UserDtoSchema.pick({
+        id: true,
+        fullName: true,
+        avatarUrl: true,
+        username: true,
+      })
+    )
+    .optional(),
+
+  boards: z
+    .array(
+      BoardDtoSchema.pick({
+        id: true,
+        name: true,
+        background: true,
+        updatedAt: true,
+      }).extend({
+        workspace: z.object({
+          name: z.string(),
+        }),
+      })
+    )
+    .optional(),
+
+  cards: z
+    .array(
+      CardDtoSchema.pick({
+        title: true,
+        inboxUserId: true,
+      }).extend({
+        list: z
+          .object({
+            board: z.object({
+              name: z.string(),
+              workspace: z.object({
+                name: z.string(),
+              }),
+            }),
+          })
+          .nullable(),
+      })
+    )
+    .optional(),
+});
+
 // ==========================
 // COMPOSED DTO SCHEMAS
 // ==========================
