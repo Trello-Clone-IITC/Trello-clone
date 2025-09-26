@@ -9,11 +9,7 @@ export type BoardServerEvents = {
   "card:created": (card: CardDto) => void;
   "card:updated": (card: CardDto) => void;
   "card:deleted": (cardId: string, listId: string) => void;
-  "card:moved": (
-    card: CardDto,
-    fromListId?: string,
-    fromInboxUserId?: string
-  ) => void;
+  "card:moved": (card: CardDto, fromListId: string | null) => void;
 };
 
 // INTERFACE: Events from client to server
@@ -42,17 +38,7 @@ export type BoardClientEvents = {
   "card:update": (payload: {
     boardId: string;
     cardId: string;
-    updates: Partial<
-      Pick<
-        CardDto,
-        | "title"
-        | "description"
-        | "dueDate"
-        | "startDate"
-        | "coverImageUrl"
-        | "position"
-      >
-    >;
+    updates: UpdateCardInput;
   }) => void;
   "card:delete": (payload: {
     boardId: string;
@@ -62,10 +48,8 @@ export type BoardClientEvents = {
   "card:move": (payload: {
     boardId: string;
     cardId: string;
-    fromListId?: string;
-    toListId?: string;
-    fromInboxUserId?: string;
-    toInboxUserId?: string;
+    fromListId: string | null;
+    toListId: string | null;
     position: number;
   }) => void;
 };
