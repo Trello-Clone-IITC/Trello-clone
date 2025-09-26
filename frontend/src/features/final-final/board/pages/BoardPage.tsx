@@ -15,16 +15,20 @@ import {
 import { useTheme } from "@/hooks/useTheme";
 import BoardFooter from "../components/BoardFooter";
 import { Inbox } from "@/features/final-final/inbox";
+import { useInbox } from "@/features/final-final/inbox/hooks/useInbox";
+import { Planner } from "@/features/final-final/planner";
 import { useAppContext } from "@/hooks/useAppContext";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const { theme } = useTheme();
   const { setNavbarBorderHidden } = useAppContext();
+  const { cards } = useInbox();
   const [activeComponents, setActiveComponents] = useState<{
     inbox: boolean;
+    planner: boolean;
     board: boolean;
-  }>({ inbox: false, board: true });
+  }>({ inbox: false, planner: false, board: true });
 
   const handleTabChange = (
     tab: "inbox" | "planner" | "board" | "switch-boards"
@@ -33,7 +37,7 @@ const BoardPage = () => {
       setActiveComponents((prev) => {
         const newState = { ...prev, inbox: !prev.inbox };
         // Prevent having no components active
-        if (!newState.inbox && !newState.board) {
+        if (!newState.inbox && !newState.board && !newState.planner) {
           newState.board = true;
         }
         return newState;
@@ -42,18 +46,16 @@ const BoardPage = () => {
       setActiveComponents((prev) => {
         const newState = { ...prev, board: !prev.board };
         // Prevent having no components active
-        if (!newState.inbox && !newState.board) {
+        if (!newState.inbox && !newState.board && !newState.planner) {
           newState.inbox = true;
         }
         return newState;
       });
     } else if (tab === "planner") {
-      // Toggle both components
       setActiveComponents((prev) => {
-        const newState = { inbox: !prev.inbox, board: !prev.board };
-        // If both would be off, turn on both
-        if (!newState.inbox && !newState.board) {
-          newState.inbox = true;
+        const newState = { ...prev, planner: !prev.planner };
+        // Prevent having no components active
+        if (!newState.inbox && !newState.board && !newState.planner) {
           newState.board = true;
         }
         return newState;
@@ -62,16 +64,43 @@ const BoardPage = () => {
   };
 
   const bothActive = activeComponents.inbox && activeComponents.board;
+  const anyActive =
+    activeComponents.inbox ||
+    activeComponents.planner ||
+    activeComponents.board;
+  const multipleActive =
+    (activeComponents.inbox ? 1 : 0) +
+      (activeComponents.planner ? 1 : 0) +
+      (activeComponents.board ? 1 : 0) >
+    1;
+
+  // Specific layout scenarios
+  const inboxAndBoardOnly =
+    activeComponents.inbox &&
+    activeComponents.board &&
+    !activeComponents.planner;
+  const plannerAndBoardOnly =
+    activeComponents.planner &&
+    activeComponents.board &&
+    !activeComponents.inbox;
+  const inboxAndPlannerOnly =
+    activeComponents.inbox &&
+    activeComponents.planner &&
+    !activeComponents.board;
+  const allThreeActive =
+    activeComponents.inbox &&
+    activeComponents.planner &&
+    activeComponents.board;
 
   // Keep navbar border hidden state in sync with layout; must be above any early returns
   useEffect(() => {
     console.log("BoardPage setting navbarBorderHidden:", {
       activeComponents,
-      bothActive,
-      settingNavbarBorderHidden: bothActive,
+      multipleActive,
+      settingNavbarBorderHidden: multipleActive,
     });
-    setNavbarBorderHidden(bothActive);
-  }, [bothActive, setNavbarBorderHidden, activeComponents]);
+    setNavbarBorderHidden(multipleActive);
+  }, [multipleActive, setNavbarBorderHidden, activeComponents]);
 
   // Kick off data loading to drive a loading state
   const {
@@ -138,29 +167,55 @@ const BoardPage = () => {
   return (
     <div className="h-full flex flex-col">
       <div
-        className={`flex w-full h-full pb-8 pt-0 min-w-0 min-h-0 items-stretch ${
-          bothActive ? "gap-3 px-4" : ""
+        className={`flex w-full h-full pt-0 min-w-0 min-h-0 items-stretch ${
+          multipleActive ? "gap-3 px-4 pb-8" : ""
         } ${theme === "light" ? "bg-white" : "bg-[#1f1f21]"}`}
       >
         {/* Inbox pane */}
         <div
           className={`${
             activeComponents.inbox
-              ? bothActive
-                ? "opacity-100 translate-x-0 basis-[272px] w-[272px] my-2"
+              ? multipleActive
+                ? inboxAndPlannerOnly
+                  ? "opacity-100 translate-x-0 flex-1 my-2"
+                  : "opacity-100 translate-x-0 basis-[272px] w-[272px] my-2"
                 : "opacity-100 translate-x-0 flex-1 my-0"
-              : "opacity-0 -translate-x-4 pointer-events-none basis-0 w-0 my-0"
+              : "opacity-0 -translate-x-4 pointer-events-none basis-0 w-0 my-0 hidden"
           } flex flex-col h-full min-h-0 shrink-0 transition-all duration-200 ease-out`}
         >
-          <Inbox fullWidth={!bothActive} />
+          <Inbox
+            fullWidth={!multipleActive}
+            isSidebar={!inboxAndPlannerOnly}
+            isVisible={activeComponents.inbox}
+          />
+        </div>
+
+        {/* Planner pane */}
+        <div
+          className={`${
+            activeComponents.planner
+              ? multipleActive
+                ? inboxAndPlannerOnly
+                  ? "opacity-100 translate-x-0 flex-1 my-2"
+                  : "opacity-100 translate-x-0 basis-[272px] w-[272px] my-2"
+                : "opacity-100 translate-x-0 flex-1 my-0"
+              : "opacity-0 -translate-x-4 pointer-events-none basis-0 w-0 my-0 hidden"
+          } flex flex-col h-full min-h-0 shrink-0 transition-all duration-200 ease-out`}
+        >
+          <Planner
+            fullWidth={!multipleActive}
+            isSidebar={!inboxAndPlannerOnly && multipleActive}
+          />
         </div>
 
         {/* Board pane */}
         <div
           className={`${
             activeComponents.board
-              ? bothActive
-                ? "flex-1 h-full rounded-lg border border-[#313133] overflow-hidden my-2"
+              ? multipleActive
+                ? inboxAndBoardOnly
+                  ? "flex-1 h-full rounded-lg border border-[#313133] overflow-hidden my-2"
+                  : "flex-1 h-full rounded-lg border border-[#313133] overflow-hidden my-2"
                 : "flex-1 h-full"
               : "w-0 basis-0 h-full pointer-events-none opacity-0"
           } min-w-0 min-h-0 transition-all duration-200 ease-out`}
@@ -168,11 +223,11 @@ const BoardPage = () => {
           <Board
             board={board}
             backgroundStyle={
-              bothActive
+              multipleActive
                 ? { ...backgroundStyle, minHeight: undefined }
                 : backgroundStyle
             }
-            bottomGap={!bothActive}
+            bottomGap={!multipleActive}
           />
         </div>
       </div>

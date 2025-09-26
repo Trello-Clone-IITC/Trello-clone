@@ -1,1 +1,1 @@
-export { default as Inbox } from "@/features/caspi-playground/inbox/components/Inbox";
+export { default as Inbox } from "@/features/final-final/inbox/components/Inbox";
