@@ -3,13 +3,13 @@
 # --- deps: install all deps with GH Packages auth ---
 FROM node:20-alpine AS deps
 WORKDIR /app
-RUN apk add --no-cache openssl libc6-compat
+# RUN apk add --no-cache openssl libc6-compat
 COPY package*.json ./
 RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
     sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)"; \
            printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc; \
-           npm ci; \
-           rm -f .npmrc'
+           npm ci'
+
 
 # --- build: copy source, generate Prisma Client, build TS ---
 FROM node:20-alpine AS build
