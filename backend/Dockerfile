@@ -3,21 +3,22 @@
 # --- deps: install all deps with GH Packages auth ---
 FROM node:20-alpine AS deps
 WORKDIR /app
-# RUN apk add --no-cache openssl libc6-compat
+RUN apk add --no-cache openssl libc6-compat
 COPY package*.json ./
+# npm cache speeds up subsequent builds
 RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
+    --mount=type=cache,target=/root/.npm \
     sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)"; \
            printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc; \
-           npm ci'
-
+           npm ci; \
+           rm -f .npmrc'
 
 # --- build: copy source, generate Prisma Client, build TS ---
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules node_modules
 COPY . .
-# prisma generate (needs schema in repo)
-ENV DATABASE_URL=postgresql://user:pass@localhost:5432/db
+# prisma generate does NOT require a live DB; remove the dummy URL
 RUN npx prisma generate
 RUN npm run build
 
@@ -25,15 +26,26 @@ RUN npm run build
 FROM node:20-alpine AS prod-deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
+    --mount=type=cache,target=/root/.npm \
+    sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)"; \
+           printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc; \
+           npm ci --omit=dev; \
+           rm -f .npmrc'
 
 # --- runtime: prod deps + generated client + built JS ---
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# (Optional) drop privileges
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
 COPY --from=prod-deps /app/node_modules ./node_modules
+# bring over prisma engines + generated client artifacts from build
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/dist ./dist
+
 EXPOSE 3000
 CMD ["node","dist/server.js"]
