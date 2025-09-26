@@ -199,7 +199,8 @@ export const CardLocationDtoSchema = z.object({
 
 export const CardDtoSchema = z.object({
   id: z.uuid(),
-  listId: z.uuid(),
+  listId: z.uuid().nullable().optional(),
+  inboxUserId: z.uuid().nullable().optional(),
   title: z.string(),
   description: z.string().nullable().optional(),
   dueDate: z.iso.datetime().nullable().optional(),

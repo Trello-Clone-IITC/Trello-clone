@@ -68,7 +68,7 @@ export const cardController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.getCardById(id, listId, userId);
+      const card = await cardService.getCardById(id, userId, listId);
 
       res.status(200).json({
         success: true,
@@ -136,96 +136,96 @@ export const cardController = {
   },
 
   // Move card to different list/position
-  moveCard: async (
-    req: Request,
-    res: Response<ApiResponse<CardDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-      const { listId, position } = req.body;
-      const userId = await userService.getUserIdByRequest(req);
+  // moveCard: async (
+  //   req: Request,
+  //   res: Response<ApiResponse<CardDto>>,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const { id } = req.params;
+  //     const { listId, position } = req.body;
+  //     const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+  //     if (!userId) {
+  //       return next(new AppError("User not authenticated", 401));
+  //     }
 
-      const card = await cardService.moveCard(
-        id,
-        listId,
-        parseFloat(position),
-        userId
-      );
+  //     const card = await cardService.moveCard(
+  //       id,
+  //       listId,
+  //       parseFloat(position),
+  //       userId
+  //     );
 
-      res.status(200).json({
-        success: true,
-        data: card,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
+  //     res.status(200).json({
+  //       success: true,
+  //       data: card,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // },
 
   // Archive/Unarchive a card
-  toggleArchive: async (
-    req: Request,
-    res: Response<ApiResponse<CardDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-      const userId = await userService.getUserIdByRequest(req);
+  // toggleArchive: async (
+  //   req: Request,
+  //   res: Response<ApiResponse<CardDto>>,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const { id } = req.params;
+  //     const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+  //     if (!userId) {
+  //       return next(new AppError("User not authenticated", 401));
+  //     }
 
-      const card = await cardService.toggleArchive(id, userId);
+  //     const card = await cardService.toggleArchive(id, userId);
 
-      res.status(200).json({
-        success: true,
-        data: card,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
+  //     res.status(200).json({
+  //       success: true,
+  //       data: card,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // },
 
   // Search cards
-  searchCards: async (
-    req: Request,
-    res: Response<ApiResponse<CardDto[]>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { query, boardId, listId } = req.query;
-      const userId = await userService.getUserIdByRequest(req);
+  // searchCards: async (
+  //   req: Request,
+  //   res: Response<ApiResponse<CardDto[]>>,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const { query, boardId, listId } = req.query;
+  //     const userId = await userService.getUserIdByRequest(req);
 
-      if (!userId) {
-        return next(new AppError("User not authenticated", 401));
-      }
+  //     if (!userId) {
+  //       return next(new AppError("User not authenticated", 401));
+  //     }
 
-      if (!query || typeof query !== "string") {
-        return next(new AppError("Search query is required", 400));
-      }
+  //     if (!query || typeof query !== "string") {
+  //       return next(new AppError("Search query is required", 400));
+  //     }
 
-      const cards = await cardService.searchCards(
-        query,
-        {
-          boardId: boardId as string,
-          listId: listId as string,
-        },
-        userId
-      );
+  //     const cards = await cardService.searchCards(
+  //       query,
+  //       {
+  //         boardId: boardId as string,
+  //         listId: listId as string,
+  //       },
+  //       userId
+  //     );
 
-      res.status(200).json({
-        success: true,
-        data: cards,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
+  //     res.status(200).json({
+  //       success: true,
+  //       data: cards,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // },
 
   // Get card activity
   getCardActivity: async (

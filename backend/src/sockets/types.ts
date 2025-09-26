@@ -1,4 +1,4 @@
-import type { ListDto, CardDto } from "@ronmordo/contracts";
+import type { ListDto, CardDto, UpdateCardInput } from "@ronmordo/contracts";
 
 // INTERFACE: Events from server to clients in a board room
 export type BoardServerEvents = {
@@ -9,7 +9,11 @@ export type BoardServerEvents = {
   "card:created": (card: CardDto) => void;
   "card:updated": (card: CardDto) => void;
   "card:deleted": (cardId: string, listId: string) => void;
-  "card:moved": (card: CardDto, fromListId?: string) => void;
+  "card:moved": (
+    card: CardDto,
+    fromListId?: string,
+    fromInboxUserId?: string
+  ) => void;
 };
 
 // INTERFACE: Events from client to server
@@ -25,9 +29,7 @@ export type BoardClientEvents = {
   "list:update": (payload: {
     boardId: string;
     listId: string;
-    updates: Partial<
-      Pick<ListDto, "name" | "position" | "isArchived" | "subscribed">
-    >;
+    updates: UpdateCardInput;
   }) => void;
   "list:delete": (payload: { boardId: string; listId: string }) => void;
   // Cards CRUD
@@ -60,8 +62,10 @@ export type BoardClientEvents = {
   "card:move": (payload: {
     boardId: string;
     cardId: string;
-    fromListId: string;
-    toListId: string;
+    fromListId?: string;
+    toListId?: string;
+    fromInboxUserId?: string;
+    toInboxUserId?: string;
     position: number;
   }) => void;
 };

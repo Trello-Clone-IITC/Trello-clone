@@ -54,7 +54,7 @@ export function mapCardToDto(
 export function mapCardDtoToCreateInput(dto: CardDto): Prisma.CardCreateInput {
   return {
     id: dto.id,
-    list: { connect: { id: dto.listId } },
+    list: dto.listId ? { connect: { id: dto.listId } } : undefined,
     title: dto.title,
     description: dto.description ?? undefined,
     dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
@@ -72,7 +72,8 @@ export function mapCardDtoToCreateInput(dto: CardDto): Prisma.CardCreateInput {
 // Dates: string ISO -> Date; nullable fields: null is preserved, undefined means no-op
 export function mapUpdateDtoToUpdateInput(dto: {
   id?: string;
-  listId?: string;
+  listId?: string | null;
+  inboxUserId?: string | null;
   title?: string;
   description?: string | null | undefined;
   dueDate?: string | null | undefined;
@@ -87,7 +88,18 @@ export function mapUpdateDtoToUpdateInput(dto: {
 }): Prisma.CardUpdateInput {
   return {
     // Connect to another list if listId provided
-    list: dto.listId ? { connect: { id: dto.listId } } : undefined,
+    list:
+      dto.listId === undefined
+        ? undefined
+        : dto.listId === null
+        ? { disconnect: true }
+        : { connect: { id: dto.listId } },
+    inbox:
+      dto.inboxUserId === undefined
+        ? undefined
+        : dto.inboxUserId === null
+        ? { disconnect: true }
+        : { connect: { userId: dto.inboxUserId } },
     title: dto.title,
     description: dto.description === undefined ? undefined : dto.description, // allow null to clear
     dueDate:

@@ -7,12 +7,14 @@ import cardRouter from "./cards/card.route.js";
 import listRouter from "./lists/list.route.js";
 import checklistRouter from "./checklists/checklist.route.js";
 import docsRouter from "./docs/docs.route.js";
+import inboxRouter from "./inboxes/inbox.route.js";
 
 const router = Router();
 
 // Changed resources routing to plural convenstion.
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
+router.use("/inbox", inboxRouter);
 router.use("/workspaces", workspaceRouter);
 router.use("/boards", boardRouter);
 router.use("/cards", cardRouter);
