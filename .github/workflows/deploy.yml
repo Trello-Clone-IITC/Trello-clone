@@ -40,6 +40,9 @@ jobs:
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Check GH_PACKAGES_TOKEN present
+        run: test -n "${{ secrets.GH_PACKAGES_TOKEN }}" || (echo "Missing GH_PACKAGES_TOKEN secret" && exit 1)
+
       - name: Build backend image
         working-directory: ${{ env.BACKEND_WORKDIR }}
         env:
