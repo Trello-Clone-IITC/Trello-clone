@@ -19,15 +19,12 @@ import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Board pages
-import FinalBoardPage from "@/features/final-final/board/pages/BoardPage"
+import FinalBoardPage from "@/features/final-final/board/pages/BoardPage";
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
 
-
-
 //caspi imports
-import CaspiBoardPage from "@/features/caspi-playground/board/pages/BoardPage";
 
 export const AppRouter = () => {
   return (
@@ -54,7 +51,6 @@ export const AppRouter = () => {
         </Route>
         {/* Caspi board with its own layout */}
         <Route element={<BoardLayout />}>
-          <Route path="/caspi/:boardId" element={<CaspiBoardPage />} />
           <Route path="/b/:boardId" element={<FinalBoardPage />} />
         </Route>
         {/* Board page with navbar but no sidebar */}

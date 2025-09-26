@@ -278,17 +278,30 @@ export function useCardDnd(boardId: string, listId: string) {
           }
         }
 
-        // Check if this is a cross-list move
+        // Check if this is a cross-list move or inbox move
         const isCrossListMove = sourceListId && sourceListId !== listId;
+        const isInboxMove = sourceListId === "inbox";
 
-        if (isCrossListMove) {
-          // Handle cross-list move
-          // First, get the card from the source list
-          const sourceCards =
-            queryClient.getQueryData<CardDto[] | undefined>(
-              boardKeys.cards(boardId, sourceListId)
-            ) || [];
-          const cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+        if (isCrossListMove || isInboxMove) {
+          // Handle cross-list move or inbox move
+          let sourceCards: CardDto[] = [];
+          let cardToMove: CardDto | undefined;
+
+          if (isInboxMove) {
+            // Get card from inbox cache
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>([
+                "inbox-cards",
+              ]) || [];
+            cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+          } else {
+            // Get card from source list
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>(
+                boardKeys.cards(boardId, sourceListId)
+              ) || [];
+            cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+          }
 
           if (!cardToMove) {
             console.error("Card not found in source list:", sourceCardId);
@@ -314,19 +327,36 @@ export function useCardDnd(boardId: string, listId: string) {
           }
 
           // Remove card from source list first
-          queryClient.setQueryData<CardDto[] | undefined>(
-            boardKeys.cards(boardId, sourceListId),
-            (prev) => {
-              if (!prev) return prev;
-              const filtered = prev.filter((x) => x.id !== sourceCardId);
-              console.log("Removed card from source list:", {
-                sourceListId,
-                removedCardId: sourceCardId,
-                remainingCards: filtered.length,
-              });
-              return filtered;
-            }
-          );
+          if (isInboxMove) {
+            // Remove from inbox cache
+            queryClient.setQueryData<CardDto[] | undefined>(
+              ["inbox-cards"],
+              (prev) => {
+                if (!prev) return prev;
+                const filtered = prev.filter((x) => x.id !== sourceCardId);
+                console.log("Removed card from inbox:", {
+                  removedCardId: sourceCardId,
+                  remainingCards: filtered.length,
+                });
+                return filtered;
+              }
+            );
+          } else {
+            // Remove from source list
+            queryClient.setQueryData<CardDto[] | undefined>(
+              boardKeys.cards(boardId, sourceListId),
+              (prev) => {
+                if (!prev) return prev;
+                const filtered = prev.filter((x) => x.id !== sourceCardId);
+                console.log("Removed card from source list:", {
+                  sourceListId,
+                  removedCardId: sourceCardId,
+                  remainingCards: filtered.length,
+                });
+                return filtered;
+              }
+            );
+          }
 
           // Add card to target list with updated listId and position
           queryClient.setQueryData<CardDto[] | undefined>(
@@ -367,13 +397,19 @@ export function useCardDnd(boardId: string, listId: string) {
           );
 
           // Emit cross-list move event
-          emitMoveCard(
-            boardId,
-            sourceListId,
-            sourceCardId,
-            listId,
-            newPosition
-          );
+          if (isInboxMove) {
+            // For inbox moves, we need to emit a special event or use a different approach
+            // Since emitMoveCard expects a fromListId, we'll use a special identifier
+            emitMoveCard(boardId, "inbox", sourceCardId, listId, newPosition);
+          } else {
+            emitMoveCard(
+              boardId,
+              sourceListId,
+              sourceCardId,
+              listId,
+              newPosition
+            );
+          }
         } else {
           // Handle same-list reorder - match the visual positioning logic
           console.log("Same-list reorder:", {
@@ -421,8 +457,9 @@ export function useCardDnd(boardId: string, listId: string) {
       } finally {
         // Clear state: immediate for same-list, slight delay for cross-list to show settle animation
         const wasCrossList = !!(sourceListId && sourceListId !== listId);
+        const wasInboxMove = sourceListId === "inbox";
 
-        if (wasCrossList) {
+        if (wasCrossList || wasInboxMove) {
           const delay = 180;
           window.setTimeout(() => {
             setDraggingId(null);
