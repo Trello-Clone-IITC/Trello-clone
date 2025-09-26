@@ -1,40 +1,56 @@
+// Centralized mapping of public image asset paths.
+// These strings point to files located under `frontend/public/images`.
+
 // Dashboard Icons
-export { default as starIconLight } from "./star-icon-light.svg";
-export { default as starIconDark } from "./star-icon-dark.svg";
-export { default as clockIconLight } from "./clock-icon-light.svg";
-export { default as clockIconDark } from "./clock-icon-dark.svg";
-export { default as boardsIconLight } from "./boards-icon-light.svg";
-export { default as boardsIconDark } from "./boards-icon-dark.svg";
-export { default as membersIconLight } from "./members-icon-light.svg";
-export { default as membersIconDark } from "./members-icon-dark.svg";
-export { default as gearwheelIconLight } from "./gearwheel-icon-light.svg";
-export { default as gearwheelIconDark } from "./gearwheel-icon-dark.svg";
-export { default as upgradeIconLight } from "./upgrade-icon-light.svg";
-export { default as upgradeIconDark } from "./upgrade-icon-dark.svg";
+export const starIconLight = "/images/star-icon-light.svg";
+export const starIconDark = "/images/star-icon-dark.svg";
+export const clockIconLight = "/images/clock-icon-light.svg";
+export const clockIconDark = "/images/clock-icon-dark.svg";
+export const boardsIconLight = "/images/boards-icon-light.svg";
+export const boardsIconDark = "/images/boards-icon-dark.svg";
+export const membersIconLight = "/images/members-icon-light.svg";
+export const membersIconDark = "/images/members-icon-dark.svg";
+export const gearwheelIconLight = "/images/gearwheel-icon-light.svg";
+export const gearwheelIconDark = "/images/gearwheel-icon-dark.svg";
+export const upgradeIconLight = "/images/upgrade-icon-light.svg";
+export const upgradeIconDark = "/images/upgrade-icon-dark.svg";
+export const clockIcon = "/images/clock-icon.svg";
+export const starIcon = "/images/star-icon.svg";
+export const starredIcon = "/images/starred-icon.svg";
+export const megaphoneIconLight = "/images/megaphone-icon-light.svg";
+export const megaphoneIconDark = "/images/megaphone-icon-dark.svg";
 
 // Sidebar Icons
-export { default as gearwheelIcon } from "./gearwheel.svg";
-export { default as gearwheelLightIcon } from "./gearwheel-light.svg";
-export { default as peopleIcon } from "./people-icon.svg";
-export { default as peopleLightIcon } from "./people-icon-light.svg";
+export const gearwheelIcon = "/images/gearwheel.svg";
+export const gearwheelLightIcon = "/images/gearwheel-light.svg";
+export const peopleIcon = "/images/people-icon.svg";
+export const peopleLightIcon = "/images/people-icon-light.svg";
 
 // Board Icons
-export { default as lockIcon } from "./lock-icon.svg";
-export { default as lockIconDark } from "./lock-icon-dark.svg";
-export { default as globeIcon } from "./globe-icon.svg";
-export { default as globeIconDark } from "./globe-icon-dark.svg";
+export const lockIcon = "/images/lock-icon.svg";
+export const lockIconDark = "/images/lock-icon-dark.svg";
+export const globeIcon = "/images/globe-icon.svg";
+export const globeIconDark = "/images/globe-icon-dark.svg";
+export const threeBarIcon = "/images/three-bar-icon.svg";
 
 // Add Members Icons
-export { default as addMembersIconDark } from "./dark-add-members.svg";
-export { default as addMembersIconLight } from "./light-add-members.svg";
+export const addMembersIconDark = "/images/dark-add-members.svg";
+export const addMembersIconLight = "/images/light-add-members.svg";
 
-// Board Background Images
-export { default as background1Hd } from "./background-1-hd.webp";
-export { default as background1Preview } from "./background-1-preview.webp";
-export { default as background2Hd } from "./background-2-hd.webp";
-export { default as background2Preview } from "./background-2-preview.webp";
-export { default as background3Hd } from "./background-3-hd.webp";
-export { default as background3Preview } from "./background-3-preview.webp";
-export { default as background4Hd } from "./background-4-hd.webp";
-export { default as background4Preview } from "./background-4-preview.webp";
-export { default as filterIcon } from "./filter-icon.svg";
+// Theme Icons
+export const lightThemeIcon = "/images/light-theme-icon.svg";
+export const darkThemeIcon = "/images/dark-theme-icon.svg";
+export const systemThemeIcon = "/images/system-theme-icon.svg";
+
+// Background Images
+export const background1Hd = "/images/background-1-hd.webp";
+export const background1Preview = "/images/background-1-preview.webp";
+export const background2Hd = "/images/background-2-hd.webp";
+export const background2Preview = "/images/background-2-preview.webp";
+export const background3Hd = "/images/background-3-hd.webp";
+export const background3Preview = "/images/background-3-preview.webp";
+export const background4Hd = "/images/background-4-hd.webp";
+export const background4Preview = "/images/background-4-preview.webp";
+
+// Misc Icons
+export const filterIcon = "/images/filter-icon.svg";

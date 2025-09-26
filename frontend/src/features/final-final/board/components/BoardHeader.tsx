@@ -7,7 +7,7 @@ import VisibilityPopover from "./VisibilityPopover";
 import { useState } from "react";
 import { getIconColor } from "../utils/backgroundUtils";
 import type { BoardBackground } from "@ronmordo/contracts";
-import SpaceshipIcon from "@/assets/SpaceshipIcon";
+import SpaceshipIcon from "@/components/ui/SpaceshipIcon";
 import { useTheme } from "@/hooks/useTheme";
 interface BoardHeaderProps {
   boardName: string;
@@ -42,7 +42,7 @@ export default function BoardHeader({
             className="text-[#172b4d] bg-transparent flex shadow-none hover:bg-white/10 rounded-[3px] has-[>svg]:p-1.5"
           >
             <img
-              src="/src/assets/three-bar-icon.svg"
+              src="/images/three-bar-icon.svg"
               alt="Menu"
               className="w-5 h-5"
               style={{
@@ -151,7 +151,7 @@ export default function BoardHeader({
             }`}
           >
             <img
-              src="/src/assets/people-icon.svg"
+              src="/images/people-icon.svg"
               alt="People"
               className="w-5 h-5"
               style={{

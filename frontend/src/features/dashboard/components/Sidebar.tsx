@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useUserWorkspaces } from "../hooks/useUserWorkspaces";
 import { useTheme } from "@/hooks/useTheme";
-import * as Icons from "../../../assets";
+import * as Icons from "@/assets";
 import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 
 // Custom SVG Icons
