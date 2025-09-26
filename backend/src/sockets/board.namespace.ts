@@ -105,7 +105,7 @@ export function registerBoardNamespace(io: Server) {
       });
 
       // Cards
-      socket.on("card:create", async ({ boardId, listId, title }) => {
+      socket.on("card:create", async ({ boardId, listId, title, position }) => {
         try {
           // const userId = getUserId(socket);
           const userId = await userService.getUserIdByClerkId(
@@ -114,7 +114,7 @@ export function registerBoardNamespace(io: Server) {
           // console.log("userId:", userId);
 
           const created = await cardService.createCard(
-            { title },
+            { title, position },
             listId,
             userId
           );
@@ -156,15 +156,7 @@ export function registerBoardNamespace(io: Server) {
 
       socket.on(
         "card:move",
-        async ({
-          boardId,
-          cardId,
-          fromListId,
-          toListId,
-          fromInboxUserId,
-          toInboxUserId,
-          position,
-        }) => {
+        async ({ boardId, cardId, fromListId, toListId, position }) => {
           try {
             // We need fromListId for the client UI to remove from source list; get card first
             // const userId = getUserId(socket);
@@ -175,10 +167,10 @@ export function registerBoardNamespace(io: Server) {
 
             const moved = await cardService.updateCard(
               cardId,
-              { listId: toListId, position, inboxUserId: toInboxUserId },
+              { listId: toListId, position },
               userId
             );
-            emitCardMoved(boardId, moved, fromListId, fromInboxUserId);
+            emitCardMoved(boardId, moved, fromListId);
           } catch (e) {
             // ignore
           }

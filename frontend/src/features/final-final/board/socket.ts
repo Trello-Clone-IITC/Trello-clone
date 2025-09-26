@@ -21,7 +21,10 @@ let socketInstance: Socket | null = null;
 export function getBoardSocket(): Socket {
   if (!socketInstance) {
     // Allow default transports (polling + upgrade) to improve connectivity
-    socketInstance = io(SOCKET_URL, { autoConnect: true, withCredentials: true });
+    socketInstance = io(SOCKET_URL, {
+      autoConnect: true,
+      withCredentials: true,
+    });
     socketInstance.on("connect_error", (err) => {
       console.warn("Socket connect_error:", (err as any)?.message || err);
     });
@@ -32,30 +35,21 @@ export function getBoardSocket(): Socket {
   return socketInstance;
 }
 
-export function useBoardSocket(
-  boardId: string,
-  handlers: BoardSocketHandlers
-) {
+export function useBoardSocket(boardId: string, handlers: BoardSocketHandlers) {
   const socket = getBoardSocket();
 
   useEffect(() => {
     socket.emit("board:join", { boardId });
 
     // Lists
-    handlers.onListCreated &&
-      socket.on("list:created", handlers.onListCreated);
-    handlers.onListUpdated &&
-      socket.on("list:updated", handlers.onListUpdated);
-    handlers.onListDeleted &&
-      socket.on("list:deleted", handlers.onListDeleted);
+    handlers.onListCreated && socket.on("list:created", handlers.onListCreated);
+    handlers.onListUpdated && socket.on("list:updated", handlers.onListUpdated);
+    handlers.onListDeleted && socket.on("list:deleted", handlers.onListDeleted);
 
     // Cards
-    handlers.onCardCreated &&
-      socket.on("card:created", handlers.onCardCreated);
-    handlers.onCardUpdated &&
-      socket.on("card:updated", handlers.onCardUpdated);
-    handlers.onCardDeleted &&
-      socket.on("card:deleted", handlers.onCardDeleted);
+    handlers.onCardCreated && socket.on("card:created", handlers.onCardCreated);
+    handlers.onCardUpdated && socket.on("card:updated", handlers.onCardUpdated);
+    handlers.onCardDeleted && socket.on("card:deleted", handlers.onCardDeleted);
     handlers.onCardMoved && socket.on("card:moved", handlers.onCardMoved);
 
     return () => {
@@ -81,7 +75,9 @@ export const emitCreateList = (
 export const emitUpdateList = (
   boardId: string,
   listId: string,
-  updates: Partial<Pick<ListDto, "name" | "position" | "isArchived" | "subscribed">>
+  updates: Partial<
+    Pick<ListDto, "name" | "position" | "isArchived" | "subscribed">
+  >
 ) => getBoardSocket().emit("list:update", { boardId, listId, updates });
 
 export const emitDeleteList = (boardId: string, listId: string) =>
@@ -92,7 +88,18 @@ export const emitCreateCard = (
   listId: string,
   title: string,
   position?: number
-) => getBoardSocket().emit("card:create", { boardId, listId, title, position });
+) => {
+  console.log("emitCreateCard called with:", {
+    boardId,
+    listId,
+    title,
+    position,
+  });
+  const socket = getBoardSocket();
+  console.log("Socket instance:", socket);
+  console.log("Socket connected:", socket.connected);
+  socket.emit("card:create", { boardId, listId, title, position });
+};
 
 export const emitUpdateCard = (
   boardId: string,
@@ -100,7 +107,12 @@ export const emitUpdateCard = (
   updates: Partial<
     Pick<
       CardDto,
-      "title" | "description" | "dueDate" | "startDate" | "coverImageUrl" | "position"
+      | "title"
+      | "description"
+      | "dueDate"
+      | "startDate"
+      | "coverImageUrl"
+      | "position"
     >
   >
 ) => getBoardSocket().emit("card:update", { boardId, cardId, updates });
@@ -113,8 +125,15 @@ export const emitDeleteCard = (
 
 export const emitMoveCard = (
   boardId: string,
-  fromListId: string,
   cardId: string,
-  toListId: string,
-  position: number
-) => getBoardSocket().emit("card:move", { boardId, fromListId, cardId, toListId, position });
+  position: number,
+  fromListId: string | null,
+  toListId: string | null
+) =>
+  getBoardSocket().emit("card:move", {
+    boardId,
+    fromListId,
+    cardId,
+    toListId,
+    position,
+  });

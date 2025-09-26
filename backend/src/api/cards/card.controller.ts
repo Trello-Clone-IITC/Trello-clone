@@ -37,7 +37,7 @@ export const cardController = {
         return next(new AppError("User not authenticated", 401));
       }
 
-      const card = await cardService.createCard(req.body, listId, userId);
+      const card = await cardService.createCard(req.body, listId, userId, true);
 
       res.status(201).json({
         success: true,

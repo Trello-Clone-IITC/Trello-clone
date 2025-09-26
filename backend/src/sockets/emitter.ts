@@ -47,10 +47,7 @@ export const emitCardDeleted = (
 export const emitCardMoved = (
   boardId: string,
   card: Parameters<BoardServerEvents["card:moved"]>[0],
-  fromListId?: string,
-  fromInboxUserId?: string
+  fromListId: string | null
 ) => {
-  ioRef
-    ?.to(room(boardId))
-    .emit("card:moved", card, fromListId, fromInboxUserId);
+  ioRef?.to(room(boardId)).emit("card:moved", card, fromListId);
 };

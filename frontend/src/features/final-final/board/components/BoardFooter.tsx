@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Inbox, Calendar, Layout, Layers } from "lucide-react";
 
 interface BoardFooterProps {
-  activeComponents: { inbox: boolean; board: boolean };
+  activeComponents: { inbox: boolean; planner: boolean; board: boolean };
   onTabChange?: (tab: "inbox" | "planner" | "board" | "switch-boards") => void;
 }
 
@@ -40,31 +40,36 @@ export default function BoardFooter({
       <div className="flex p-1.5 border border-[#313133] shadow-md gap-1.5 pointer-events-auto rounded-lg bg-[#1a1a1a]">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          // Determine if this component is active (planner is never active)
+          // Determine if this component is active
           const isActive =
             (item.id === "inbox" && activeComponents.inbox) ||
+            (item.id === "planner" && activeComponents.planner) ||
             (item.id === "board" && activeComponents.board);
 
-          // Disable toggling if it's the only active component, or if it's planner (not implemented yet)
+          // Disable toggling if it's the only active component
           const isDisabled =
-            (isActive &&
-              ((item.id === "inbox" && !activeComponents.board) ||
-                (item.id === "board" && !activeComponents.inbox))) ||
-            item.id === "planner"; // Disable planner for now
+            isActive &&
+            ((item.id === "inbox" &&
+              !activeComponents.board &&
+              !activeComponents.planner) ||
+              (item.id === "planner" &&
+                !activeComponents.board &&
+                !activeComponents.inbox) ||
+              (item.id === "board" &&
+                !activeComponents.inbox &&
+                !activeComponents.planner));
 
           return (
-            <div key={item.id} role="presentation">
+            <div key={item.id} role="presentation" className="relative">
               <button
                 onClick={() => onTabChange?.(item.id)}
                 disabled={isDisabled}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200",
-                  item.id === "planner"
-                    ? "text-gray-500 cursor-not-allowed opacity-60"
-                    : isDisabled
+                  isDisabled
                     ? "bg-[#1c2b42] text-[#5786ce] cursor-not-allowed opacity-75"
                     : isActive
-                    ? "bg-[#1c2b42] text-[#5786ce] hover:bg-[#123263] hover:text-[#415b84] cursor-pointer"
+                    ? "bg-[#1c2b42] text-[#669df1] hover:bg-[#123263] hover:text-[#5786ce] cursor-pointer"
                     : "text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer"
                 )}
                 role="checkbox"
@@ -76,6 +81,10 @@ export default function BoardFooter({
                 </span>
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
+              {/* Blue indicator bar for active tab */}
+              {isActive && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-0.5 bg-[#669df1] rounded-full"></div>
+              )}
             </div>
           );
         })}

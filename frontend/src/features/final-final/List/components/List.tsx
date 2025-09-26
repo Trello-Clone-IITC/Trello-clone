@@ -22,7 +22,7 @@ const List = ({
   );
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
   const listFooterRef = useRef<ListFooterRef>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLLIElement>(null);
   const { handleDrop } = useCardDnd(list.boardId, list.id);
   const [isCardDragOver, setIsCardDragOver] = useState(false);
 
@@ -37,7 +37,8 @@ const List = ({
         type: "list-card-drop",
         listId: list.id,
       }),
-      canDrop: ({ source }) => source.data?.type === "card",
+      canDrop: ({ source }) =>
+        source.data?.type === "card" || source.data?.type === "inbox-card",
       onDragEnter: () => {
         setIsCardDragOver(true);
       },
@@ -47,18 +48,22 @@ const List = ({
       onDrop: ({ source }) => {
         const sourceCardId = source.data?.cardId as string;
         const sourceListId = source.data?.listId as string;
+        const isInboxCard = source.data?.type === "inbox-card";
 
         // Only handle the drop if this is a cross-list move (different listId)
-        // or if this list is empty (no cards)
+        // or if this is an inbox card, or if this list is empty (no cards)
         if (
           sourceCardId &&
-          (sourceListId !== list.id || !cards || cards.length === 0)
+          (sourceListId !== list.id ||
+            isInboxCard ||
+            !cards ||
+            cards.length === 0)
         ) {
           handleDrop({
             sourceCardId,
             targetCardId: "empty",
             edge: "bottom",
-            sourceListId,
+            sourceListId: isInboxCard ? "inbox" : sourceListId,
           });
         }
         setIsCardDragOver(false);
@@ -85,10 +90,6 @@ const List = ({
         <ListHeader
           list={list}
           boardId={list.boardId}
-          nextPosition={
-            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ??
-              0) + 1000
-          }
           isEditing={isEditing}
           onStartEditing={startEditing}
           onStopEditing={stopEditing}
@@ -124,10 +125,6 @@ const List = ({
           ref={listFooterRef}
           listId={list.id}
           boardId={list.boardId}
-          nextPosition={
-            (cards?.reduce((max, c) => Math.max(max, c.position ?? 0), 0) ??
-              0) + 1000
-          }
         />
       </div>
     </li>

@@ -1,0 +1,260 @@
+import React, { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { useInbox } from "../hooks/useInbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  X,
+  Check,
+  Bell,
+  Filter,
+  MoreHorizontal,
+  Inbox as InboxIcon,
+  Mail,
+  Smartphone,
+  Lock,
+} from "lucide-react";
+import type { InboxCard } from "../types";
+import SlackIcon from "@/assets/icons/slack-color.svg";
+import TeamsIcon from "@/assets/icons/microsoft-teams-color.svg";
+
+interface InboxProps {
+  className?: string;
+  fullWidth?: boolean;
+  isSidebar?: boolean;
+  isVisible?: boolean;
+}
+
+const InboxCardComponent: React.FC<{
+  card: InboxCard;
+  onUpdate: (id: string, updates: Partial<InboxCard>) => void;
+  onDelete: (id: string) => void;
+  onToggleCompletion: (id: string) => void;
+}> = ({ card, onUpdate, onDelete, onToggleCompletion }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(card.title);
+  const [editDescription, setEditDescription] = useState(
+    card.description || ""
+  );
+
+  const handleSave = () => {
+    if (editTitle.trim()) {
+      onUpdate(card.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+      });
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditTitle(card.title);
+    setEditDescription(card.description || "");
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
+
+  return (
+    <div className="bg-[#22272b] rounded-lg p-3 mb-2 border border-[#313133] hover:border-[#44546f] transition-colors">
+      {isEditing ? (
+        <div className="space-y-2">
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-[#1a1a1a] border-[#313133] text-white placeholder:text-gray-400"
+            placeholder="Card title"
+            autoFocus
+          />
+          <Textarea
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="bg-[#1a1a1a] border-[#313133] text-white placeholder:text-gray-400 resize-none"
+            placeholder="Add a description..."
+            rows={3}
+          />
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSave}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Save
+            </Button>
+            <Button
+              onClick={handleCancel}
+              size="sm"
+              variant="ghost"
+              className="text-gray-400 hover:text-white"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="group">
+          <div className="flex items-start gap-2">
+            <button
+              onClick={() => onToggleCompletion(card.id)}
+              className={cn(
+                "mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors",
+                card.isCompleted
+                  ? "bg-green-600 border-green-600 text-white"
+                  : "border-[#44546f] hover:border-green-600"
+              )}
+            >
+              {card.isCompleted && <Check className="w-3 h-3" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <h3
+                className={cn(
+                  "text-sm font-medium text-white cursor-pointer hover:bg-[#313133] rounded px-1 py-0.5 -mx-1 -my-0.5",
+                  card.isCompleted && "line-through text-gray-400"
+                )}
+                onClick={() => setIsEditing(true)}
+              >
+                {card.title}
+              </h3>
+              {card.description && (
+                <p className="text-xs text-gray-400 mt-1 whitespace-pre-wrap">
+                  {card.description}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => onDelete(card.id)}
+              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#313133] rounded transition-all"
+            >
+              <X className="w-4 h-4 text-gray-400 hover:text-white" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default function Inbox({
+  className,
+  fullWidth = false,
+  isSidebar = false,
+  isVisible = true,
+}: InboxProps) {
+  const {
+    cards,
+    addCard,
+    updateCard,
+    deleteCard,
+    toggleCardCompletion,
+    isLoading,
+  } = useInbox();
+  const [isAddingCard, setIsAddingCard] = useState(false);
+  const [newCardTitle, setNewCardTitle] = useState("");
+  const [newCardDescription, setNewCardDescription] = useState("");
+  const [hasAnimatedIn, setHasAnimatedIn] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [animationKey, setAnimationKey] = useState(0);
+  const addCardRef = useRef<HTMLDivElement>(null);
+
+  const handleAddCard = () => {
+    if (newCardTitle.trim()) {
+      addCard(newCardTitle.trim(), newCardDescription.trim() || undefined);
+      setNewCardTitle("");
+      setNewCardDescription("");
+      setIsAddingCard(false);
+    }
+  };
+
+  const handleCancelAdd = () => {
+    setNewCardTitle("");
+    setNewCardDescription("");
+    setIsAddingCard(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAddCard();
+    } else if (e.key === "Escape") {
+      handleCancelAdd();
+    }
+  };
+
+  // Auto-focus the input when adding a card
+  useEffect(() => {
+    if (isAddingCard && addCardRef.current) {
+      const input = addCardRef.current.querySelector("input");
+      input?.focus();
+    }
+  }, [isAddingCard]);
+
+  // Reset animation state when Inbox becomes visible
+  useEffect(() => {
+    if (isVisible) {
+      console.log("Inbox became visible:", {
+        cardsLength: cards.length,
+        isLoading,
+        animationKey,
+      });
+
+      setHasAnimatedIn(false);
+      setIsTransitioning(false);
+      setAnimationKey((prev) => prev + 1); // Force animation reset
+
+      if (cards.length === 0 && !isLoading) {
+        const timer = setTimeout(() => {
+          console.log("Triggering diamond animation");
+          setHasAnimatedIn(true);
+        }, 100);
+        return () => clearTimeout(timer);
+      } else if (cards.length > 0) {
+        // If there are cards, show them immediately without animation
+        setHasAnimatedIn(true);
+      }
+    }
+  }, [isVisible, cards.length, isLoading]);
+
+  // Trigger transition animation when cards are added
+  useEffect(() => {
+    if (cards.length > 0 && hasAnimatedIn && !isTransitioning) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 800); // Full duration for the transition
+      return () => clearTimeout(timer);
+    }
+  }, [cards.length, hasAnimatedIn, isTransitioning]);
+
+  if (isLoading) {
+    return (
+      <div
+        className={cn(
+          fullWidth
+            ? "flex-1 min-w-0 w-full border border-[#313133] overflow-hidden flex items-center justify-center"
+            : "flex-grow-0 flex-shrink-0 basis-[272px] w-[272px] border border-[#313133] rounded-lg overflow-hidden flex items-center justify-center",
+          "bg-gradient-to-b from-[#0e1b2c] via-[#0f2541] to-[#14365e]",
+          className
+        )}
+      >
+        <div className="text-gray-400">Loading inbox...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        fullWidth
+          ? "flex-1 min-w-0 max-w-none w-full self-stretch border border-[#313133] overflow-hidden flex flex-col h-full min-h-0 group"
+          : isSidebar
+          ? "shrink-0 grow min-w-[272px] max-w-[272px] self-stretch border border-[#313133] rounded-lg overflow-hidden flex flex-col h

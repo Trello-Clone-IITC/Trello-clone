@@ -4,6 +4,7 @@ import BoardLists from "./BoardLists";
 import ListView from "./List";
 import { useListDnd } from "../hooks/useListDnd";
 import { useDragScroll } from "../utils/drag-scroll";
+import { sortByPosition } from "@/features/final-final/shared/utils/positionUtils";
 
 export default function ListsRow({
   boardId,
@@ -32,13 +33,7 @@ export default function ListsRow({
     isAutoScrolling,
   } = useListDnd(boardId);
 
-  const sortedLists = useMemo(
-    () =>
-      (lists ? [...lists] : []).sort(
-        (a, b) => (a.position ?? 0) - (b.position ?? 0)
-      ),
-    [lists]
-  );
+  const sortedLists = useMemo(() => sortByPosition(lists || []), [lists]);
   //----------------------------------------------------------dragging sideways scroll---------------------------------
   useDragScroll(scrollRef as React.RefObject<HTMLElement>, {
     blockSelector:

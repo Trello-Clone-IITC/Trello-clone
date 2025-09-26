@@ -7,6 +7,11 @@ import {
   emitUpdateCard,
   emitMoveCard,
 } from "@/features/final-final/board/socket";
+import { useInbox } from "@/features/final-final/inbox/hooks/useInbox";
+import {
+  calculatePosition,
+  sortByPosition,
+} from "@/features/final-final/shared/utils/positionUtils";
 
 type Edge = "top" | "bottom";
 
@@ -15,6 +20,7 @@ type DndLocation = { current?: { input?: { clientY?: number } } };
 
 export function useCardDnd(boardId: string, listId: string) {
   const queryClient = useQueryClient();
+  const { moveCardToList } = useInbox();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -179,10 +185,22 @@ export function useCardDnd(boardId: string, listId: string) {
 
         // Additional check: if this is a cross-list move, verify the card is still in source list
         if (sourceListId && sourceListId !== listId) {
-          const sourceCards =
-            queryClient.getQueryData<CardDto[] | undefined>(
-              boardKeys.cards(boardId, sourceListId)
-            ) || [];
+          let sourceCards: CardDto[] = [];
+
+          if (sourceListId === "inbox") {
+            // For inbox moves, check inbox cache
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>([
+                "inbox-cards",
+              ]) || [];
+          } else {
+            // For regular cross-list moves, check board list cache
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>(
+                boardKeys.cards(boardId, sourceListId)
+              ) || [];
+          }
+
           const cardInSource = sourceCards.find((c) => c.id === sourceCardId);
 
           if (!cardInSource) {
@@ -207,9 +225,7 @@ export function useCardDnd(boardId: string, listId: string) {
             boardKeys.cards(boardId, listId)
           ) || [];
 
-        const currentSorted = [...current].sort(
-          (a, b) => (a.position ?? 0) - (b.position ?? 0)
-        );
+        const currentSorted = sortByPosition(current);
 
         console.log(
           "Current cards before update:",
@@ -220,75 +236,45 @@ export function useCardDnd(boardId: string, listId: string) {
           }))
         );
 
-        let newPosition: number;
+        // Calculate new position using centralized utility
+        const newPosition = calculatePosition({
+          sourceId: sourceCardId,
+          targetId: targetCardId,
+          edge,
+          items: currentSorted,
+        });
 
-        // Handle empty list drop
-        if (targetCardId === "empty") {
-          newPosition =
-            currentSorted.length === 0
-              ? 1000
-              : (currentSorted[currentSorted.length - 1].position ?? 0) + 1000;
-        } else {
-          // Handle normal card drop
-          const others = currentSorted.filter((x) => x.id !== sourceCardId);
-          const targetIdx = others.findIndex((x) => x.id === targetCardId);
+        console.log("Position calculation result:", {
+          sourceId: sourceCardId,
+          targetId: targetCardId,
+          edge,
+          newPosition,
+        });
 
-          if (targetIdx === -1) {
-            console.log("Target card not found in others array:", targetCardId);
-            return;
-          }
-
-          const insIdx = edge === "top" ? targetIdx : targetIdx + 1;
-
-          if (others.length === 0) {
-            newPosition = 1000;
-            console.log("Position calculation: empty list, using 1000");
-          } else if (insIdx <= 0) {
-            newPosition = (others[0].position ?? 0) - 1000;
-            console.log("Position calculation: insert at beginning", {
-              firstCardPosition: others[0].position,
-              newPosition,
-            });
-          } else if (insIdx >= others.length) {
-            newPosition = (others[others.length - 1].position ?? 0) + 1000;
-            console.log("Position calculation: insert at end", {
-              lastCardPosition: others[others.length - 1].position,
-              newPosition,
-            });
-          } else {
-            const prev = others[insIdx - 1];
-            const next = others[insIdx];
-            newPosition = ((prev.position ?? 0) + (next.position ?? 0)) / 2;
-            console.log("Position calculation: insert between", {
-              prevCard: {
-                id: prev.id,
-                position: prev.position,
-                title: prev.title,
-              },
-              nextCard: {
-                id: next.id,
-                position: next.position,
-                title: next.title,
-              },
-              newPosition,
-              insIdx,
-              targetIdx,
-              edge,
-            });
-          }
-        }
-
-        // Check if this is a cross-list move
+        // Check if this is a cross-list move or inbox move
         const isCrossListMove = sourceListId && sourceListId !== listId;
+        const isInboxMove = sourceListId === "inbox";
 
-        if (isCrossListMove) {
-          // Handle cross-list move
-          // First, get the card from the source list
-          const sourceCards =
-            queryClient.getQueryData<CardDto[] | undefined>(
-              boardKeys.cards(boardId, sourceListId)
-            ) || [];
-          const cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+        if (isCrossListMove || isInboxMove) {
+          // Handle cross-list move or inbox move
+          let sourceCards: CardDto[] = [];
+          let cardToMove: CardDto | undefined;
+
+          if (isInboxMove) {
+            // Get card from inbox cache
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>([
+                "inbox-cards",
+              ]) || [];
+            cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+          } else {
+            // Get card from source list
+            sourceCards =
+              queryClient.getQueryData<CardDto[] | undefined>(
+                boardKeys.cards(boardId, sourceListId)
+              ) || [];
+            cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+          }
 
           if (!cardToMove) {
             console.error("Card not found in source list:", sourceCardId);
@@ -314,19 +300,36 @@ export function useCardDnd(boardId: string, listId: string) {
           }
 
           // Remove card from source list first
-          queryClient.setQueryData<CardDto[] | undefined>(
-            boardKeys.cards(boardId, sourceListId),
-            (prev) => {
-              if (!prev) return prev;
-              const filtered = prev.filter((x) => x.id !== sourceCardId);
-              console.log("Removed card from source list:", {
-                sourceListId,
-                removedCardId: sourceCardId,
-                remainingCards: filtered.length,
-              });
-              return filtered;
-            }
-          );
+          if (isInboxMove) {
+            // Remove from inbox cache
+            queryClient.setQueryData<CardDto[] | undefined>(
+              ["inbox-cards"],
+              (prev) => {
+                if (!prev) return prev;
+                const filtered = prev.filter((x) => x.id !== sourceCardId);
+                console.log("Removed card from inbox:", {
+                  removedCardId: sourceCardId,
+                  remainingCards: filtered.length,
+                });
+                return filtered;
+              }
+            );
+          } else {
+            // Remove from source list
+            queryClient.setQueryData<CardDto[] | undefined>(
+              boardKeys.cards(boardId, sourceListId),
+              (prev) => {
+                if (!prev) return prev;
+                const filtered = prev.filter((x) => x.id !== sourceCardId);
+                console.log("Removed card from source list:", {
+                  sourceListId,
+                  removedCardId: sourceCardId,
+                  remainingCards: filtered.length,
+                });
+                return filtered;
+              }
+            );
+          }
 
           // Add card to target list with updated listId and position
           queryClient.setQueryData<CardDto[] | undefined>(
@@ -355,25 +358,42 @@ export function useCardDnd(boardId: string, listId: string) {
                 listId,
               };
               const next = [...prev, newCard];
-              next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+              const sorted = sortByPosition(next);
+
               console.log("Added card to target list:", {
                 targetListId: listId,
                 addedCardId: sourceCardId,
                 newPosition,
-                totalCards: next.length,
+                totalCards: sorted.length,
               });
-              return next;
+
+              return sorted;
             }
           );
 
-          // Emit cross-list move event
-          emitMoveCard(
-            boardId,
-            sourceListId,
-            sourceCardId,
-            listId,
-            newPosition
-          );
+          // Handle API call and socket emission
+          if (isInboxMove) {
+            // For inbox moves: Call API first, then emit socket event
+            moveCardToList(sourceCardId, listId, newPosition);
+
+            // Emit socket event to notify other clients
+            emitMoveCard(
+              boardId,
+              sourceCardId,
+              newPosition,
+              sourceListId,
+              listId
+            );
+          } else {
+            // For cross-list moves: emit socket event
+            emitMoveCard(
+              boardId,
+              sourceCardId,
+              newPosition,
+              sourceListId,
+              listId
+            );
+          }
         } else {
           // Handle same-list reorder - match the visual positioning logic
           console.log("Same-list reorder:", {
@@ -394,14 +414,14 @@ export function useCardDnd(boardId: string, listId: string) {
               const updated = prev.map((x) =>
                 x.id === sourceCardId ? { ...x, position: newPosition } : x
               );
-              updated.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+              const sorted = sortByPosition(updated);
 
               console.log("Same-list reorder details:", {
                 sourceCardId,
                 targetCardId,
                 edge,
                 newPosition,
-                finalCards: updated.map((c, index) => ({
+                finalCards: sorted.map((c, index) => ({
                   index,
                   id: c.id,
                   position: c.position,
@@ -409,7 +429,7 @@ export function useCardDnd(boardId: string, listId: string) {
                 })),
               });
 
-              return updated;
+              return sorted;
             }
           );
 
@@ -421,8 +441,9 @@ export function useCardDnd(boardId: string, listId: string) {
       } finally {
         // Clear state: immediate for same-list, slight delay for cross-list to show settle animation
         const wasCrossList = !!(sourceListId && sourceListId !== listId);
+        const wasInboxMove = sourceListId === "inbox";
 
-        if (wasCrossList) {
+        if (wasCrossList || wasInboxMove) {
           const delay = 180;
           window.setTimeout(() => {
             setDraggingId(null);
@@ -438,7 +459,7 @@ export function useCardDnd(boardId: string, listId: string) {
         }
       }
     },
-    [boardId, listId, queryClient, setDraggingId]
+    [boardId, listId, queryClient, setDraggingId, moveCardToList]
   );
 
   // Fallback drop target on the scroll container

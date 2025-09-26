@@ -4,6 +4,10 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import type { ListDto } from "@ronmordo/contracts";
 import { boardKeys } from "@/features/final-final/board/hooks";
 import { emitUpdateList } from "@/features/final-final/board/socket";
+import {
+  calculatePosition,
+  sortByPosition,
+} from "@/features/final-final/shared/utils/positionUtils";
 
 type Edge = "left" | "right";
 
@@ -169,36 +173,31 @@ export function useListDnd(boardId: string) {
         queryClient.getQueryData<ListDto[] | undefined>(
           boardKeys.lists(boardId)
         ) || [];
-      const currentSorted = [...current].sort(
-        (a, b) => (a.position ?? 0) - (b.position ?? 0)
-      );
-      const others = currentSorted.filter((x) => x.id !== sourceListId);
-      const targetIdx = others.findIndex((x) => x.id === targetListId);
-      if (targetIdx === -1) return;
-      const insIdx = edge === "left" ? targetIdx : targetIdx + 1;
+      const currentSorted = sortByPosition(current);
 
-      let newPosition: number;
-      if (others.length === 0) {
-        newPosition = 1000;
-      } else if (insIdx <= 0) {
-        newPosition = (others[0].position ?? 0) - 1000;
-      } else if (insIdx >= others.length) {
-        newPosition = (others[others.length - 1].position ?? 0) + 1000;
-      } else {
-        const prev = others[insIdx - 1];
-        const next = others[insIdx];
-        newPosition = ((prev.position ?? 0) + (next.position ?? 0)) / 2;
-      }
+      // Calculate new position using centralized utility
+      const newPosition = calculatePosition({
+        sourceId: sourceListId,
+        targetId: targetListId,
+        edge: edge === "left" ? "top" : "bottom", // Convert left/right to top/bottom for the utility
+        items: currentSorted,
+      });
+
+      console.log("List position calculation result:", {
+        sourceId: sourceListId,
+        targetId: targetListId,
+        edge,
+        newPosition,
+      });
 
       queryClient.setQueryData<ListDto[] | undefined>(
         boardKeys.lists(boardId),
         (prev) => {
           if (!prev) return prev;
-          const next = prev.map((x) =>
+          const updated = prev.map((x) =>
             x.id === sourceListId ? { ...x, position: newPosition } : x
           );
-          next.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-          return next;
+          return sortByPosition(updated);
         }
       );
 

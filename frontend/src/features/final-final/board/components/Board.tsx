@@ -10,6 +10,7 @@ import { useLists } from "@/features/final-final/List/hooks/useListQueries";
 import { ListsRow } from "@/features/final-final/List/components";
 import { emitCreateList } from "@/features/final-final/board/socket";
 import { cn } from "@/lib/utils";
+import { calculatePosition } from "@/features/final-final/shared/utils/positionUtils";
 
 interface BoardProps {
   board: BoardDto;
@@ -45,10 +46,16 @@ const Board = ({ board, backgroundStyle, bottomGap = false }: BoardProps) => {
     e.preventDefault();
     const name = listName.trim();
     if (!name) return;
-    const nextPosition =
-      (lists?.reduce((max, l) => Math.max(max, l.position ?? 0), 0) ?? 0) +
-      1000;
-    emitCreateList(board.id, name, nextPosition);
+
+    // Calculate position using centralized utility
+    const position = calculatePosition({
+      sourceId: "new-list", // Dummy ID for new list
+      targetId: "empty", // Add to end
+      edge: "bottom",
+      items: lists || [],
+    });
+
+    emitCreateList(board.id, name, position);
     setIsCreatingList(false);
     setListName("");
   };
