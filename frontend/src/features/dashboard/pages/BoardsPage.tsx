@@ -1,4 +1,4 @@
-import * as Icons from "../../../assets";
+import * as Icons from "@/assets";
 import { useTheme } from "@/hooks/useTheme";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";

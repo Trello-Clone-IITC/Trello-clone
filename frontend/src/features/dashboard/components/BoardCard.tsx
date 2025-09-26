@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
-import starredIcon from "../../../assets/starred-icon.svg";
+import { starredIcon } from "@/assets";
 
 interface BoardCardProps {
   id: string;

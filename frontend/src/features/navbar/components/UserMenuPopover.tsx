@@ -7,11 +7,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SquareArrowOutUpRight, ChevronRight } from "lucide-react";
-import peopleIcon from "../../../assets/people-icon.svg";
-import peopleIconLight from "../../../assets/people-icon-light.svg";
-import lightThemeIcon from "../../../assets/light-theme-icon.svg";
-import darkThemeIcon from "../../../assets/dark-theme-icon.svg";
-import systemThemeIcon from "../../../assets/system-theme-icon.svg";
+import {
+  peopleIcon,
+  peopleLightIcon as peopleIconLight,
+  lightThemeIcon,
+  darkThemeIcon,
+  systemThemeIcon,
+} from "@/assets";
 
 // Trello Theme Icons
 const LightThemeIcon: React.FC<{ className?: string }> = ({ className }) => (

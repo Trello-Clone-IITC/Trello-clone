@@ -2,10 +2,10 @@ import type { BoardBackground } from "@ronmordo/contracts";
 
 // Background image mappings
 const backgroundImages: Record<BoardBackground, string> = {
-  mountain: "/src/assets/background-1-hd.webp", // Mountain landscape
-  valley: "/src/assets/background-2-hd.webp", // Valley/landscape
-  tree: "/src/assets/background-3-hd.webp", // Tree/forest
-  snow: "/src/assets/background-4-hd.webp", // Snowy landscape
+  mountain: "/images/background-1-hd.webp", // Mountain landscape
+  valley: "/images/background-2-hd.webp", // Valley/landscape
+  tree: "/images/background-3-hd.webp", // Tree/forest
+  snow: "/images/background-4-hd.webp", // Snowy landscape
 };
 
 export const getBoardBackgroundStyle = (

@@ -197,9 +197,9 @@ export const CoverPopover = ({
           </h4>
           <ul className="grid grid-cols-3 gap-2 -mx-1 overflow-x-hidden p-1 list-none">
             {[
-              "/src/assets/background-1-preview.webp",
-              "/src/assets/background-2-preview.webp",
-              "/src/assets/background-3-preview.webp",
+              "/images/background-1-preview.webp",
+              "/images/background-2-preview.webp",
+              "/images/background-3-preview.webp",
             ].map((image, index) => (
               <li key={index} className="list-none relative">
                 <button

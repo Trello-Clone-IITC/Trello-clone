@@ -5,7 +5,7 @@ import { getWorkspaceDisplayProps } from "@/lib/workspaceUtils";
 import { BoardCard, CreateNewBoard } from "../index";
 import { useUserBoards } from "../hooks/useUserBoards";
 import { getBackgroundPreviewUrl } from "../utils/backgroundUtils";
-import * as Icons from "../../../assets";
+import * as Icons from "@/assets";
 import type { WorkspaceDto } from "@ronmordo/contracts";
 
 interface WorkspaceBoardsProps {

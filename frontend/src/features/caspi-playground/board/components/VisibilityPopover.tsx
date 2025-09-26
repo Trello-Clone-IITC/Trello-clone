@@ -48,7 +48,7 @@ export default function VisibilityPopover({
                   <div className="w-full h-full m-0 py-1.5 px-3 rounded-none text-left text-[#a9abaf] hover:bg-[#36373a] cursor-pointer">
                     <div className="flex m-0 items-center justify-start gap-x-1 text-sm font-normal leading-5 text-left">
                       <img
-                        src="/src/assets/lock-icon.svg"
+                        src="/images/lock-icon.svg"
                         alt="Private"
                         className="w-4 h-4"
                         style={{
@@ -75,7 +75,7 @@ export default function VisibilityPopover({
                   <div className="w-full h-full m-0 py-1.5 px-3 rounded-none text-left text-[#a9abaf] hover:bg-[#36373a] cursor-pointer">
                     <div className="flex m-0 items-center justify-start gap-x-1 text-sm font-normal leading-5 text-left">
                       <img
-                        src="/src/assets/people-icon.svg"
+                        src="/images/people-icon.svg"
                         alt="Workspace"
                         className="w-4 h-4 "
                         style={{
@@ -103,7 +103,7 @@ export default function VisibilityPopover({
                   <div className="w-full h-full m-0 py-1.5 px-3 rounded-none text-left text-[#434445] cursor-none pointer-events-none ">
                     <div className="flex m-0 items-center justify-start gap-x-1 text-sm font-normal leading-5 text-left">
                       <img
-                        src="/src/assets/upgrade-icon-dark.svg"
+                        src="/images/upgrade-icon-dark.svg"
                         alt="Organization"
                         className="w-4 h-4"
                         style={{
@@ -131,7 +131,7 @@ export default function VisibilityPopover({
                   <div className="w-full h-full m-0 py-1.5 px-3 rounded-none text-left text-[#a9abaf] hover:bg-[#36373a] cursor-pointer">
                     <div className="flex m-0 items-center justify-start gap-x-1 text-sm font-normal leading-5 text-left">
                       <img
-                        src="/src/assets/globe-icon.svg"
+                        src="/images/globe-icon.svg"
                         alt="Public"
                         className="w-4 h-4"
                         style={{
