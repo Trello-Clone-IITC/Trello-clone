@@ -8,6 +8,7 @@ import listRouter from "./lists/list.route.js";
 import checklistRouter from "./checklists/checklist.route.js";
 import docsRouter from "./docs/docs.route.js";
 import inboxRouter from "./inboxes/inbox.route.js";
+import searchRouter from "./search/search.route.js";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use("/boards", boardRouter);
 router.use("/cards", cardRouter);
 router.use("/checklists", checklistRouter);
 router.use("/lists", listRouter);
+router.use("search", searchRouter);
 router.use("/apiDocs", docsRouter);
 
 export default router;
