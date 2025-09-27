@@ -4,14 +4,14 @@ import type { SearchResultsDto } from "@ronmordo/contracts";
 import { searchService } from "./search.service.js";
 
 const search = async (
-  req: Request<{}, {}, {}, { search: string }>,
+  req: Request<{}, {}, {}, { q: string }>,
   res: Response<ApiResponse<SearchResultsDto>>,
   next: NextFunction
 ) => {
   try {
-    const { search } = req.query;
+    const { q } = req.query;
 
-    const searchResultsDto = await searchService.search(search);
+    const searchResultsDto = await searchService.search(q);
 
     return res.status(200).json({ success: true, data: searchResultsDto });
   } catch (err) {

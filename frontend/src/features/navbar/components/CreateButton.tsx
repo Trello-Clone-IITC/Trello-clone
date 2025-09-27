@@ -9,7 +9,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAppContext } from "@/hooks/useAppContext";
-import { CreateBoardForm } from "@/features/final-final/board/components/CreateBoardForm";
+import { CreateBoardForm } from "@/features/board/components/CreateBoardForm";
 import { cn } from "@/lib/utils";
 
 export default function CreateButton() {

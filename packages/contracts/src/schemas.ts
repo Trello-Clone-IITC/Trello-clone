@@ -227,6 +227,7 @@ export const CardDtoSchema = z.object({
   ),
   location: CardLocationDtoSchema.nullable().optional(),
   isArchived: z.boolean(),
+  isCompleted: z.boolean(),
   createdBy: z.uuid(),
   coverImageUrl: z.string().nullable().optional(),
   createdAt: z.iso.datetime(),
@@ -631,6 +632,7 @@ export const CreateCardLabelInputSchema = CardLabelDtoSchema.pick({
 export const CreateCardInputSchema = CardDtoSchema.pick({
   title: true,
   location: true,
+  position: true,
 });
 
 export const CreateChecklistInputSchema = ChecklistDtoSchema.pick({
