@@ -137,6 +137,7 @@ jobs:
                 | docker login --username AWS --password-stdin \"\$AWS_ACCOUNT_ID.dkr.ecr.\$AWS_REGION.amazonaws.com\"
       
               docker compose pull
+              docker compose run --rm backend npx prisma migrate deploy
               docker compose up -d --remove-orphans
             "
       
