@@ -5,6 +5,5 @@ export const useSearch = (searchText: string) => {
   return useQuery({
     queryKey: ["search", searchText],
     queryFn: () => search(searchText),
-    enabled: !!searchText,
   });
 };

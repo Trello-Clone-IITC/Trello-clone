@@ -86,7 +86,7 @@ const search = async (
     },
   });
 
-  const recentlyViewedBoards = await prisma.board.findMany({
+  const recentlyViewedBoardsRaw = await prisma.board.findMany({
     where: { id: { in: user.recentlyViewedBoards } },
     select: {
       id: true,
@@ -96,6 +96,10 @@ const search = async (
       workspace: { select: { name: true } },
     },
   });
+
+  const recentlyViewedBoards = user.recentlyViewedBoards
+    .map((id) => recentlyViewedBoardsRaw.find((b) => b.id === id))
+    .filter((b): b is NonNullable<typeof b> => Boolean(b));
 
   return {
     users,

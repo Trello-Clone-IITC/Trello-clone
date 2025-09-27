@@ -3,6 +3,7 @@ import { Search, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SearchResultsDto } from "@ronmordo/contracts";
 import { getBackgroundPreviewUrl } from "@/features/dashboard/utils/backgroundUtils";
+import { useNavigate } from "react-router-dom";
 
 interface SearchPopoverProps {
   searchResults: SearchResultsDto | undefined;
@@ -16,20 +17,15 @@ export default function SearchPopover({
   searchValue,
 }: SearchPopoverProps) {
   const [activeTab, setActiveTab] = useState<"trello" | "confluence">("trello");
-
-  // For now, show empty recent boards until we implement the proper API
-  const recentBoards: Array<{
-    id: string;
-    name: string;
-    workspace: string;
-    background: string;
-  }> = [];
+  const navigate = useNavigate();
 
   const hasSearchResults =
     searchValue &&
     searchResults &&
     ((searchResults.boards && searchResults.boards.length > 0) ||
       (searchResults.cards && searchResults.cards.length > 0) ||
+      (searchResults.recentlyViewedBoards &&
+        searchResults.recentlyViewedBoards.length > 0) ||
       (searchResults.users && searchResults.users.length > 0));
 
   return (
@@ -70,16 +66,18 @@ export default function SearchPopover({
             <h3 className="text-xs font-semibold text-[#8c8f97] uppercase tracking-wide mb-3">
               RECENT BOARDS
             </h3>
-            {recentBoards.length > 0 ? (
+            {searchResults?.recentlyViewedBoards?.length &&
+            searchResults.recentlyViewedBoards.length > 0 ? (
               <div className="space-y-1">
-                {recentBoards.map((board) => (
+                {searchResults.recentlyViewedBoards.map((board) => (
                   <div
                     key={board.id}
                     className="flex items-center space-x-3 p-2 rounded hover:bg-[#626468] cursor-pointer transition-colors"
+                    onClick={() => navigate(`/b/${board.id}`)}
                   >
                     <div className="w-8 h-8 rounded bg-gray-300 flex-shrink-0 overflow-hidden">
                       <img
-                        src={board.background}
+                        src={getBackgroundPreviewUrl(board.background)}
                         alt={board.name}
                         className="w-full h-full object-cover"
                       />
@@ -89,7 +87,7 @@ export default function SearchPopover({
                         {board.name}
                       </p>
                       <p className="text-[#8c8f97] text-xs truncate">
-                        {board.workspace}
+                        {board.workspace.name}
                       </p>
                     </div>
                   </div>

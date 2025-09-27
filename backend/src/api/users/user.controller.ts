@@ -1,7 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import type { ApiResponse } from "../../utils/globalTypes.js";
-import type { UserDto, WorkspaceDto } from "@ronmordo/contracts";
+import type {
+  UpdateUserInput,
+  UserDto,
+  WorkspaceDto,
+} from "@ronmordo/contracts";
 import { userService } from "./user.service.js";
 import workspaceService from "../workspaces/workspace.service.js";
 
@@ -18,6 +22,21 @@ const getMe = async (
     return res.status(200).json({ success: true, data: user });
   } catch (err) {
     next(err);
+  }
+};
+
+const updateUser = async (
+  req: Request<{}, {}, UpdateUserInput>,
+  res: Response<ApiResponse<UserDto>>,
+  next: NextFunction
+) => {
+  try {
+    const userId = await userService.getUserIdByRequest(req);
+    const updatedUser = await userService.updateUser(userId, req.body);
+
+    return res.status(200).json({ success: true, data: updatedUser });
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -38,4 +57,4 @@ const getAllWorkspaces = async (
   }
 };
 
-export const usersController = { getMe, getAllWorkspaces };
+export const usersController = { getMe, updateUser, getAllWorkspaces };

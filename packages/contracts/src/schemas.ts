@@ -117,6 +117,7 @@ export const UserDtoSchema = z.object({
   fullName: z.string(),
   avatarUrl: z.string(),
   theme: ThemeSchema,
+  recentlyViewedBoards: z.array(z.string()),
   emailNotification: z.boolean(),
   pushNotification: z.boolean(),
   createdAt: z.iso.datetime(),

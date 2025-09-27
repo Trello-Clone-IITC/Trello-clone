@@ -1,5 +1,9 @@
 import type { Prisma, User, Theme, $Enums } from "@prisma/client";
-import { UserDtoSchema, type UserDto } from "@ronmordo/contracts";
+import {
+  UserDtoSchema,
+  type UpdateUserInput,
+  type UserDto,
+} from "@ronmordo/contracts";
 
 export function mapUserToDto(user: User): UserDto {
   const dto: UserDto = {
@@ -10,6 +14,7 @@ export function mapUserToDto(user: User): UserDto {
     fullName: user.fullName,
     avatarUrl: user.avatarUrl,
     theme: mapTheme(user.theme),
+    recentlyViewedBoards: user.recentlyViewedBoards,
     emailNotification: user.emailNotification,
     pushNotification: user.pushNotification,
     createdAt: user.createdAt.toISOString(),
@@ -42,6 +47,24 @@ export function mapUserDtoToCreateInput(dto: UserDto): Prisma.UserCreateInput {
     pushNotification: dto.pushNotification,
     createdAt: new Date(dto.createdAt),
     bio: dto.bio ?? undefined,
+  };
+}
+
+export function mapUserDtoToUpdateInput(
+  dto: UpdateUserInput
+): Prisma.UserUpdateInput {
+  return {
+    email: dto.email,
+    username: dto.username ?? undefined,
+    fullName: dto.fullName,
+    avatarUrl: dto.avatarUrl,
+    theme: dto.theme ? mapThemeDto(dto.theme) : undefined,
+    emailNotification: dto.emailNotification,
+    pushNotification: dto.pushNotification,
+    bio: dto.bio ?? undefined,
+    recentlyViewedBoards: dto.recentlyViewedBoards
+      ? { set: dto.recentlyViewedBoards }
+      : undefined,
   };
 }
 
