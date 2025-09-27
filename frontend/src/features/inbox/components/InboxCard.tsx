@@ -7,7 +7,7 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import type { CardDto } from "@ronmordo/contracts";
+import type { CardDto, UpdateCardInput } from "@ronmordo/contracts";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { useAppContext } from "@/hooks/useAppContext";
 import {
@@ -19,7 +19,7 @@ import CardModal from "@/features/card/components/CardModal";
 
 interface InboxCardProps {
   card: CardDto;
-  onUpdate: (id: string, updates: Partial<CardDto>) => void;
+  onUpdate: (id: string, updates: UpdateCardInput) => void;
   onDragStart?: (cardId: string) => void;
   onDragEnd?: (cardId: string) => void;
   onPreview?: (preview: {
@@ -48,7 +48,7 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
     card.description || ""
   );
   const [openModal, setOpenModal] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(card.isCompleted);
   const { data: user } = useMe();
   const { labelsExpanded, toggleLabelsExpanded } = useAppContext();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -76,7 +76,13 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
 
   const handleComplete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsCompleted(!isCompleted);
+    const newCompletedStatus = !isCompleted;
+    setIsCompleted(newCompletedStatus);
+
+    // Use the onUpdate prop to call the API endpoint
+    onUpdate(card.id, {
+      isCompleted: newCompletedStatus,
+    });
   };
 
   const handleLabelClick = (e: React.MouseEvent) => {

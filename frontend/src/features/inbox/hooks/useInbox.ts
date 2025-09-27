@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axiosInstance";
-import type { CardDto } from "@ronmordo/contracts";
+import type { CardDto, UpdateCardInput } from "@ronmordo/contracts";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { calculatePosition } from "@/features/shared/utils/positionUtils";
 
 const INBOX_QUERY_KEY = ["inbox-cards"];
 
-export function useInbox() {
+export function useInbox(enabled: boolean = true) {
   const { data: user } = useMe();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +19,7 @@ export function useInbox() {
     error,
   } = useQuery({
     queryKey: INBOX_QUERY_KEY,
+    enabled: enabled,
     queryFn: async (): Promise<CardDto[]> => {
       try {
         const response = await api.get<{ success: boolean; data: CardDto[] }>(
@@ -88,14 +89,11 @@ export function useInbox() {
       updates,
     }: {
       id: string;
-      updates: Partial<CardDto>;
+      updates: UpdateCardInput;
     }) => {
       const response = await api.patch<{ success: boolean; data: CardDto }>(
         `/cards/${id}`,
-        {
-          title: updates.title,
-          description: updates.description,
-        }
+        updates
       );
       return response.data.data;
     },

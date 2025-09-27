@@ -111,7 +111,6 @@ const createCard = async (
   api: boolean = false
 ): Promise<CardDto> => {
   // Verify list exists and user has access
-  console.log("-------------------------", listId);
   // if (api) {
   //   const card = await prisma.card.create({
   //     data: {
@@ -205,13 +204,19 @@ const createCard = async (
 
   const cardDto = await getCardDto(card, userId);
 
-  const cached = await getCache<CardDto[]>(`list:${listId}:cards`);
+  // Determine cache key for the new card
+  const cacheKey = api
+    ? `user:${userId}:inbox`
+    : listId
+    ? `list:${listId}:cards`
+    : null;
 
-  await setCache<CardDto[]>(
-    `list:${listId}:cards`,
-    cached ? [cardDto, ...cached] : [cardDto],
-    120
-  );
+  if (cacheKey) {
+    const cached = await getCache<CardDto[]>(cacheKey);
+    if (cached) {
+      await setCache<CardDto[]>(cacheKey, [cardDto, ...cached], 120);
+    }
+  }
 
   return cardDto;
 };
@@ -223,9 +228,14 @@ const getCardById = async (
   listId?: string,
   inboxUserId?: string
 ) => {
-  const cached = await getCache<CardDto[]>(
-    inboxUserId ? `user:${inboxUserId}:inbox` : `list:${listId}:cards`
-  );
+  // Determine cache key for the card
+  const cacheKey = inboxUserId
+    ? `user:${inboxUserId}:inbox`
+    : listId
+    ? `list:${listId}:cards`
+    : null;
+
+  const cached = cacheKey ? await getCache<CardDto[]>(cacheKey) : null;
 
   if (cached) {
     const cachedCard = cached.find((c) => c.id === cardId);
@@ -301,19 +311,20 @@ const getCardById = async (
 
   const cardDto = await getCardDto(card, userId);
 
-  let updatedCache: CardDto[];
-
   if (cached) {
-    updatedCache = cached.map((c) => (c.id === cardId ? cardDto : c));
-  } else {
-    updatedCache = [cardDto];
+    const updateCacheKey = cardDto.inboxUserId
+      ? `user:${inboxUserId}:inbox`
+      : listId
+      ? `list:${listId}:cards`
+      : null;
+    if (updateCacheKey) {
+      await setCache<CardDto[]>(
+        updateCacheKey,
+        cached.map((c) => (c.id === cardId ? cardDto : c)),
+        120
+      );
+    }
   }
-
-  await setCache<CardDto[]>(
-    cardDto.inboxUserId ? `user:${inboxUserId}:inbox` : `list:${listId}:cards`,
-    updatedCache,
-    120
-  );
 
   return cardDto;
 };
@@ -324,33 +335,19 @@ const updateCard = async (
   updateData: UpdateCardInput,
   userId: string
 ) => {
-  console.log("UPDATED DATA $$$$$$$$", updateData);
-  // Verify user has access to the card
-  // const existingCard = await prisma.card.findFirst({
-  //   where: { id: cardId },
-  //   include: {
-  //     list: {
-  //       include: {
-  //         board: {
-  //           include: {
-  //             boardMembers: {
-  //               where: { userId: userId },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // });
+  // Get the previous card state to detect location changes
+  const previousCard = await prisma.card.findUnique({
+    where: { id: cardId },
+    select: {
+      listId: true,
+      inboxUserId: true,
+    },
+  });
 
-  // if (!existingCard) {
-  //   throw new AppError("Card not found", 404);
-  // }
+  if (!previousCard) {
+    throw new AppError("Card not found", 404);
+  }
 
-  // if (existingCard.list.board.boardMembers.length === 0) {
-  //   throw new AppError("Access denied", 403);
-  // }
-  console.log("before updating");
   const card = await prisma.card.update({
     where: { id: cardId },
     data: {
@@ -396,7 +393,6 @@ const updateCard = async (
       attachments: true,
     },
   });
-  console.log("After updating");
   // Log activity
   // await prisma.activityLog.create({
   //   data: {
@@ -410,27 +406,59 @@ const updateCard = async (
 
   const cardDto = await getCardDto(card, userId);
 
-  const cached = await getCache<CardDto[]>(
-    cardDto.inboxUserId
-      ? `user:${cardDto.inboxUserId}:inbox`
-      : `list:${cardDto.listId}:cards`
-  );
+  // Determine previous and current cache keys
+  const previousCacheKey = previousCard.inboxUserId
+    ? `user:${previousCard.inboxUserId}:inbox`
+    : previousCard.listId
+    ? `list:${previousCard.listId}:cards`
+    : null; // Should not happen, but handle gracefully
 
-  let updatedCache: CardDto[];
+  const currentCacheKey = cardDto.inboxUserId
+    ? `user:${cardDto.inboxUserId}:inbox`
+    : cardDto.listId
+    ? `list:${cardDto.listId}:cards`
+    : null; // Should not happen, but handle gracefully
 
-  if (cached) {
-    updatedCache = cached.map((c) => (c.id === cardId ? cardDto : c));
+  console.log("Keyssssssssssss:", previousCacheKey, currentCacheKey);
+
+  // Handle cache updates based on location changes
+  if (previousCacheKey !== currentCacheKey) {
+    // Card moved between locations - update both caches
+
+    // Remove from previous location cache (if it exists)
+    if (previousCacheKey) {
+      const previousCached = await getCache<CardDto[]>(previousCacheKey);
+      if (previousCached) {
+        const updatedPreviousCache = previousCached.filter(
+          (c) => c.id !== cardId
+        );
+        await setCache<CardDto[]>(previousCacheKey, updatedPreviousCache, 120);
+      }
+    }
+
+    // Add to new location cache (if it exists)
+    if (currentCacheKey) {
+      const currentCached = await getCache<CardDto[]>(currentCacheKey);
+      if (currentCached) {
+        const updatedCurrentCache = currentCached.map((c) =>
+          c.id === cardId ? cardDto : c
+        );
+        await setCache<CardDto[]>(currentCacheKey, updatedCurrentCache, 120);
+      }
+    }
   } else {
-    updatedCache = [cardDto];
+    // Card stayed in same location - just update the existing cache
+    if (currentCacheKey) {
+      const cached = await getCache<CardDto[]>(currentCacheKey);
+      if (cached) {
+        await setCache<CardDto[]>(
+          currentCacheKey,
+          cached.map((c) => (c.id === cardId ? cardDto : c)),
+          120
+        );
+      }
+    }
   }
-
-  await setCache<CardDto[]>(
-    cardDto.inboxUserId
-      ? `user:${cardDto.inboxUserId}:inbox`
-      : `list:${cardDto.listId}:cards`,
-    updatedCache,
-    120
-  );
 
   return cardDto;
 };
@@ -480,20 +508,23 @@ const deleteCard = async (cardId: string, userId: string) => {
     where: { id: cardId },
   });
 
-  const cached = await getCache<CardDto[]>(
-    deletedCard.inboxUserId
-      ? `user:${deletedCard.inboxUserId}:inbox`
-      : `list:${deletedCard.listId}:cards`
-  );
+  // Determine cache key for deletion
+  const cacheKey = deletedCard.inboxUserId
+    ? `user:${deletedCard.inboxUserId}:inbox`
+    : deletedCard.listId
+    ? `list:${deletedCard.listId}:cards`
+    : null;
 
-  if (cached) {
-    await setCache<CardDto[]>(
-      deletedCard.inboxUserId
-        ? `user:${deletedCard.inboxUserId}:inbox`
-        : `list:${deletedCard.listId}:cards`,
-      cached.filter((c) => c.id !== cardId),
-      120
-    );
+  if (cacheKey) {
+    const cached = await getCache<CardDto[]>(cacheKey);
+
+    if (cached) {
+      await setCache<CardDto[]>(
+        cacheKey,
+        cached.filter((c) => c.id !== cardId),
+        120
+      );
+    }
   }
 };
 
@@ -1118,6 +1149,12 @@ const getCardAttachments = async (cardId: string, userId: string) => {
 };
 
 const getInboxCards = async (userId: string) => {
+  const cached = await getCache<CardDto[]>(`user:${userId}:inbox`);
+
+  if (cached) {
+    return cached;
+  }
+
   const cards = await prisma.card.findMany({
     where: {
       inboxUserId: userId,
@@ -1125,6 +1162,8 @@ const getInboxCards = async (userId: string) => {
   });
 
   const cardsDto = await Promise.all(cards.map((c) => getCardDto(c, userId)));
+
+  await setCache<CardDto[]>(`user:${userId}:inbox`, cardsDto, 120);
 
   return cardsDto;
 };

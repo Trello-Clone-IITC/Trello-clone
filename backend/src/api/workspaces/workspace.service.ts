@@ -16,7 +16,6 @@ import { AppError } from "../../utils/appError.js";
 import { mapBoardToDto } from "../boards/board.mapper.js";
 import { mapWorkspaceRoleDto } from "../workspace-members/workspace-members.mapper.js";
 import { getCache, setCache } from "../../lib/cache.js";
-import redis from "../../redis.js";
 
 const createWorkspace = async (
   createWorkspaceDto: CreateWorkspaceInput,
@@ -39,9 +38,15 @@ const createWorkspace = async (
 
   const workspaceDto = mapWorkspaceToDto(workspace);
 
-  await redis.del(`user:${creatorId}:workspaces`);
+  const cached = await getCache<WorkspaceDto[]>(`user:${creatorId}:workspaces`);
 
-  await getWorkspacesByUser(creatorId);
+  if (cached) {
+    await setCache<WorkspaceDto[]>(
+      `user:${creatorId}:workspaces`,
+      [workspaceDto, ...cached],
+      120
+    );
+  }
 
   return workspaceDto;
 };
@@ -69,11 +74,13 @@ const getWorkspaceById = async (
 
   const workspaceDto = mapWorkspaceToDto(workspace);
 
-  setCache<WorkspaceDto[]>(
-    `user:${userId}:workspaces`,
-    cached ? [workspaceDto, ...cached] : [workspaceDto],
-    120
-  );
+  if (cached) {
+    await setCache<WorkspaceDto[]>(
+      `user:${userId}:workspaces`,
+      [workspaceDto, ...cached],
+      120
+    );
+  }
 
   return workspaceDto;
 };

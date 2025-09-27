@@ -21,7 +21,7 @@ import TeamsIcon from "@/assets/icons/microsoft-teams-color.svg";
 import { emitMoveCard } from "@/features/board/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { boardKeys } from "@/features/board/hooks";
-import type { CardDto } from "@ronmordo/contracts";
+import type { CardDto, UpdateCardInput } from "@ronmordo/contracts";
 import { useMemo } from "react";
 import { sortByPosition } from "@/features/shared/utils/positionUtils";
 import { useTheme } from "@/hooks/useTheme";
@@ -55,7 +55,7 @@ const InboxCardsList = ({
     targetCardId: string;
     edge: "top" | "bottom";
   }) => void;
-  updateCard: (id: string, updates: Partial<CardDto>) => void;
+  updateCard: (id: string, updates: UpdateCardInput) => void;
 }) => {
   // Use a stable, de-duplicated, position-sorted array for all DnD math
   const items = useMemo(() => {

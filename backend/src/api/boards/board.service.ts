@@ -32,19 +32,21 @@ const createBoard = async (
       creator: {
         connect: { id: userId },
       },
+      boardMembers: {
+        create: {
+          userId,
+        },
+      },
     },
   });
   return board;
 };
 
 const getBoardById = async (id: string, userId: string): Promise<BoardDto> => {
-  const cached = await getCache<BoardDto[]>(`user:${userId}:boards`);
+  const cached = await getCache<BoardDto>(`board:${id}`);
 
   if (cached) {
-    const cachedBoard = cached.find((b) => b.id === id);
-    if (cachedBoard) {
-      return cachedBoard;
-    }
+    cached;
   }
 
   const board = await prisma.board.findUnique({
@@ -57,15 +59,7 @@ const getBoardById = async (id: string, userId: string): Promise<BoardDto> => {
 
   const boardDto = mapBoardToDto(board);
 
-  let updatedCache: BoardDto[];
-
-  if (cached) {
-    updatedCache = cached.map((b) => (b.id === id ? boardDto : b));
-  } else {
-    updatedCache = [boardDto];
-  }
-
-  await setCache<BoardDto[]>(`user:${userId}:boards`, updatedCache, 120);
+  await setCache<BoardDto>(`board:${id}`, boardDto, 120);
 
   return boardDto;
 };
