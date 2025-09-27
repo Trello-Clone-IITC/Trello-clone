@@ -1,7 +1,8 @@
+import type { UpdateUserInput } from "@ronmordo/contracts";
 import { getCache, setCache } from "../../lib/cache.js";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
-import { mapUserToDto } from "./user.mapper.js";
+import { mapUserDtoToUpdateInput, mapUserToDto } from "./user.mapper.js";
 import { clerkClient, getAuth } from "@clerk/express";
 import { type Request } from "express";
 
@@ -36,6 +37,17 @@ const getMe = async (clerkUserId: string) => {
 
   // Return the UserDto.
   return mapUserToDto(user);
+};
+
+const updateUser = async (userId: string, updateData: UpdateUserInput) => {
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: mapUserDtoToUpdateInput(updateData),
+  });
+
+  return mapUserToDto(updatedUser);
 };
 
 const getUserByEmail = async (email: string) => {
@@ -87,4 +99,5 @@ export const userService = {
   getUserByEmail,
   getUserIdByClerkId,
   getUserIdByRequest,
+  updateUser,
 };

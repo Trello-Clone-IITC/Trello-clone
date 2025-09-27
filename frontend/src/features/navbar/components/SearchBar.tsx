@@ -21,12 +21,12 @@ export default function SearchBar() {
   const [isOpen, setIsOpen] = useState(false);
   const isLight = theme === "light";
 
+  const { data, isLoading } = useSearch(debouncedValue);
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedValue(searchValue), 500); // wait 500ms
     return () => clearTimeout(handler);
   }, [searchValue]);
-
-  const { data, isLoading } = useSearch(debouncedValue);
 
   // Check if we're in board view (handles both /board/ and /b/ routes)
   const isBoardView =

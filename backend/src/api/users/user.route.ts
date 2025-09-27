@@ -12,6 +12,8 @@ router.use(validateAuthenticatedUser);
 // Protected Routes
 router.get("/me", usersController.getMe);
 
+router.patch("/me", usersController.updateUser);
+
 router.use("/me/activity", activityLogsRouter);
 
 export default router;

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { starredIcon } from "@/assets";
+import { useUpdateMe } from "../hooks/useUpdateMe";
+import { useMe } from "@/features/auth/hooks/useMe";
 
 interface BoardCardProps {
   id: string;
@@ -23,8 +25,27 @@ export const BoardCard = ({
   const { theme } = useTheme();
   const navigate = useNavigate();
   const isLight = theme === "light";
+  const { mutateAsync: updateMe } = useUpdateMe();
+  const { data: user } = useMe();
 
   const handleBoardClick = () => {
+    if (!user) return;
+
+    const boardIndex = user.recentlyViewedBoards.findIndex(
+      (boardId) => boardId === id
+    );
+
+    let updatedArray: string[];
+    if (boardIndex === -1) {
+      updatedArray = [id, ...user.recentlyViewedBoards];
+    } else {
+      updatedArray = [
+        id,
+        ...user.recentlyViewedBoards.filter((boardId) => boardId !== id),
+      ];
+    }
+
+    updateMe({ recentlyViewedBoards: updatedArray });
     navigate(`/b/${id}`);
   };
 

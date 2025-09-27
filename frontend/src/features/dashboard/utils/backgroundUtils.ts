@@ -10,7 +10,7 @@ const backgroundImages: Record<BoardBackground, string> = {
 
 export const getBackgroundPreviewUrl = (
   background: BoardBackground
-): string | null => {
+): string => {
   const backgroundImageUrl = backgroundImages[background];
-  return backgroundImageUrl || null;
+  return backgroundImageUrl;
 };
