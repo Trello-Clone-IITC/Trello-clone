@@ -440,10 +440,13 @@ const updateCard = async (
     if (currentCacheKey) {
       const currentCached = await getCache<CardDto[]>(currentCacheKey);
       if (currentCached) {
-        const updatedCurrentCache = currentCached.map((c) =>
-          c.id === cardId ? cardDto : c
-        );
+        const cardExistsInCache = currentCached.some((c) => c.id === cardId);
+        const updatedCurrentCache = cardExistsInCache
+          ? currentCached.map((c) => (c.id === cardId ? cardDto : c))
+          : [...currentCached, cardDto];
         await setCache<CardDto[]>(currentCacheKey, updatedCurrentCache, 120);
+      } else {
+        await setCache<CardDto[]>(currentCacheKey, [cardDto], 120);
       }
     }
   } else {
