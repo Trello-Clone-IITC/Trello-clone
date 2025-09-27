@@ -352,6 +352,21 @@ export const SearchResultsDtoSchema = z.object({
       })
     )
     .optional(),
+
+  recentlyViewedBoards: z
+    .array(
+      BoardDtoSchema.pick({
+        id: true,
+        name: true,
+        background: true,
+        updatedAt: true,
+      }).extend({
+        workspace: z.object({
+          name: z.string(),
+        }),
+      })
+    )
+    .optional(),
 });
 
 // ==========================
