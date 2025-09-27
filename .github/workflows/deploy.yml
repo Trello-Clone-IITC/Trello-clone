@@ -92,44 +92,51 @@ jobs:
 
       - name: Remote deploy on EC2
         run: |
-          ssh -tt -o StrictHostKeyChecking=no -i /tmp/deploy_key ${EC2_USER}@${EC2_HOST} <<EOSSH
-          set -e
-          # Make region available to aws by default (optional but nice)
-          export AWS_REGION="${AWS_REGION}"
-          export AWS_DEFAULT_REGION="${AWS_REGION}"
-          export AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
+          ssh -tt \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=6 \
+            -i /tmp/deploy_key \
+            "${EC2_USER}@${EC2_HOST}" "
+              set -e
       
-          # Ensure unzip + AWS CLI
-          sudo apt-get update -y
-          sudo apt-get install -y unzip curl >/dev/null 2>&1 || true
-          if ! command -v aws >/dev/null; then
-            curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip
-            unzip -q /tmp/awscliv2.zip -d /tmp
-            sudo /tmp/aws/install
-          fi
+              # pass only what we actually need
+              AWS_REGION='${AWS_REGION}'; export AWS_REGION AWS_DEFAULT_REGION=\$AWS_REGION
+              AWS_ACCOUNT_ID='${AWS_ACCOUNT_ID}'; export AWS_ACCOUNT_ID
+              EC2_PATH='${EC2_PATH}'
       
-          cd ${EC2_PATH}
-          mkdir -p frontend_build
+              # tools
+              sudo apt-get update -y
+              sudo apt-get install -y unzip curl >/dev/null 2>&1 || true
+              if ! command -v aws >/dev/null 2>&1; then
+                curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip
+                unzip -q /tmp/awscliv2.zip -d /tmp
+                sudo /tmp/aws/install
+              fi
       
-          # Unpack new frontend
-          rm -rf /tmp/fb && mkdir -p /tmp/fb
-          unzip -q /tmp/frontend_build.zip -d /tmp/fb
+              cd \"\$EC2_PATH\"
+              mkdir -p frontend_build
       
-          shopt -s dotglob || true
-          if [ -d "/tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}" ]; then
-            rm -rf frontend_build/*
-            cp -r /tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}/* frontend_build/
-          else
-            rm -rf frontend_build/*
-            cp -r /tmp/fb/* frontend_build/
-          fi
+              # unpack uploaded zip
+              rm -rf /tmp/fb && mkdir -p /tmp/fb
+              unzip -q /tmp/frontend_build.zip -d /tmp/fb
       
-          # Login to ECR using instance role
-          aws ecr get-login-password --region "${AWS_REGION}" \
-            | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+              # find a 'dist' or 'build' dir (up to depth 3); copy its contents incl. dotfiles
+              TARGET=\$(find /tmp/fb -maxdepth 3 -type d \( -name dist -o -name build \) | head -n 1)
+              rm -rf frontend_build/*
       
-          # Pull new backend + (re)start stack
-          docker compose pull
-          docker compose up -d --remove-orphans
-          EOSSH
-
+              if [ -n \"\$TARGET\" ]; then
+                cp -a \"\$TARGET\"/. frontend_build/
+              else
+                # fallback: copy everything
+                cp -a /tmp/fb/. frontend_build/
+              fi
+      
+              # ECR login & restart
+              aws ecr get-login-password --region \"\$AWS_REGION\" \
+                | docker login --username AWS --password-stdin \"\$AWS_ACCOUNT_ID.dkr.ecr.\$AWS_REGION.amazonaws.com\"
+      
+              docker compose pull
+              docker compose up -d --remove-orphans
+            "
+      
