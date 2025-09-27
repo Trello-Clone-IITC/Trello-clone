@@ -6,6 +6,7 @@ import {
   calculatePosition,
   sortByPosition,
 } from "@/features/final-final/shared/utils/positionUtils";
+import { api } from "@/lib/axiosInstance";
 
 type Edge = "top" | "bottom";
 
@@ -32,7 +33,7 @@ export function useInboxCardDnd() {
   const INBOX_QUERY_KEY = ["inbox-cards"];
 
   const handleDrop = useCallback(
-    ({
+    async ({
       sourceCardId,
       targetCardId,
       edge,
@@ -44,6 +45,12 @@ export function useInboxCardDnd() {
       let timeoutId: NodeJS.Timeout | null = null;
 
       try {
+        console.log("handleDrop called with:", {
+          sourceCardId,
+          targetCardId,
+          edge,
+        });
+
         if (!sourceCardId) {
           console.log("handleDrop: No sourceCardId provided");
           return;
@@ -89,6 +96,12 @@ export function useInboxCardDnd() {
           targetId: targetCardId,
           edge,
           newPosition,
+          currentSorted: currentSorted.map((c, idx) => ({
+            index: idx,
+            id: c.id,
+            title: c.title,
+            position: c.position,
+          })),
         });
 
         // Handle same-inbox reorder
@@ -128,8 +141,36 @@ export function useInboxCardDnd() {
           }
         );
 
-        // TODO: Send position update to backend
-        // This would require a batch update endpoint for inbox cards
+        // Send position update to backend
+        try {
+          await api.patch(`/cards/${sourceCardId}`, {
+            position: newPosition,
+          });
+
+          console.log("Card position updated successfully:", {
+            cardId: sourceCardId,
+            newPosition,
+          });
+        } catch (error) {
+          console.error("Failed to update card position:", error);
+          // Revert the optimistic update on error
+          queryClient.setQueryData<CardDto[] | undefined>(
+            INBOX_QUERY_KEY,
+            (prev) => {
+              if (!prev) return prev;
+              return prev.map((x) =>
+                x.id === sourceCardId
+                  ? {
+                      ...x,
+                      position:
+                        currentSorted.find((c) => c.id === sourceCardId)
+                          ?.position || 0,
+                    }
+                  : x
+              );
+            }
+          );
+        }
       } catch (error) {
         console.error("Error in handleDrop:", error);
       } finally {

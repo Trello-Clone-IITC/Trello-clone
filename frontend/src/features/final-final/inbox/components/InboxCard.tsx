@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Circle, CheckCircle2 } from "lucide-react";
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { CardDto } from "@ronmordo/contracts";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { useAppContext } from "@/hooks/useAppContext";
@@ -19,6 +22,16 @@ interface InboxCardProps {
   onUpdate: (id: string, updates: Partial<CardDto>) => void;
   onDragStart?: (cardId: string) => void;
   onDragEnd?: (cardId: string) => void;
+  onPreview?: (preview: {
+    sourceCardId: string;
+    targetCardId: string;
+    edge: "top" | "bottom";
+  }) => void;
+  onDrop?: (params: {
+    sourceCardId: string;
+    targetCardId: string;
+    edge: "top" | "bottom";
+  }) => void;
 }
 
 const InboxCardComponent: React.FC<InboxCardProps> = ({
@@ -26,6 +39,8 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
   onUpdate,
   onDragStart,
   onDragEnd,
+  onPreview,
+  onDrop,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
@@ -114,14 +129,69 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
       },
     });
 
-    return cleanup;
-  }, [card.id, onDragStart, onDragEnd, user?.id]);
+    const dropCleanup = dropTargetForElements({
+      element,
+      canDrop: ({ source }) => {
+        const canDrop =
+          source.data?.type === "inbox-card" && source.data?.cardId !== card.id;
+        console.log("InboxCard canDrop check:", {
+          sourceType: source.data?.type,
+          sourceCardId: source.data?.cardId,
+          targetCardId: card.id,
+          canDrop,
+        });
+        return canDrop;
+      },
+      onDrag: ({ source, location }) => {
+        const sourceCardId = source.data?.cardId as string;
+        if (sourceCardId && sourceCardId !== card.id) {
+          // Determine edge based on mouse position relative to card center
+          const rect = element.getBoundingClientRect();
+          const mouseY = location.current.input.clientY;
+          const edge = mouseY - rect.top > rect.height / 2 ? "bottom" : "top";
+
+          onPreview?.({
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+          });
+        }
+      },
+      onDrop: ({ source, location }) => {
+        console.log("InboxCard onDrop called:", { source, cardId: card.id });
+        const sourceCardId = source.data?.cardId as string;
+        if (sourceCardId && sourceCardId !== card.id) {
+          // Determine edge based on final mouse position
+          const rect = element.getBoundingClientRect();
+          const mouseY = location.current.input.clientY;
+          const edge = mouseY - rect.top > rect.height / 2 ? "bottom" : "top";
+
+          console.log("InboxCard calling onDrop with:", {
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+          });
+
+          onDrop?.({
+            sourceCardId,
+            targetCardId: card.id,
+            edge,
+          });
+        }
+      },
+    });
+
+    return () => {
+      cleanup();
+      dropCleanup();
+    };
+  }, [card.id, onDragStart, onDragEnd, onPreview, onDrop, user?.id]);
 
   return (
     <>
       <div
         ref={cardRef}
-        className="group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-sm hover:bg-[#2c2e33] transition-colors"
+        className="card-hover-group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-sm hover:bg-[#2c2e33] transition-colors"
         onClick={handleCardClick}
         style={{
           // Add some padding to make drop target area larger
@@ -217,10 +287,10 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
                 <span
                   role="img"
                   aria-label={`Mark this card complete (${card.title})`}
-                  className={`absolute left-0 top-0.5 transition-all duration-500 ease-out cursor-pointer rounded-full z-20 ${
+                  className={`card-completion-button absolute left-0 top-0.5 transition-all duration-500 ease-out cursor-pointer rounded-full z-20 ${
                     isCompleted
                       ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-[#ffffff1a]"
+                      : "opacity-0 hover:bg-[#ffffff1a]"
                   }`}
                   onClick={handleComplete}
                 >
@@ -242,10 +312,8 @@ const InboxCardComponent: React.FC<InboxCardProps> = ({
                 </span>
 
                 <h3
-                  className={`font-medium text-white mb-1 text-sm leading-tight transition-all duration-500 ease-out break-words ${
-                    isCompleted
-                      ? "ml-6"
-                      : "group-hover:ml-6 group-focus-within:ml-8"
+                  className={`card-title font-medium text-white mb-1 text-sm leading-tight transition-all duration-500 ease-out break-words ${
+                    isCompleted ? "ml-6" : ""
                   }`}
                   onDoubleClick={() => setIsEditing(true)}
                 >

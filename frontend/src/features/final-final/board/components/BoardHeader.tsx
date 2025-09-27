@@ -190,6 +190,7 @@ export default function BoardHeader({
       <ShareBoardModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
+        boardId={boardId}
       />
     </div>
   );
