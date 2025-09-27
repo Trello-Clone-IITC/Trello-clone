@@ -61,11 +61,7 @@ const Board = ({ board, backgroundStyle, bottomGap = false }: BoardProps) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-white">Loading board...</div>
-      </div>
-    );
+    return null; // Parent handles loading skeleton
   }
 
   if (error) {

@@ -1,13 +1,19 @@
 import React from "react";
 import { Navbar } from "@/features/navbar";
 
-export const DashboardLoadingSkeleton: React.FC = () => {
+export const DashboardLoadingSkeleton: React.FC<{ showNavbar?: boolean }> = ({
+  showNavbar = true,
+}) => {
   return (
     <div className="min-h-screen w-full flex flex-col">
-      {/* Real Navbar, visual-only (white background, faded items) */}
-      <div className="navbar-faded pointer-events-none select-none" aria-hidden>
-        <Navbar />
-      </div>
+      {showNavbar && (
+        <div
+          className="navbar-faded pointer-events-none select-none"
+          aria-hidden
+        >
+          <Navbar />
+        </div>
+      )}
 
       {/* Center pipes */}
       <div className="flex-1 flex items-center justify-center bg-white">

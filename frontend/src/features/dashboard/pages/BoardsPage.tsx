@@ -6,6 +6,7 @@ import { useUserWorkspaces } from "../index";
 import { WorkspaceBoards } from "../components/WorkspaceBoards";
 import { useEffect } from "react";
 import { resetPageTitle } from "@/lib/faviconUtils";
+import { AIButton } from "@/features/ai";
 
 export default function BoardsPage() {
   const { theme } = useTheme();
@@ -48,6 +49,8 @@ export default function BoardsPage() {
 
   return (
     <div className="space-y-6">
+      {/* AI Assistant floating button for dashboard (no boardId so it can create boards) */}
+      <AIButton variant="floating" />
       {/* Starred Boards Section - Only show if there are starred boards */}
       {starredBoards.length > 0 && (
         <section className="max-w-[1266px] pb-6">

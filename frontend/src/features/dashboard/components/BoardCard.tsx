@@ -8,11 +8,13 @@ import { useUpdateMe } from "../hooks/useUpdateMe";
 import { useMe } from "@/features/auth/hooks/useMe";
 
 interface BoardCardProps {
-  id: string;
+  id?: string;
   title: string;
   backgroundImage?: string;
   className?: string;
   isStarred?: boolean;
+  onClick?: () => void;
+  useRandomImage?: boolean;
 }
 
 export const BoardCard = ({
@@ -21,6 +23,8 @@ export const BoardCard = ({
   backgroundImage,
   className,
   isStarred = false,
+  onClick,
+  useRandomImage = true,
 }: BoardCardProps) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -29,7 +33,8 @@ export const BoardCard = ({
   const { data: user } = useMe();
 
   const handleBoardClick = () => {
-    if (!user) return;
+    if (onClick) return onClick();
+    if (!user || !id) return;
 
     const boardIndex = user.recentlyViewedBoards.findIndex(
       (boardId) => boardId === id
@@ -49,10 +54,14 @@ export const BoardCard = ({
     navigate(`/b/${id}`);
   };
 
-  // Generate a random image if none provided
+  // Use provided image; optionally fallback to random image
   const imageUrl =
     backgroundImage ||
-    `https://picsum.photos/480/320?random=${Math.floor(Math.random() * 1000)}`;
+    (useRandomImage
+      ? `https://picsum.photos/480/320?random=${Math.floor(
+          Math.random() * 1000
+        )}`
+      : undefined);
   return (
     <Card
       className={cn(
@@ -63,8 +72,10 @@ export const BoardCard = ({
     >
       {/* Background Image Container */}
       <div
-        className={`relative h-20 w-full bg-cover bg-center bg-no-repeat`}
-        style={{ backgroundImage: `url("${imageUrl}")` }}
+        className={`relative h-20 w-full bg-cover bg-center bg-no-repeat ${
+          imageUrl ? "" : "bg-[#2b2c2f]"
+        }`}
+        style={imageUrl ? { backgroundImage: `url("${imageUrl}")` } : undefined}
       >
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-200" />
