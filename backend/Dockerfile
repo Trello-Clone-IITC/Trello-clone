@@ -11,6 +11,7 @@ RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
     sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)"; \
            printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc; \
            npm ci; \
+           npm i --no-save prisma; \
            rm -f .npmrc'
 
 # --- build: copy source, generate Prisma Client, build TS ---
