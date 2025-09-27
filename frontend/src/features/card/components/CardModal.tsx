@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type { CardDto, LabelDto } from "@ronmordo/contracts";
 import {
   useCardAttachments,
@@ -19,6 +19,10 @@ import { TitleHeader } from "./TitleHeader";
 import { MainContent } from "./MainContent";
 import { CommentsSidebar } from "@/features/card/components/CommentsSidebar";
 import { CoverPopover } from "./CoverPopover";
+import { InboxCoverPopover } from "./InboxCoverPopover";
+import { useQueryClient } from "@tanstack/react-query";
+import { boardKeys } from "@/features/board/hooks";
+import { fetchBoardMembers } from "@/features/board/api";
 
 export default function CardModal({
   open,
@@ -52,21 +56,21 @@ export default function CardModal({
   const enableExtras = open && showDetails;
   const { data: comments, isLoading: commentsLoading } = useCardComments(
     boardId,
-    card.listId,
+    card.listId || "",
     card.id,
-    open
+    open && !isInbox
   );
   const { data: checklists } = useCardChecklists(
     boardId,
-    card.listId,
+    card.listId || "",
     card.id,
-    enableExtras
+    enableExtras && !isInbox
   );
   const { data: attachments } = useCardAttachments(
     boardId,
-    card.listId,
+    card.listId || "",
     card.id,
-    enableExtras
+    enableExtras && !isInbox
   );
 
   const cover = card.coverImageUrl?.trim() ?? null;
@@ -82,6 +86,20 @@ export default function CardModal({
             backgroundPosition: "center",
           }
       : undefined;
+
+  // Prefetch board members when modal opens for instant Members UI
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!open || !boardId) return;
+    queryClient.prefetchQuery({
+      queryKey: boardKeys.boardMembers(boardId),
+      queryFn: () => fetchBoardMembers(boardId),
+      staleTime: 60_000,
+    });
+    // Prime card cache with the passed card so assignees render immediately
+    const listKey = card.listId || "";
+    queryClient.setQueryData(boardKeys.card(boardId, listKey, card.id), card);
+  }, [open, boardId, queryClient]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -103,36 +121,67 @@ export default function CardModal({
             }`}
           >
             {/* Cover menu */}
-            <CoverPopover
-              boardId={boardId}
-              listId={card.listId}
-              cardId={card.id}
-              value={card.coverImageUrl ?? undefined}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-white hover:bg-white/20"
+            {isInbox ? (
+              <InboxCoverPopover
+                cardId={card.id}
+                value={card.coverImageUrl ?? undefined}
               >
-                <svg
-                  fill="none"
-                  viewBox="0 0 16 16"
-                  role="presentation"
-                  className="size-4"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-white hover:bg-white/20"
                 >
-                  <path
-                    fill="currentColor"
-                    d="M5.75 4a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5"
-                  />
-                  <path
-                    fill="currentColor"
-                    fillRule="evenodd"
-                    d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 2.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h.644l6.274-7.723.053-.058a.75.75 0 0 1 1.06 0L13.5 8.19V3a.5.5 0 0 0-.5-.5zm2.575 11H13a.5.5 0 0 0 .5-.5v-2.69l-2.943-2.943z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Button>
-            </CoverPopover>
+                  <svg
+                    fill="none"
+                    viewBox="0 0 16 16"
+                    role="presentation"
+                    className="size-4"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M5.75 4a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5"
+                    />
+                    <path
+                      fill="currentColor"
+                      fillRule="evenodd"
+                      d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 2.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h.644l6.274-7.723.053-.058a.75.75 0 0 1 1.06 0L13.5 8.19V3a.5.5 0 0 0-.5-.5zm2.575 11H13a.5.5 0 0 0 .5-.5v-2.69l-2.943-2.943z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Button>
+              </InboxCoverPopover>
+            ) : card.listId ? (
+              <CoverPopover
+                boardId={boardId}
+                listId={card.listId}
+                cardId={card.id}
+                value={card.coverImageUrl ?? undefined}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-white hover:bg-white/20"
+                >
+                  <svg
+                    fill="none"
+                    viewBox="0 0 16 16"
+                    role="presentation"
+                    className="size-4"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M5.75 4a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5"
+                    />
+                    <path
+                      fill="currentColor"
+                      fillRule="evenodd"
+                      d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM3 2.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h.644l6.274-7.723.053-.058a.75.75 0 0 1 1.06 0L13.5 8.19V3a.5.5 0 0 0-.5-.5zm2.575 11H13a.5.5 0 0 0 .5-.5v-2.69l-2.943-2.943z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Button>
+              </CoverPopover>
+            ) : null}
 
             {/* 3-dot menu */}
             <DropdownMenu>
@@ -211,7 +260,7 @@ export default function CardModal({
               labels={labels}
               description={displayDescription}
               boardId={boardId}
-              listId={card.listId}
+              listId={card.listId || ""}
               cardId={card.id}
               startDate={card.startDate as string | null | undefined}
               dueDate={card.dueDate as string | null | undefined}
@@ -228,7 +277,7 @@ export default function CardModal({
               comments={comments}
               commentsLoading={commentsLoading}
               boardId={boardId}
-              listId={card.listId}
+              listId={card.listId || ""}
               cardId={card.id}
               checklistsCount={checklists?.length ?? 0}
               attachmentsCount={attachments?.length ?? 0}

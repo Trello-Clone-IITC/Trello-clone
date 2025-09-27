@@ -6,6 +6,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Check } from "lucide-react";
 
 type DatesDropdownProps = {
@@ -71,7 +78,7 @@ export default function DatesDropdown({
         side="top"
         alignOffset={0}
         sideOffset={-200}
-        className="w-80 bg-[#22272b] border-gray-600 text-white p-0 overflow-y-auto dates-dropdown"
+        className="w-80 bg-[#2b2c2f] border-gray-600 text-white p-0 overflow-y-auto dates-dropdown"
       >
         <div className="p-3">
           <div className="flex items-center justify-between mb-3">
@@ -99,7 +106,7 @@ export default function DatesDropdown({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setStartDateEnabled(!startDateEnabled)}
-                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                  className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer ${
                     startDateEnabled
                       ? "bg-blue-600 border-blue-600"
                       : "border-gray-500"
@@ -113,10 +120,10 @@ export default function DatesDropdown({
                   placeholder="M/D/YYYY"
                   disabled={!startDateEnabled}
                   onClick={() => setCurrentMode("start")}
-                  className={`px-2 py-1 rounded border text-sm w-[90px] cursor-pointer ${
+                  className={`px-2 py-1 rounded  text-sm w-[90px] cursor-pointer ${
                     startDateEnabled
-                      ? "bg-white text-black border-gray-300"
-                      : "bg-gray-700 text-gray-500 border-gray-600"
+                      ? "bg-[#242528] text-[#bfc1c4]"
+                      : "bg-[#303134] text-gray-500 "
                   }`}
                   readOnly
                 />
@@ -131,7 +138,7 @@ export default function DatesDropdown({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setDueDateEnabled(!dueDateEnabled)}
-                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                  className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer ${
                     dueDateEnabled
                       ? "bg-blue-600 border-blue-600"
                       : "border-gray-500"
@@ -144,10 +151,10 @@ export default function DatesDropdown({
                   value={formatDate(selectedDueDate)}
                   disabled={!dueDateEnabled}
                   onClick={() => setCurrentMode("due")}
-                  className={`px-2 py-1 rounded border text-sm w-[90px] cursor-pointer ${
+                  className={`px-2 py-1 rounded  text-sm w-[90px] cursor-pointer ${
                     dueDateEnabled
-                      ? "bg-white text-black border-gray-300"
-                      : "bg-gray-700 text-gray-500 border-gray-600"
+                      ? "bg-[#242528] text-[#bfc1c4] "
+                      : "bg-[#303134] text-gray-500"
                   }`}
                   readOnly
                 />
@@ -155,10 +162,10 @@ export default function DatesDropdown({
                   type="text"
                   value={dueTime}
                   disabled={!dueDateEnabled}
-                  className={`px-2 py-1 rounded border text-sm w-20 ${
+                  className={`px-2 py-1 rounded  text-sm w-20 ${
                     dueDateEnabled
-                      ? "bg-white text-black border-gray-300"
-                      : "bg-gray-700 text-gray-500 border-gray-600"
+                      ? "bg-[#242528] text-[#bfc1c4] "
+                      : "bg-[#303134] text-gray-500 "
                   }`}
                   onChange={(e) => setDueTime(e.target.value)}
                 />
@@ -170,16 +177,40 @@ export default function DatesDropdown({
               <label className="text-sm font-medium text-gray-400">
                 Set due date reminder
               </label>
-              <select
-                value={reminder}
-                onChange={(e) => setReminder(e.target.value)}
-                className="w-full px-2 py-1 rounded border border-gray-600 bg-[#22272b] text-white text-sm"
-              >
-                <option value="1 Day before">1 Day before</option>
-                <option value="2 Days before">2 Days before</option>
-                <option value="1 Week before">1 Week before</option>
-                <option value="On due date">On due date</option>
-              </select>
+              <Select value={reminder} onValueChange={setReminder}>
+                <SelectTrigger className="flex items-center justify-between min-h-[40px] rounded-[3px] border-2 w-full py-[2px] px-[6px] cursor-pointer focus-visible:ring-0 bg-[#242528] placeholder:text-[#bfc1c4] border-[#7e8188] focus-visible:border-[#596e8f]">
+                  <SelectValue
+                    className="placeholder:text-[#bfc1c4]"
+                    placeholder="Select reminder"
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-[#2b2c2f] border-[#7e8188]">
+                  <SelectItem
+                    value="1 Day before"
+                    className="text-[#bfc1c4] hover:bg-[#3d3f43] focus:bg-[#3d3f43]"
+                  >
+                    1 Day before
+                  </SelectItem>
+                  <SelectItem
+                    value="2 Days before"
+                    className="text-[#bfc1c4] hover:bg-[#3d3f43] focus:bg-[#3d3f43]"
+                  >
+                    2 Days before
+                  </SelectItem>
+                  <SelectItem
+                    value="1 Week before"
+                    className="text-[#bfc1c4] hover:bg-[#3d3f43] focus:bg-[#3d3f43]"
+                  >
+                    1 Week before
+                  </SelectItem>
+                  <SelectItem
+                    value="On due date"
+                    className="text-[#bfc1c4] hover:bg-[#3d3f43] focus:bg-[#3d3f43]"
+                  >
+                    On due date
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <p className="text-xs text-gray-400">
                 Reminders will be sent to all members and watchers of this card.
               </p>
@@ -188,7 +219,7 @@ export default function DatesDropdown({
             {/* Action Buttons */}
             <div className="flex flex-col gap-2 pt-2">
               <Button
-                className="bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125] text-sm py-2"
+                className="bg-[#579DFF] hover:bg-[#85b8ff] text-[#1d2125] text-sm py-2 rounded-[6px] cursor-pointer"
                 onClick={() => {
                   const toIso = (d?: Date) =>
                     d ? new Date(d).toISOString() : null;
@@ -223,8 +254,7 @@ export default function DatesDropdown({
                 Save
               </Button>
               <Button
-                variant="outline"
-                className="bg-[#A1BDD914] hover:bg-[#3d474f] text-[#aab4c2] hover:text-[#aab4c2] border-transparent text-sm py-2"
+                className="bg-[#37383b] hover:bg-[#424346] rounded-[6px] text-[#aab4c2] hover:text-[#aab4c2] border-transparent text-sm py-2 cursor-pointer"
                 onClick={() => {
                   onClear();
                   onOpenChange?.(false);

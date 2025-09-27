@@ -109,11 +109,13 @@ export const MainContent = ({
   const { data: cardLabels } = useCardLabels(boardId, listId, cardId, true);
   console.log(attachments);
   const { data: boardMembers } = useBoardMembers(boardId);
+  // Build a light map of userId -> user for optimistic rendering in children
+  const userById = new Map((boardMembers ?? []).map((m) => [m.userId, m.user]));
   const { data: boardLabels } = useBoardLabels(boardId);
   const { data: card } = useCard(boardId, listId, cardId);
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const userById = new Map((boardMembers ?? []).map((m) => [m.userId, m.user]));
+  // userById defined above
   const toggleLabelMut = useToggleCardLabel(boardId, listId, cardId);
 
   // Label handling functions
@@ -261,42 +263,40 @@ export const MainContent = ({
             </PopoverContent>
           </Popover>
 
-          {!isInbox &&
-            card?.cardAssignees &&
-            card.cardAssignees.length === 0 && (
-              <MembersPopover
-                members={(boardMembers ?? []).map((m) => ({
-                  id: m.userId,
-                  fullName: m.user.fullName || "Member",
-                  username: m.user.username || "",
-                  avatarUrl: m.user.avatarUrl,
-                }))}
-                selectedIds={[]}
-                onSelect={(member) => {
-                  assignMemberMut.mutate(member.id);
-                }}
+          {!isInbox && (!card || (card.cardAssignees?.length ?? 0) === 0) && (
+            <MembersPopover
+              members={(boardMembers ?? []).map((m) => ({
+                id: m.userId,
+                fullName: m.user.fullName || "Member",
+                username: m.user.username || "",
+                avatarUrl: m.user.avatarUrl,
+              }))}
+              selectedIds={[]}
+              onSelect={(member) => {
+                assignMemberMut.mutate(member.id);
+              }}
+            >
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
               >
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 rounded-sm border border-[#3c3d40] px-2 py-1.5 text-sm font-medium hover:bg-[#303134] text-[#a9abaf] whitespace-nowrap"
-                >
-                  {isLight ? (
-                    <img
-                      src={addMembersIconLight}
-                      alt="Members"
-                      className="w-4 h-4"
-                    />
-                  ) : (
-                    <img
-                      src={addMembersIconDark}
-                      alt="Members"
-                      className="w-4 h-4"
-                    />
-                  )}
-                  <span>Members</span>
-                </button>
-              </MembersPopover>
-            )}
+                {isLight ? (
+                  <img
+                    src={addMembersIconLight}
+                    alt="Members"
+                    className="w-4 h-4"
+                  />
+                ) : (
+                  <img
+                    src={addMembersIconDark}
+                    alt="Members"
+                    className="w-4 h-4"
+                  />
+                )}
+                <span>Members</span>
+              </button>
+            </MembersPopover>
+          )}
 
           <AttachmentPopover
             onInsert={({ url, displayText }) =>

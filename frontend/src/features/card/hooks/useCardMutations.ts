@@ -545,6 +545,20 @@ export const useAssignCardMember = (
       const prev = queryClient.getQueryData<any>(
         boardKeys.card(boardId, listId, cardId)
       );
+      // Try to grab full user info for optimistic avatar/name
+      const boardMembers = queryClient.getQueryData<any[]>([
+        "board",
+        "board",
+        "members",
+        boardId,
+      ]) as
+        | Array<{
+            userId: string;
+            user: { fullName?: string; username?: string; avatarUrl?: string };
+          }>
+        | undefined;
+      const m = boardMembers?.find((bm) => bm.userId === userId)?.user;
+
       queryClient.setQueryData<any>(
         boardKeys.card(boardId, listId, cardId),
         (c: any) =>
@@ -559,9 +573,9 @@ export const useAssignCardMember = (
                       ...((c.cardAssignees as any[]) || []),
                       {
                         id: userId,
-                        fullName: "",
-                        username: "",
-                        avatarUrl: null,
+                        fullName: m?.fullName || "",
+                        username: m?.username || "",
+                        avatarUrl: m?.avatarUrl ?? null,
                       },
                     ],
               }

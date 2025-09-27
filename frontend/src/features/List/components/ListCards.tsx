@@ -317,10 +317,11 @@ const ListCards = ({
                     edge,
                     sourceListId,
                   }) => {
+                    // Forward the latest visual preview when target info is missing.
                     handleDrop({
                       sourceCardId,
-                      targetCardId,
-                      edge,
+                      targetCardId: targetCardId ?? preview?.targetId,
+                      edge: (edge ?? (preview?.edge as any)) as any,
                       sourceListId,
                     });
                   }}

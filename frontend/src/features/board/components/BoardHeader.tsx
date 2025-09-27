@@ -177,7 +177,7 @@ export default function BoardHeader({
         </Button>
 
         {/* Three Dots Menu */}
-        <HeaderPopoverMenu>
+        <HeaderPopoverMenu boardId={boardId} initialMembers={members}>
           <Button
             size="sm"
             className="bg-transparent text-[#172b4d] hover:bg-black/16 px-2 py-1 shadow-none cursor-pointer"
