@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch src/server.ts",
     "clean": "rm -r dist",
-    "build": "tsc",
+    "build": "tsc --noEmit false",
+    "build:docker": "tsc --noEmit false --skipLibCheck",
+    "build:strict": "tsc"
     "start": "node dist/server.js",
     "seed": "tsx src/config/seed.ts",
     "seed:inboxes": "tsx src/config/seed-inboxes.ts",
