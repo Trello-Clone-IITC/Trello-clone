@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Trash2, Sparkles } from "lucide-react";
+import { Send, Bot, User, Trash2, Sparkles, Check, X } from "lucide-react";
 import { useAIChat } from "../hooks/useAIChat";
 import { format } from "date-fns";
 
@@ -49,11 +49,11 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl h-[600px] flex flex-col">
+      <div className="bg-white dark:bg-[#1f1f21] rounded-lg shadow-xl w-full max-w-2xl h-[600px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg">
               <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
@@ -77,7 +77,7 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
               onClick={onClose}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
             >
-              ×
+              X
             </button>
           </div>
         </div>
@@ -86,7 +86,7 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-8">
-              <div className="p-4 bg-blue-100 dark:bg-blue-900 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <div className="p-4 bg-blue-100 dark:bg-blue-500/10 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -114,7 +114,7 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
                 }`}
               >
                 {message.role === "assistant" && (
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
+                  <div className="p-2 bg-blue-100 dark:bg-[#2c2c2e] rounded-lg flex-shrink-0 h-fit">
                     <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
                 )}
@@ -122,42 +122,42 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.role === "user"
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                      : "bg-gray-100 dark:bg-[#2c2c2e] text-gray-900 dark:text-white"
                   }`}
                 >
                   <div className="whitespace-pre-wrap">{message.content}</div>
                   {message.functionCalls &&
                     message.functionCalls.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-start flex-col items-start">
+                        <div className="text-xs text-gray-500 mb-1">
                           Actions performed:
                         </div>
                         {message.functionCalls.map((call, index) => (
                           <div
                             key={index}
-                            className="text-xs bg-gray-200 dark:bg-gray-600 rounded p-1 mb-1"
+                            className="text-xs bg-gray-200 dark:bg-[#1f1f21] rounded p-2 flex justify-start mb-1 gap-1"
                           >
                             <span className="font-medium">{call.name}</span>
                             {call.result.success ? (
-                              <span className="text-green-600 dark:text-green-400 ml-1">
-                                ✓
+                              <span className="text-green-600 dark:text-green-400">
+                                <Check className="w-4 h-4" />
                               </span>
                             ) : (
-                              <span className="text-red-600 dark:text-red-400 ml-1">
-                                ✗
+                              <span className="text-red-600 dark:text-red-400">
+                                <X className="w-4 h-4" />
                               </span>
                             )}
                           </div>
                         ))}
                       </div>
                     )}
-                  <div className="text-xs opacity-70 mt-1">
+                  <div className="text-xs opacity-70 mt-1 text-gray-500 dark:text-gray-400">
                     {format(message.timestamp, "HH:mm")}
                   </div>
                 </div>
                 {message.role === "user" && (
-                  <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex-shrink-0">
-                    <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <div className="p-2 bg-gray-100 dark:bg-blue-500/10  rounded-lg h-fit">
+                    <User className="w-4 h-4 text-blue-600 dark:text-blue-600" />
                   </div>
                 )}
               </div>
@@ -165,19 +165,19 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
           )}
           {isLoading && (
             <div className="flex gap-3 justify-start">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
+              <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex-shrink-0 h-fit">
                 <Bot className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
+              <div className="bg-gray-100 dark:bg-[#2c2c2e] rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
                       style={{ animationDelay: "0.1s" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
                       style={{ animationDelay: "0.2s" }}
                     ></div>
                   </div>
@@ -201,7 +201,7 @@ export const AIChat: React.FC<AIChatProps> = ({ boardId, isOpen, onClose }) => {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask me to help with your board..."
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#2c2c2e] dark:text-white dark:placeholder:text-gray-400"
               disabled={isLoading}
             />
             <button

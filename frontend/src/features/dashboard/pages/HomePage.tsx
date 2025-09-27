@@ -1,6 +1,6 @@
-import React from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
+import { LayoutDashboard, BookOpen, Users, ChevronRight } from "lucide-react";
 
 export default function HomePage() {
   const { theme } = useTheme();
@@ -26,17 +26,55 @@ export default function HomePage() {
           >
             Organize your projects and collaborate with your team
           </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href="/boards"
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                isLight
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              )}
+              aria-label="View Boards"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              View Boards
+            </a>
+            <a
+              href="/templates"
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border",
+                isLight
+                  ? "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                  : "bg-transparent text-white border-white/20 hover:bg-white/10"
+              )}
+              aria-label="Browse Templates"
+            >
+              <BookOpen className="h-4 w-4" />
+              Browse Templates
+            </a>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
             className={cn(
-              "p-6 rounded-lg border",
+              "group p-6 rounded-lg border transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col",
               isLight
-                ? "bg-white border-gray-200"
-                : "bg-[#2c2c2e] border-gray-700"
+                ? "bg-white border-gray-200 hover:ring-1 hover:ring-blue-500/20"
+                : "bg-[#2c2c2e] border-gray-700 hover:ring-1 hover:ring-blue-400/20"
             )}
           >
+            <div
+              className={cn(
+                "h-10 w-10 rounded-md flex items-center justify-center mb-4",
+                isLight
+                  ? "bg-blue-50 text-blue-600"
+                  : "bg-blue-500/10 text-blue-400"
+              )}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </div>
             <h3
               className={cn(
                 "text-xl font-semibold mb-3",
@@ -57,24 +95,35 @@ export default function HomePage() {
             <a
               href="/boards"
               className={cn(
-                "inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 isLight
                   ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-blue-500 text-white hover:bg-blue-600"
               )}
             >
               View Boards
+              <ChevronRight className="h-4 w-4" />
             </a>
           </div>
 
           <div
             className={cn(
-              "p-6 rounded-lg border",
+              "group p-6 rounded-lg border transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col",
               isLight
-                ? "bg-white border-gray-200"
-                : "bg-[#2c2c2e] border-gray-700"
+                ? "bg-white border-gray-200 hover:ring-1 hover:ring-blue-500/20"
+                : "bg-[#2c2c2e] border-gray-700 hover:ring-1 hover:ring-blue-400/20"
             )}
           >
+            <div
+              className={cn(
+                "h-10 w-10 rounded-md flex items-center justify-center mb-4",
+                isLight
+                  ? "bg-violet-50 text-violet-600"
+                  : "bg-violet-500/10 text-violet-400"
+              )}
+            >
+              <BookOpen className="h-5 w-5" />
+            </div>
             <h3
               className={cn(
                 "text-xl font-semibold mb-3",
@@ -95,24 +144,35 @@ export default function HomePage() {
             <a
               href="/templates"
               className={cn(
-                "inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 isLight
                   ? "bg-gray-600 text-white hover:bg-gray-700"
                   : "bg-gray-500 text-white hover:bg-gray-600"
               )}
             >
               Browse Templates
+              <ChevronRight className="h-4 w-4" />
             </a>
           </div>
 
           <div
             className={cn(
-              "p-6 rounded-lg border",
+              "group p-6 rounded-lg border transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col",
               isLight
-                ? "bg-white border-gray-200"
-                : "bg-[#2c2c2e] border-gray-700"
+                ? "bg-white border-gray-200 hover:ring-1 hover:ring-blue-500/20"
+                : "bg-[#2c2c2e] border-gray-700 hover:ring-1 hover:ring-blue-400/20"
             )}
           >
+            <div
+              className={cn(
+                "h-10 w-10 rounded-md flex items-center justify-center mb-4",
+                isLight
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-emerald-500/10 text-emerald-400"
+              )}
+            >
+              <Users className="h-5 w-5" />
+            </div>
             <h3
               className={cn(
                 "text-xl font-semibold mb-3",
@@ -132,13 +192,14 @@ export default function HomePage() {
             </p>
             <button
               className={cn(
-                "inline-block px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 isLight
                   ? "bg-green-600 text-white hover:bg-green-700"
                   : "bg-green-500 text-white hover:bg-green-600"
               )}
             >
               Invite Members
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
