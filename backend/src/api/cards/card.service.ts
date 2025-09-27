@@ -1,6 +1,5 @@
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
-import { Decimal } from "@prisma/client/runtime/library";
 import { mapLabelToDto } from "../labels/label.mapper.js";
 import type {
   CardDto,
@@ -12,24 +11,10 @@ import {
   mapCommentToDto,
   mapUpdateDtoToUpdateInput,
 } from "./card.mapper.js";
-import type { Card } from "@prisma/client";
+import type { BoardMember, Card } from "@prisma/client";
 import { getCache, setCache } from "../../lib/cache.js";
 import { mapChecklistToDto } from "../checklists/checklist.mapper.js";
 import { mapActivityLogToDto } from "../activity-logs/activity-log.mapper.js";
-
-// interface UpdateCardData {
-//   title?: string;
-//   description?: string;
-//   dueDate?: Date;
-//   startDate?: Date;
-//   coverImageUrl?: string;
-//   position?: number;
-// }
-
-interface SearchFilters {
-  boardId?: string;
-  listId?: string;
-}
 
 export const getCardDto = async (
   card: Card,
@@ -111,45 +96,33 @@ const createCard = async (
   api: boolean = false
 ): Promise<CardDto> => {
   // Verify list exists and user has access
-  // if (api) {
-  //   const card = await prisma.card.create({
-  //     data: {
-  //       ...data,
-  //       inboxUserId: userId,
-  //       createdBy: userId,
-  //     },
-  //   });
-  // }
+  let list;
 
-  // const list = await prisma.list.findFirst({
-  //   where: {
-  //     id: listId,
-  //     board: {
-  //       boardMembers: {
-  //         some: {
-  //           userId,
-  //         },
-  //       },
-  //     },
-  //   },
-  //   include: {
-  //     cards: {
-  //       orderBy: { position: "asc" },
-  //     },
-  //     board: true,
-  //   },
-  // });
+  if (listId) {
+    list = await prisma.list.findFirst({
+      where: {
+        id: listId,
+        board: {
+          boardMembers: {
+            some: {
+              userId,
+            },
+          },
+        },
+      },
+      include: {
+        cards: {
+          orderBy: { position: "asc" },
+        },
+        board: true,
+      },
+    });
+  }
 
-  // if (!list) {
-  //   throw new AppError("List not found", 404);
-  // }
+  if (listId && !list) {
+    throw new AppError("List not found", 404);
+  }
 
-  // Get the highest position in the list and add 1000
-  // const lastCard = list.cards.pop();
-
-  // const newPosition = lastCard
-  //   ? lastCard.position.add(new Decimal(1000))
-  //   : new Decimal(1000);
   const createData = api
     ? { ...data, inboxUserId: userId, createdBy: userId }
     : { ...data, listId, createdBy: userId };
@@ -192,15 +165,17 @@ const createCard = async (
   });
 
   // Log activity
-  // await prisma.activityLog.create({
-  //   data: {
-  //     boardId: list.board.id,
-  //     cardId: card.id,
-  //     userId,
-  //     action: "Created",
-  //     payload: { title: card.title },
-  //   },
-  // });
+  if (list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: list.board.id,
+        cardId: card.id,
+        userId,
+        action: "Created",
+        payload: { title: card.title },
+      },
+    });
+  }
 
   const cardDto = await getCardDto(card, userId);
 
@@ -302,12 +277,14 @@ const getCardById = async (
 
   // Check if the user is a member of the board and can watch the card
 
-  // const userMember = card.list.board.boardMembers.find(
-  //   (member: any) => member.userId === userId
-  // );
-  // if (!userMember) {
-  //   throw new AppError("Access denied", 403);
-  // }
+  if (card.list) {
+    const userMember = card.list.board.boardMembers.find(
+      (member: BoardMember) => member.userId === userId
+    );
+    if (!userMember) {
+      throw new AppError("Access denied", 403);
+    }
+  }
 
   const cardDto = await getCardDto(card, userId);
 
@@ -445,8 +422,6 @@ const updateCard = async (
           ? currentCached.map((c) => (c.id === cardId ? cardDto : c))
           : [...currentCached, cardDto];
         await setCache<CardDto[]>(currentCacheKey, updatedCurrentCache, 120);
-      } else {
-        await setCache<CardDto[]>(currentCacheKey, [cardDto], 120);
       }
     }
   } else {
@@ -454,11 +429,11 @@ const updateCard = async (
     if (currentCacheKey) {
       const cached = await getCache<CardDto[]>(currentCacheKey);
       if (cached) {
-        await setCache<CardDto[]>(
-          currentCacheKey,
-          cached.map((c) => (c.id === cardId ? cardDto : c)),
-          120
-        );
+        const cardExistsInCache = cached.some((c) => c.id === cardId);
+        const updatedCurrentCache = cardExistsInCache
+          ? cached.map((c) => (c.id === cardId ? cardDto : c))
+          : [...cached, cardDto];
+        await setCache<CardDto[]>(currentCacheKey, updatedCurrentCache, 120);
       }
     }
   }

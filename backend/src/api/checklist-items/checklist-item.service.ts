@@ -1,22 +1,17 @@
-import type { CreateChecklistItemInput } from "@ronmordo/contracts";
+import type {
+  CreateChecklistItemInput,
+  UpdateChecklistItemInput,
+} from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 import { Decimal } from "@prisma/client/runtime/library";
 
-interface CreateChecklistItemData {
-  checklistId: string;
-  text: string;
-  dueDate?: Date;
-  position: number;
-  userId: string;
-}
-
-interface UpdateChecklistItemData {
-  text?: string;
-  isCompleted?: boolean;
-  dueDate?: Date;
-  position?: number;
-}
+// interface UpdateChecklistItemData {
+//   text?: string;
+//   isCompleted?: boolean;
+//   dueDate?: Date;
+//   position?: number;
+// }
 
 // Create checklist item
 const createChecklistItem = async (
@@ -93,19 +88,21 @@ const createChecklistItem = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: checklist.card.list.board.id,
-      cardId: checklist.card.id,
-      userId,
-      action: "Updated",
-      payload: {
-        action: "checklist_item_created",
-        checklistTitle: checklist.title,
-        itemText: item.text,
+  if (checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: checklist.card.list.board.id,
+        cardId: checklist.card.id,
+        userId,
+        action: "Updated",
+        payload: {
+          action: "checklist_item_created",
+          checklistTitle: checklist.title,
+          itemText: item.text,
+        },
       },
-    },
-  });
+    });
+  }
 
   return item;
 };
@@ -147,7 +144,10 @@ const getChecklistItemById = async (itemId: string, userId: string) => {
   }
 
   // Check if user has access to the board
-  if (item.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    item.checklist.card.list &&
+    item.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -157,7 +157,7 @@ const getChecklistItemById = async (itemId: string, userId: string) => {
 // Update checklist item
 const updateChecklistItem = async (
   itemId: string,
-  updateData: UpdateChecklistItemData,
+  updateData: UpdateChecklistItemInput,
   userId: string
 ) => {
   // Verify user has access to the checklist item
@@ -190,7 +190,10 @@ const updateChecklistItem = async (
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -227,19 +230,21 @@ const updateChecklistItem = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingItem.checklist.card.list.board.id,
-      cardId: existingItem.checklist.card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        action: "checklist_item_updated",
-        checklistTitle: existingItem.checklist.title,
-        itemText: item.text,
+  if (existingItem.checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingItem.checklist.card.list.board.id,
+        cardId: existingItem.checklist.card.id,
+        userId: userId,
+        action: "Updated",
+        payload: {
+          action: "checklist_item_updated",
+          checklistTitle: existingItem.checklist.title,
+          itemText: item.text,
+        },
       },
-    },
-  });
+    });
+  }
 
   return item;
 };
@@ -276,24 +281,29 @@ const deleteChecklistItem = async (itemId: string, userId: string) => {
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
   // Log activity before deletion
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingItem.checklist.card.list.board.id,
-      cardId: existingItem.checklist.card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        action: "checklist_item_deleted",
-        checklistTitle: existingItem.checklist.title,
-        itemText: existingItem.text,
+  if (existingItem.checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingItem.checklist.card.list.board.id,
+        cardId: existingItem.checklist.card.id,
+        userId: userId,
+        action: "Updated",
+        payload: {
+          action: "checklist_item_deleted",
+          checklistTitle: existingItem.checklist.title,
+          itemText: existingItem.text,
+        },
       },
-    },
-  });
+    });
+  }
 
   // Delete the checklist item
   await prisma.checklistItem.delete({
@@ -333,7 +343,10 @@ const toggleChecklistItem = async (itemId: string, userId: string) => {
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -367,20 +380,22 @@ const toggleChecklistItem = async (itemId: string, userId: string) => {
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingItem.checklist.card.list.board.id,
-      cardId: existingItem.checklist.card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        action: "checklist_item_toggled",
-        checklistTitle: existingItem.checklist.title,
-        itemText: item.text,
-        completed: newCompletionStatus,
+  if (existingItem.checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingItem.checklist.card.list.board.id,
+        cardId: existingItem.checklist.card.id,
+        userId: userId,
+        action: "Updated",
+        payload: {
+          action: "checklist_item_toggled",
+          checklistTitle: existingItem.checklist.title,
+          itemText: item.text,
+          completed: newCompletionStatus,
+        },
       },
-    },
-  });
+    });
+  }
 
   return item;
 };
@@ -417,7 +432,10 @@ const getChecklistItemAssignees = async (itemId: string, userId: string) => {
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 

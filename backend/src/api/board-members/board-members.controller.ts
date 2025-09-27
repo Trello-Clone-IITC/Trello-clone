@@ -6,7 +6,6 @@ import type {
   BoardMemberDto,
   BoardMemberWithUserDto,
 } from "@ronmordo/contracts";
-import { userService } from "../users/user.service.js";
 
 const addBoardMember = async (
   req: Request,
@@ -16,9 +15,6 @@ const addBoardMember = async (
   try {
     const { id } = req.params;
     const { userId: memberUserId, role } = req.body;
-    const userId =
-      (await userService.getUserIdByRequest(req)) ||
-      "3f992ec3-fd72-4153-8c8a-9575e5a61867";
 
     const member = await boardMembersService.addBoardMember(
       id,
@@ -74,7 +70,6 @@ const updateBoardMemberRole = async (
   try {
     const { id, userId: memberUserId } = req.params;
     const { role } = req.body;
-    const userId = await userService.getUserIdByRequest(req);
 
     const member = await boardMembersService.updateBoardMemberRole(
       id,

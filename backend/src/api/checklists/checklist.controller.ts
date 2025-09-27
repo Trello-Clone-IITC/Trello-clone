@@ -148,7 +148,10 @@ export const checklistController = {
         (await userService.getUserIdByRequest(req)) ||
         "20c2f2d8-3de3-4b8e-8dbc-97038b9acb2b";
 
-      const items = await checklistService.getChecklistItems(checklistId, userId);
+      const items = await checklistService.getChecklistItems(
+        checklistId,
+        userId
+      );
       const itemDtos: ChecklistItemDto[] = items.map((item) =>
         mapChecklistItemToDto(item)
       );
@@ -167,180 +170,180 @@ export const checklistController = {
   },
 
   // Create checklist item
-  createChecklistItem: async (
-    req: Request,
-    res: Response<ApiResponse<ChecklistItemDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  // createChecklistItem: async (
+  //   req: Request,
+  //   res: Response<ApiResponse<ChecklistItemDto>>,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const userId =
+  //       (await userService.getUserIdByRequest(req)) ||
+  //       "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      const { checklistId } = req.params;
-      const item = await checklistService.createChecklistItem({
-        checklistId,
-        ...req.body,
-        userId,
-      });
-      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+  //     const { checklistId } = req.params;
+  //     const item = await checklistService.createChecklistItem({
+  //       checklistId,
+  //       ...req.body,
+  //       userId,
+  //     });
+  //     const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
-      res.status(201).json({
-        success: true,
-        data: itemDto,
-      });
-    } catch (error) {
-      console.error("Failed to create checklist item", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to create checklist item", 500));
-    }
-  },
+  //     res.status(201).json({
+  //       success: true,
+  //       data: itemDto,
+  //     });
+  //   } catch (error) {
+  //     console.error("Failed to create checklist item", error);
+  //     if (error instanceof AppError) {
+  //       return next(error);
+  //     }
+  //     next(new AppError("Failed to create checklist item", 500));
+  //   }
+  // },
 
   // Update checklist item
-  updateChecklistItem: async (
-    req: Request,
-    res: Response<ApiResponse<ChecklistItemDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-      const updateData = req.body;
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  //   updateChecklistItem: async (
+  //     req: Request,
+  //     res: Response<ApiResponse<ChecklistItemDto>>,
+  //     next: NextFunction
+  //   ) => {
+  //     try {
+  //       const { id } = req.params;
+  //       const updateData = req.body;
+  //       const userId =
+  //         (await userService.getUserIdByRequest(req)) ||
+  //         "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      const item = await checklistService.updateChecklistItem(
-        id,
-        updateData,
-        userId
-      );
-      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+  //       const item = await checklistService.updateChecklistItem(
+  //         id,
+  //         updateData,
+  //         userId
+  //       );
+  //       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
-      res.status(200).json({
-        success: true,
-        data: itemDto,
-      });
-    } catch (error) {
-      console.error("Failed to update checklist item", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to update checklist item", 500));
-    }
-  },
+  //       res.status(200).json({
+  //         success: true,
+  //         data: itemDto,
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to update checklist item", error);
+  //       if (error instanceof AppError) {
+  //         return next(error);
+  //       }
+  //       next(new AppError("Failed to update checklist item", 500));
+  //     }
+  //   },
 
-  // Delete checklist item
-  deleteChecklistItem: async (
-    req: Request,
-    res: Response<ApiResponse<{ message: string }>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  //   // Delete checklist item
+  //   deleteChecklistItem: async (
+  //     req: Request,
+  //     res: Response<ApiResponse<{ message: string }>>,
+  //     next: NextFunction
+  //   ) => {
+  //     try {
+  //       const { id } = req.params;
+  //       const userId =
+  //         (await userService.getUserIdByRequest(req)) ||
+  //         "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      await checklistService.deleteChecklistItem(id, userId);
+  //       await checklistService.deleteChecklistItem(id, userId);
 
-      res.status(200).json({
-        success: true,
-        message: "Checklist item deleted successfully",
-      });
-    } catch (error) {
-      console.error("Failed to delete checklist item", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to delete checklist item", 500));
-    }
-  },
+  //       res.status(200).json({
+  //         success: true,
+  //         message: "Checklist item deleted successfully",
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to delete checklist item", error);
+  //       if (error instanceof AppError) {
+  //         return next(error);
+  //       }
+  //       next(new AppError("Failed to delete checklist item", 500));
+  //     }
+  //   },
 
-  // Toggle checklist item completion
-  toggleChecklistItem: async (
-    req: Request,
-    res: Response<ApiResponse<ChecklistItemDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const { id } = req.params;
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  //   // Toggle checklist item completion
+  //   toggleChecklistItem: async (
+  //     req: Request,
+  //     res: Response<ApiResponse<ChecklistItemDto>>,
+  //     next: NextFunction
+  //   ) => {
+  //     try {
+  //       const { id } = req.params;
+  //       const userId =
+  //         (await userService.getUserIdByRequest(req)) ||
+  //         "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      const item = await checklistService.toggleChecklistItem(id, userId);
-      const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
+  //       const item = await checklistService.toggleChecklistItem(id, userId);
+  //       const itemDto: ChecklistItemDto = mapChecklistItemToDto(item);
 
-      res.status(200).json({
-        success: true,
-        data: itemDto,
-      });
-    } catch (error) {
-      console.error("Failed to toggle checklist item", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to toggle checklist item", 500));
-    }
-  },
+  //       res.status(200).json({
+  //         success: true,
+  //         data: itemDto,
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to toggle checklist item", error);
+  //       if (error instanceof AppError) {
+  //         return next(error);
+  //       }
+  //       next(new AppError("Failed to toggle checklist item", 500));
+  //     }
+  //   },
 
-  // Assign user to checklist item
-  assignUserToItem: async (
-    req: Request,
-    res: Response<ApiResponse<ChecklistItemAssigneeDto>>,
-    next: NextFunction
-  ) => {
-    try {
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  //   // Assign user to checklist item
+  //   assignUserToItem: async (
+  //     req: Request,
+  //     res: Response<ApiResponse<ChecklistItemAssigneeDto>>,
+  //     next: NextFunction
+  //   ) => {
+  //     try {
+  //       const userId =
+  //         (await userService.getUserIdByRequest(req)) ||
+  //         "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      const { itemId, userId: assigneeId } = req.body;
-      const assignment = await checklistService.assignUserToItem(
-        itemId,
-        assigneeId,
-        userId
-      );
-      const assignmentDto = mapChecklistItemAssigneeToDto(assignment);
-      res.status(200).json({
-        success: true,
-        data: assignmentDto,
-      });
-    } catch (error) {
-      console.error("Failed to assign user to item", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to assign user to item", 500));
-    }
-  },
+  //       const { itemId, userId: assigneeId } = req.body;
+  //       const assignment = await checklistService.assignUserToItem(
+  //         itemId,
+  //         assigneeId,
+  //         userId
+  //       );
+  //       const assignmentDto = mapChecklistItemAssigneeToDto(assignment);
+  //       res.status(200).json({
+  //         success: true,
+  //         data: assignmentDto,
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to assign user to item", error);
+  //       if (error instanceof AppError) {
+  //         return next(error);
+  //       }
+  //       next(new AppError("Failed to assign user to item", 500));
+  //     }
+  //   },
 
-  // Remove user assignment from checklist item
-  removeUserFromItem: async (
-    req: Request,
-    res: Response<ApiResponse<{ message: string }>>,
-    next: NextFunction
-  ) => {
-    try {
-      const userId =
-        (await userService.getUserIdByRequest(req)) ||
-        "188fa046-f70f-4406-875a-8c0c67456e3e";
+  //   // Remove user assignment from checklist item
+  //   removeUserFromItem: async (
+  //     req: Request,
+  //     res: Response<ApiResponse<{ message: string }>>,
+  //     next: NextFunction
+  //   ) => {
+  //     try {
+  //       const userId =
+  //         (await userService.getUserIdByRequest(req)) ||
+  //         "188fa046-f70f-4406-875a-8c0c67456e3e";
 
-      const { itemId, userId: assigneeId } = req.params;
-      await checklistService.removeUserFromItem(itemId, assigneeId, userId);
+  //       const { itemId, userId: assigneeId } = req.params;
+  //       await checklistService.removeUserFromItem(itemId, assigneeId, userId);
 
-      res.status(200).json({
-        success: true,
-        message: "User assignment removed successfully",
-      });
-    } catch (error) {
-      console.error("Failed to remove user assignment", error);
-      if (error instanceof AppError) {
-        return next(error);
-      }
-      next(new AppError("Failed to remove user assignment", 500));
-    }
-  },
+  //       res.status(200).json({
+  //         success: true,
+  //         message: "User assignment removed successfully",
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to remove user assignment", error);
+  //       if (error instanceof AppError) {
+  //         return next(error);
+  //       }
+  //       next(new AppError("Failed to remove user assignment", 500));
+  //     }
+  //   },
 };

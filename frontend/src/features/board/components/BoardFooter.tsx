@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Inbox, Calendar, Layout, Layers } from "lucide-react";
+import { AIButton } from "@/features/ai";
 
 interface BoardFooterProps {
   activeComponents: { inbox: boolean; planner: boolean; board: boolean };
   onTabChange?: (tab: "inbox" | "planner" | "board" | "switch-boards") => void;
+  boardId?: string;
 }
 
 const navigationItems = [
@@ -33,6 +35,7 @@ const switchBoardsItem = {
 export default function BoardFooter({
   activeComponents,
   onTabChange,
+  boardId,
 }: BoardFooterProps) {
   return (
     <nav className="flex fixed z-1 right-0 left-0 items-end justify-center h-0 gap-2 pointer-events-none bottom-4">
@@ -117,6 +120,11 @@ export default function BoardFooter({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* AI Assistant Button */}
+      <div className="pointer-events-auto">
+        <AIButton boardId={boardId} variant="floating" className="ml-4" />
       </div>
     </nav>
   );

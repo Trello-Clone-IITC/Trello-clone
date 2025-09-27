@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const baseURL =
-  (import.meta.env.VITE_API_BASE_URL || "/api").trim();
+const baseURL = (import.meta.env.VITE_API_BASE_URL || "/api").trim();
 
 export const api = axios.create({
   baseURL,
@@ -10,5 +9,5 @@ export const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 10000,
+  timeout: 60000, // Increased to 60 seconds for AI operations
 });

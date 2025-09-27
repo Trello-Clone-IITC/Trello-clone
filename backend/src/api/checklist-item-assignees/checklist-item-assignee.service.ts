@@ -2,7 +2,11 @@ import { prisma } from "../../lib/prismaClient.js";
 import { AppError } from "../../utils/appError.js";
 
 // Assign user to checklist item
-const assignUserToItem = async (itemId: string, assigneeId: string, userId: string) => {
+const assignUserToItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },
@@ -33,7 +37,10 @@ const assignUserToItem = async (itemId: string, assigneeId: string, userId: stri
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -77,26 +84,32 @@ const assignUserToItem = async (itemId: string, assigneeId: string, userId: stri
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingItem.checklist.card.list.board.id,
-      cardId: existingItem.checklist.card.id,
-      userId: userId,
-      action: "Assigned",
-      payload: {
-        action: "checklist_item_assigned",
-        checklistTitle: existingItem.checklist.title,
-        itemText: existingItem.text,
-        assigneeName: assignment.user.fullName,
+  if (existingItem.checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingItem.checklist.card.list.board.id,
+        cardId: existingItem.checklist.card.id,
+        userId: userId,
+        action: "Assigned",
+        payload: {
+          action: "checklist_item_assigned",
+          checklistTitle: existingItem.checklist.title,
+          itemText: existingItem.text,
+          assigneeName: assignment.user.fullName,
+        },
       },
-    },
-  });
+    });
+  }
 
   return assignment;
 };
 
 // Remove user assignment from checklist item
-const removeUserFromItem = async (itemId: string, assigneeId: string, userId: string) => {
+const removeUserFromItem = async (
+  itemId: string,
+  assigneeId: string,
+  userId: string
+) => {
   // Verify user has access to the checklist item
   const existingItem = await prisma.checklistItem.findFirst({
     where: { id: itemId },
@@ -127,7 +140,10 @@ const removeUserFromItem = async (itemId: string, assigneeId: string, userId: st
     throw new AppError("Checklist item not found", 404);
   }
 
-  if (existingItem.checklist.card.list.board.boardMembers.length === 0) {
+  if (
+    existingItem.checklist.card.list &&
+    existingItem.checklist.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -147,20 +163,22 @@ const removeUserFromItem = async (itemId: string, assigneeId: string, userId: st
   }
 
   // Log activity before removal
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingItem.checklist.card.list.board.id,
-      cardId: existingItem.checklist.card.id,
-      userId: userId,
-      action: "Unassigned",
-      payload: {
-        action: "checklist_item_unassigned",
-        checklistTitle: existingItem.checklist.title,
-        itemText: existingItem.text,
-        assigneeName: existingAssignment.user.fullName,
+  if (existingItem.checklist.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingItem.checklist.card.list.board.id,
+        cardId: existingItem.checklist.card.id,
+        userId: userId,
+        action: "Unassigned",
+        payload: {
+          action: "checklist_item_unassigned",
+          checklistTitle: existingItem.checklist.title,
+          itemText: existingItem.text,
+          assigneeName: existingAssignment.user.fullName,
+        },
       },
-    },
-  });
+    });
+  }
 
   // Remove the assignment
   await prisma.checklistItemAssignee.delete({

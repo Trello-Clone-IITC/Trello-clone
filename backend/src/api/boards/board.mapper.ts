@@ -1,9 +1,4 @@
-import {
-  Prisma,
-  type Board as PrismaBoard,
-  $Enums,
-  type Board,
-} from "@prisma/client";
+import { Prisma, type Board as PrismaBoard, $Enums } from "@prisma/client";
 import {
   type BoardDto,
   BoardDtoSchema,

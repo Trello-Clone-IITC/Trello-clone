@@ -50,7 +50,7 @@ const createAttachment = async (
     throw new AppError("Card not found", 404);
   }
 
-  if (card.list.board.boardMembers.length === 0) {
+  if (card.list && card.list.board.boardMembers.length === 0) {
     throw new AppError("Access denied", 403);
   }
 
@@ -78,18 +78,19 @@ const createAttachment = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: card.list.board.id,
-      cardId: card.id,
-      userId,
-      action: "Attached",
-      payload: {
-        filename: attachment.filename || "attachment",
-        url: attachment.url,
+  if (card.list)
+    await prisma.activityLog.create({
+      data: {
+        boardId: card.list.board.id,
+        cardId: card.id,
+        userId,
+        action: "Attached",
+        payload: {
+          filename: attachment.filename || "attachment",
+          url: attachment.url,
+        },
       },
-    },
-  });
+    });
 
   return attachment;
 };
@@ -123,7 +124,10 @@ const getAttachmentById = async (attachmentId: string, userId: string) => {
   }
 
   // Check if user has access to the card
-  if (attachment.card.list.board.boardMembers.length === 0) {
+  if (
+    attachment.card.list &&
+    attachment.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -162,7 +166,10 @@ const updateAttachment = async (
     throw new AppError("Attachment not found", 404);
   }
 
-  if (existingAttachment.card.list.board.boardMembers.length === 0) {
+  if (
+    existingAttachment.card.list &&
+    existingAttachment.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -186,19 +193,20 @@ const updateAttachment = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingAttachment.card.list.board.id,
-      cardId: existingAttachment.card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        attachmentId: attachment.id,
-        filename: attachment.filename,
-        changes: updateData as Prisma.InputJsonValue,
+  if (existingAttachment.card.list)
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingAttachment.card.list.board.id,
+        cardId: existingAttachment.card.id,
+        userId: userId,
+        action: "Updated",
+        payload: {
+          attachmentId: attachment.id,
+          filename: attachment.filename,
+          changes: updateData as Prisma.InputJsonValue,
+        },
       },
-    },
-  });
+    });
 
   return attachment;
 };
@@ -231,23 +239,28 @@ const deleteAttachment = async (attachmentId: string, userId: string) => {
     throw new AppError("Attachment not found", 404);
   }
 
-  if (existingAttachment.card.list.board.boardMembers.length === 0) {
+  if (
+    existingAttachment.card.list &&
+    existingAttachment.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
   // Log activity before deletion
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingAttachment.card.list.board.id,
-      cardId: existingAttachment.card.id,
-      userId: userId,
-      action: "Detached",
-      payload: {
-        filename: existingAttachment.filename || "attachment",
-        url: existingAttachment.url,
+  if (existingAttachment.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingAttachment.card.list.board.id,
+        cardId: existingAttachment.card.id,
+        userId: userId,
+        action: "Detached",
+        payload: {
+          filename: existingAttachment.filename || "attachment",
+          url: existingAttachment.url,
+        },
       },
-    },
-  });
+    });
+  }
 
   // Delete the attachment
   await prisma.attachment.delete({

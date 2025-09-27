@@ -239,6 +239,7 @@ const BoardPage = () => {
       <BoardFooter
         activeComponents={activeComponents}
         onTabChange={handleTabChange}
+        boardId={boardId}
       />
       {/* Switch Boards Modal */}
       <SwitchBoardsModal
