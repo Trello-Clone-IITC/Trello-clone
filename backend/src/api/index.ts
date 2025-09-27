@@ -9,6 +9,7 @@ import checklistRouter from "./checklists/checklist.route.js";
 import docsRouter from "./docs/docs.route.js";
 import inboxRouter from "./inboxes/inbox.route.js";
 import searchRouter from "./search/search.route.js";
+import aiRouter from "./ai/ai.routes.js";
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use("/checklists", checklistRouter);
 router.use("/lists", listRouter);
 router.use("/search", searchRouter);
 router.use("/apiDocs", docsRouter);
+router.use("/ai", aiRouter);
 
 export default router;

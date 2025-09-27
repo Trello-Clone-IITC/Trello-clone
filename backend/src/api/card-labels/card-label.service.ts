@@ -16,7 +16,7 @@ const addLabelToCard = async (
     // Verify label exists and belongs to the same board
     const label = await verifyLabelExists(labelId);
 
-    if (label.boardId !== card.list.boardId) {
+    if (card.list && label.boardId !== card.list.boardId) {
       throw new AppError(
         "Label does not belong to the same board as the card",
         400
@@ -34,18 +34,20 @@ const addLabelToCard = async (
     const cardLabel = await createCardLabel(cardId, labelId);
 
     // Log activity
-    await logActivity(
-      card.list.boardId,
-      cardId,
-      userId,
-      ActivityAction.Labeled,
-      {
-        type: "card_label",
-        labelId: labelId,
-        labelName: label.name,
-        labelColor: label.color,
-      }
-    );
+    if (card.list) {
+      await logActivity(
+        card.list.boardId,
+        cardId,
+        userId,
+        ActivityAction.Labeled,
+        {
+          type: "card_label",
+          labelId: labelId,
+          labelName: label.name,
+          labelColor: label.color,
+        }
+      );
+    }
 
     return cardLabel;
   } catch (error) {
@@ -79,18 +81,20 @@ const removeLabelFromCard = async (
   await deleteCardLabel(cardId, labelId);
 
   // Log activity
-  await logActivity(
-    card.list.boardId,
-    cardId,
-    userId,
-    ActivityAction.Unlabeled,
-    {
-      type: "card_label",
-      labelId: labelId,
-      labelName: label.name,
-      labelColor: label.color,
-    }
-  );
+  if (card.list) {
+    await logActivity(
+      card.list.boardId,
+      cardId,
+      userId,
+      ActivityAction.Unlabeled,
+      {
+        type: "card_label",
+        labelId: labelId,
+        labelName: label.name,
+        labelColor: label.color,
+      }
+    );
+  }
 };
 
 //-----------------------------------helper functions-----------------------------------
@@ -118,7 +122,7 @@ const verifyCardAccess = async (cardId: string, userId: string) => {
       throw new AppError("Card not found", 404);
     }
 
-    if (card.list.board.boardMembers.length === 0) {
+    if (card.list && card.list.board.boardMembers.length === 0) {
       throw new AppError("Access denied", 403);
     }
 

@@ -35,7 +35,7 @@ const createComment = async (data: CreateCommentData) => {
     throw new AppError("Card not found", 404);
   }
 
-  if (card.list.board.boardMembers.length === 0) {
+  if (card.list && card.list.board.boardMembers.length === 0) {
     throw new AppError("Access denied", 403);
   }
 
@@ -60,18 +60,20 @@ const createComment = async (data: CreateCommentData) => {
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: card.list.board.id,
-      cardId: card.id,
-      userId: data.userId,
-      action: "Commented",
-      payload: {
-        commentId: comment.id,
-        text: comment.text.substring(0, 100), // Truncate for activity log
+  if (card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: card.list.board.id,
+        cardId: card.id,
+        userId: data.userId,
+        action: "Commented",
+        payload: {
+          commentId: comment.id,
+          text: comment.text.substring(0, 100), // Truncate for activity log
+        },
       },
-    },
-  });
+    });
+  }
 
   return comment;
 };
@@ -105,7 +107,7 @@ const getCommentById = async (commentId: string, userId: string) => {
   }
 
   // Check if user has access to the card
-  if (comment.card.list.board.boardMembers.length === 0) {
+  if (comment.card.list && comment.card.list.board.boardMembers.length === 0) {
     throw new AppError("Access denied", 403);
   }
 
@@ -147,7 +149,10 @@ const updateComment = async (
     throw new AppError("Comment not found or access denied", 404);
   }
 
-  if (existingComment.card.list.board.boardMembers.length === 0) {
+  if (
+    existingComment.card.list &&
+    existingComment.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
@@ -171,18 +176,20 @@ const updateComment = async (
   });
 
   // Log activity
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingComment.card.list.board.id,
-      cardId: existingComment.card.id,
-      userId: userId,
-      action: "Updated",
-      payload: {
-        commentId: comment.id,
-        text: comment.text.substring(0, 100), // Truncate for activity log
+  if (existingComment.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingComment.card.list.board.id,
+        cardId: existingComment.card.id,
+        userId: userId,
+        action: "Updated",
+        payload: {
+          commentId: comment.id,
+          text: comment.text.substring(0, 100), // Truncate for activity log
+        },
       },
-    },
-  });
+    });
+  }
 
   return comment;
 };
@@ -218,24 +225,29 @@ const deleteComment = async (commentId: string, userId: string) => {
     throw new AppError("Comment not found or access denied", 404);
   }
 
-  if (existingComment.card.list.board.boardMembers.length === 0) {
+  if (
+    existingComment.card.list &&
+    existingComment.card.list.board.boardMembers.length === 0
+  ) {
     throw new AppError("Access denied", 403);
   }
 
   // Log activity before deletion
-  await prisma.activityLog.create({
-    data: {
-      boardId: existingComment.card.list.board.id,
-      cardId: existingComment.card.id,
-      userId: userId,
-      action: "Updated", // Using "Updated" since there's no "Deleted" action for comments
-      payload: {
-        commentId: existingComment.id,
-        action: "deleted",
-        text: existingComment.text.substring(0, 100), // Truncate for activity log
+  if (existingComment.card.list) {
+    await prisma.activityLog.create({
+      data: {
+        boardId: existingComment.card.list.board.id,
+        cardId: existingComment.card.id,
+        userId: userId,
+        action: "Updated", // Using "Updated" since there's no "Deleted" action for comments
+        payload: {
+          commentId: existingComment.id,
+          action: "deleted",
+          text: existingComment.text.substring(0, 100), // Truncate for activity log
+        },
       },
-    },
-  });
+    });
+  }
 
   // Delete the comment
   await prisma.comment.delete({

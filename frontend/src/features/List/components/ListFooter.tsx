@@ -62,6 +62,7 @@ const ListFooter = forwardRef<ListFooterRef, ListFooterProps>(
         labels: [],
         location: null,
         isArchived: false,
+        isCompleted: false,
         createdBy: `temp-user-${Date.now()}` as CardDto["createdBy"],
         coverImageUrl: null,
         dueDate: null,

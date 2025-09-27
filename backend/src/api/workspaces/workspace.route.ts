@@ -1,7 +1,6 @@
 import { Router } from "express";
 import workspaceController from "./workspace.controller.js";
 import { validateRequest } from "../../middlewares/validation.js";
-import { searchWorkspacesSchema } from "./workspace.validation.js";
 import workspaceMemberRouter from "../workspace-members/workspace-members.route.js";
 import boardRouter from "../boards/board.route.js";
 import {
@@ -36,12 +35,6 @@ router.delete(
   "/:id",
   validateRequest({ params: IdParamSchema }),
   workspaceController.deleteWorkspace
-);
-
-router.get(
-  "/search",
-  validateRequest({ query: searchWorkspacesSchema }),
-  workspaceController.searchWorkspaces
 );
 
 // --------------------------nested routes--------------------------

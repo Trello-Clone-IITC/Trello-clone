@@ -6,12 +6,7 @@ import type {
   UpdateBoardInput,
 } from "@ronmordo/contracts";
 import { prisma } from "../../lib/prismaClient.js";
-import {
-  type Board,
-  type List,
-  type Label,
-  type ActivityLog,
-} from "@prisma/client";
+import { type Board, type List, type ActivityLog } from "@prisma/client";
 import {
   mapBoardDtoToCreateBoardInput,
   mapBoardDtoToUpdateBoardInput,
