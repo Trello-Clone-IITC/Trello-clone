@@ -9,7 +9,7 @@
     "clean": "rm -r dist",
     "build": "tsc --noEmit false",
     "build:docker": "tsc --noEmit false --skipLibCheck",
-    "build:strict": "tsc"
+    "build:strict": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/config/seed.ts",
     "seed:inboxes": "tsx src/config/seed-inboxes.ts",
