@@ -93,6 +93,7 @@ async function resetDb() {
     "workspace_members",
     "workspaces",
     "users",
+    "inboxes",
   ];
   const sql = `TRUNCATE ${tables
     .map((t) => `"${t}"`)
@@ -106,6 +107,7 @@ async function main() {
   if (DO_RESET) {
     console.log("Resetting DB…");
     await resetDb();
+    return;
   }
 
   // USERS
