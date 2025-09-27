@@ -53,11 +53,6 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 
-# create user after copies, fix ownership, expose local CLIs on PATH
-RUN addgroup -S app && adduser -S app -G app && \
-    chown -R app:app /app
-ENV PATH="/app/node_modules/.bin:${PATH}"
-USER app
 
 EXPOSE 3000
 CMD ["node","dist/server.js"]
