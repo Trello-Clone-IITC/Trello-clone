@@ -34,7 +34,8 @@ RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
     --mount=type=cache,target=/root/.npm \
     sh -c 'TOKEN="$(cat /run/secrets/GH_PACKAGES_TOKEN)"; \
            printf "@ronmordo:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc; \
-           npm ci --omit=dev; \
+           npm ci --omit=dev --no-audit --no-fund; \
+           npm i --no-save prisma --no-audit --no-fund; \
            rm -f .npmrc'
 
 # --- runtime: prod deps + generated client + built JS ---
@@ -51,6 +52,12 @@ COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
+
+# create user after copies, fix ownership, expose local CLIs on PATH
+RUN addgroup -S app && adduser -S app -G app && \
+    chown -R app:app /app
+ENV PATH="/app/node_modules/.bin:${PATH}"
+USER app
 
 EXPOSE 3000
 CMD ["node","dist/server.js"]
