@@ -51,6 +51,7 @@ jobs:
         run: |
           IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_BACKEND}
           docker build \
+            --no-cache \
             --secret id=GH_PACKAGES_TOKEN,env=GH_PACKAGES_TOKEN \
             -t ${IMAGE_URI}:latest -t ${IMAGE_URI}:${GITHUB_SHA::7} .
 
