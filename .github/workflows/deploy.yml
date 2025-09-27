@@ -74,8 +74,9 @@ jobs:
         working-directory: ${{ env.FRONTEND_WORKDIR }}
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          NPM_CONFIG_LEGACY_PEER_DEPS: "true"
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm run build
           rm -f .npmrc
           cd ${{ github.workspace }}
