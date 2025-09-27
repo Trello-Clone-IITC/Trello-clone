@@ -32,6 +32,7 @@ const getMe = async (clerkUserId: string) => {
       email,
       fullName: fullName!,
       avatarUrl: imageUrl,
+      inbox: {},
     },
   });
 

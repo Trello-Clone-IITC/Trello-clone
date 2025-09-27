@@ -1146,6 +1146,49 @@ const getInboxCards = async (userId: string) => {
   return cardsDto;
 };
 
+// Get all cards assigned to a specific user
+const getCardsByAssignee = async (userId: string): Promise<CardDto[]> => {
+  const cards = await prisma.card.findMany({
+    where: {
+      assignees: {
+        some: {
+          userId: userId,
+        },
+      },
+      isArchived: false,
+    },
+    include: {
+      list: {
+        include: {
+          board: true,
+        },
+      },
+      assignees: {
+        include: {
+          user: true,
+        },
+      },
+      cardLabels: {
+        include: {
+          label: true,
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+          attachments: true,
+          checklists: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return Promise.all(cards.map((card) => getCardDto(card, userId)));
+};
+
 export default {
   createCard,
   getCardById,
@@ -1164,4 +1207,5 @@ export default {
   getCardAttachments,
   getCardDto,
   getInboxCards,
+  getCardsByAssignee,
 };
