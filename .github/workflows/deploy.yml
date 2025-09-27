@@ -92,8 +92,13 @@ jobs:
 
       - name: Remote deploy on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key ${EC2_USER}@${EC2_HOST} <<'EOSSH'
+          ssh -tt -o StrictHostKeyChecking=no -i /tmp/deploy_key ${EC2_USER}@${EC2_HOST} <<EOSSH
           set -e
+          # Make region available to aws by default (optional but nice)
+          export AWS_REGION="${AWS_REGION}"
+          export AWS_DEFAULT_REGION="${AWS_REGION}"
+          export AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
+      
           # Ensure unzip + AWS CLI
           sudo apt-get update -y
           sudo apt-get install -y unzip curl >/dev/null 2>&1 || true
@@ -102,29 +107,29 @@ jobs:
             unzip -q /tmp/awscliv2.zip -d /tmp
             sudo /tmp/aws/install
           fi
-
+      
           cd ${EC2_PATH}
           mkdir -p frontend_build
-
+      
           # Unpack new frontend
           rm -rf /tmp/fb && mkdir -p /tmp/fb
           unzip -q /tmp/frontend_build.zip -d /tmp/fb
-          # move inner dist/build contents to target folder
-          shopt -s dotglob
+      
+          shopt -s dotglob || true
           if [ -d "/tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}" ]; then
             rm -rf frontend_build/*
             cp -r /tmp/fb/${FRONTEND_WORKDIR}/${FRONTEND_BUILD_DIR}/* frontend_build/
           else
-            # fallback if zip structure differs
             rm -rf frontend_build/*
             cp -r /tmp/fb/* frontend_build/
           fi
-
+      
           # Login to ECR using instance role
-          aws ecr get-login-password --region ${AWS_REGION} \
+          aws ecr get-login-password --region "${AWS_REGION}" \
             | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-
+      
           # Pull new backend + (re)start stack
           docker compose pull
           docker compose up -d --remove-orphans
           EOSSH
+
