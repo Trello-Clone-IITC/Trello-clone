@@ -2,6 +2,7 @@
 
 # --- deps: install all deps with GH Packages auth ---
 FROM node:20-alpine AS deps
+USER root
 WORKDIR /app
 ENV NPM_CONFIG_LEGACY_PEER_DEPS=true
 RUN apk add --no-cache openssl libc6-compat
