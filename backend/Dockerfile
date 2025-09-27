@@ -44,8 +44,9 @@ FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 # (Optional) drop privileges
-# RUN addgroup -S app && adduser -S app -G app
-# USER app
+RUN addgroup -S app && adduser -S app -G app
+ENV PATH="/app/node_modules/.bin:${PATH}"
+USER app
 
 COPY --from=prod-deps /app/node_modules ./node_modules
 # bring over prisma engines + generated client artifacts from build
@@ -54,10 +55,6 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 
-# after COPYs
-RUN addgroup -S app && adduser -S app -G app && chown -R app:app /app
-ENV PATH="/app/node_modules/.bin:${PATH}"
-USER app
 
 
 EXPOSE 3000
