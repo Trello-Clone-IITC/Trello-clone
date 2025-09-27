@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import Spinner from "@/features/board/components/Spinner";
+// Spinner removed; skeleton used instead
+import DashboardLoadingSkeleton from "@/features/dashboard/components/DashboardLoadingSkeleton";
 import Board from "@/features/board/components/Board";
 import { useBoard } from "../hooks";
 import {
@@ -29,7 +30,7 @@ const BoardPage = () => {
     planner: boolean;
     board: boolean;
   }>({ inbox: false, planner: false, board: true });
-  const { cards } = useInbox(activeComponents.inbox);
+  useInbox(activeComponents.inbox);
 
   const [switchBoardsOpen, setSwitchBoardsOpen] = useState(false);
 
@@ -68,11 +69,11 @@ const BoardPage = () => {
     }
   };
 
-  const bothActive = activeComponents.inbox && activeComponents.board;
-  const anyActive =
-    activeComponents.inbox ||
-    activeComponents.planner ||
-    activeComponents.board;
+  // const bothActive = activeComponents.inbox && activeComponents.board;
+  // const anyActive =
+  //   activeComponents.inbox ||
+  //   activeComponents.planner ||
+  //   activeComponents.board;
   const multipleActive =
     (activeComponents.inbox ? 1 : 0) +
       (activeComponents.planner ? 1 : 0) +
@@ -84,18 +85,18 @@ const BoardPage = () => {
     activeComponents.inbox &&
     activeComponents.board &&
     !activeComponents.planner;
-  const plannerAndBoardOnly =
-    activeComponents.planner &&
-    activeComponents.board &&
-    !activeComponents.inbox;
+  // const plannerAndBoardOnly =
+  //   activeComponents.planner &&
+  //   activeComponents.board &&
+  //   !activeComponents.inbox;
   const inboxAndPlannerOnly =
     activeComponents.inbox &&
     activeComponents.planner &&
     !activeComponents.board;
-  const allThreeActive =
-    activeComponents.inbox &&
-    activeComponents.planner &&
-    activeComponents.board;
+  // const allThreeActive =
+  //   activeComponents.inbox &&
+  //   activeComponents.planner &&
+  //   activeComponents.board;
 
   // Keep navbar border hidden state in sync with layout; must be above any early returns
   useEffect(() => {
@@ -146,18 +147,17 @@ const BoardPage = () => {
     : { backgroundColor: theme === "light" ? "#ffffff" : "#1f1f21" };
 
   if (missingBoardId || isLoading || isFetching) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: theme === "light" ? "#ffffff" : "#1f1f21" }}
-      >
-        {missingBoardId ? (
+    if (missingBoardId) {
+      return (
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ backgroundColor: theme === "light" ? "#ffffff" : "#1f1f21" }}
+        >
           <div className="text-white/90">Missing board ID</div>
-        ) : (
-          <Spinner label="Loading board..." size={28} />
-        )}
-      </div>
-    );
+        </div>
+      );
+    }
+    return <DashboardLoadingSkeleton showNavbar={true} />;
   }
 
   if (isError || !board) {
