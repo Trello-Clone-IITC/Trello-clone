@@ -3,6 +3,7 @@
 # --- deps: install all deps with GH Packages auth ---
 FROM node:20-alpine AS deps
 WORKDIR /app
+ENV NPM_CONFIG_LEGACY_PEER_DEPS=true
 RUN apk add --no-cache openssl libc6-compat
 COPY package*.json ./
 # npm cache speeds up subsequent builds
@@ -27,6 +28,7 @@ RUN npx tsc --skipLibCheck --noUnusedLocals false --noUnusedParameters false --s
 # --- prod-deps: only production deps ---
 FROM node:20-alpine AS prod-deps
 WORKDIR /app
+ENV NPM_CONFIG_LEGACY_PEER_DEPS=true
 COPY package*.json ./
 RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
     --mount=type=cache,target=/root/.npm \
