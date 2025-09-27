@@ -151,7 +151,7 @@ export default function LoginForm() {
   );
 
   useEffect(() => {
-    setTheme("light");
+    setTheme("dark");
   }, [setTheme]);
 
   return (
@@ -193,7 +193,7 @@ export default function LoginForm() {
                         </FormLabel>
                         <FormControl className="hover:bg-[#f7f8f9] transition ease-in-out">
                           <Input
-                            className={`rounded border-1 border-[#8590a2] px-2 py-1.5 ${
+                            className={`rounded border-1 border-[#8590a2] px-2 dark:text-[#44546f] py-1.5 bg-white dark:bg-white hover:bg-white dark:hover:bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#388bff] ${
                               showPassword
                                 ? "bg-gray-100 cursor-not-allowed"
                                 : ""
@@ -219,7 +219,7 @@ export default function LoginForm() {
                           </FormLabel>
                           <FormControl className="hover:bg-[#f7f8f9] transition ease-in-out">
                             <Input
-                              className="rounded border-1 border-[#8590a2] px-2 py-1.5"
+                              className="rounded border-1 border-[#8590a2] px-2 dark:text-[#44546f] py-1.5 bg-white dark:bg-white hover:bg-white dark:hover:bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#388bff]"
                               placeholder="Enter your password"
                               {...field}
                               type="password"

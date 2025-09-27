@@ -222,6 +222,15 @@
   }
 }
 
+/* Pipe animation utility classes */
+.pulse-forward {
+  animation: forward-pulse 700ms ease-in-out infinite alternate;
+}
+
+.pulse-reverse {
+  animation: reverse-pulse 700ms ease-in-out infinite alternate;
+}
+
 @keyframes slideInFromBottomLeft {
   from {
     transform: translate(-500px, 40px);
@@ -423,6 +432,20 @@ input[type="radio"]:active {
 
 .header-popover-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #72737b;
+}
+
+/* Faded Navbar used in loading skeleton - keep white BG, fade contents */
+.navbar-faded nav {
+  background-color: white !important;
+  border-color: #e5e7eb !important; /* light gray border */
+}
+.dark .navbar-faded nav {
+  background-color: white !important; /* force white even in dark */
+  border-color: #e5e7eb !important;
+}
+.navbar-faded nav * {
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 
 /* Board horizontal scrollbar */

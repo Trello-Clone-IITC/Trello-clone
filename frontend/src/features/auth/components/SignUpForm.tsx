@@ -38,10 +38,10 @@ export default function SignupForm() {
     },
   });
   const input =
-    "border-1 border-[#8590a2] px-2 py-1.5 rounded-[3px]  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#0052cc] placeholder:text-[#727e92]";
+    "border-1 border-[#8590a2] px-2 py-1.5 rounded-[3px]  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-2 focus-visible:border-[#388bff] placeholder:text-[#727e92] bg-white dark:bg-white hover:bg-white dark:hover:bg-white";
   const isMobile = useMediaQuery("(max-width: 425px)");
   const { setTheme } = useTheme();
-  setTheme("light");
+  setTheme("dark");
 
   const navigate = useNavigate();
   const { isLoaded, oauthSignIn } = useOauthSignIn();

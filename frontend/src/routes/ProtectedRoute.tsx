@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { useUser } from "@clerk/clerk-react";
+import DashboardLoadingSkeleton from "@/features/dashboard/components/DashboardLoadingSkeleton";
 
 export const ProtectedRoute = () => {
   const { data: backendUser, isLoading, error, isFetching } = useMe();
@@ -19,13 +20,7 @@ export const ProtectedRoute = () => {
 
   // Still loading Clerk
   if (!isLoaded || isLoading || isFetching) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <DashboardLoadingSkeleton />;
   }
 
   // Not logged in → go to login

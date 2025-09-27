@@ -19,9 +19,7 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          {/* <Provider store={store}> */}
-            <App />
-          {/* </Provider> */}
+          <App />
         </QueryClientProvider>
       </BrowserRouter>
     </ThemeProvider>
