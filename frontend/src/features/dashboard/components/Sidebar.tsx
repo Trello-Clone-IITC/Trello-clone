@@ -318,26 +318,27 @@ const Sidebar: React.FC = () => {
                       <CollapsibleContent>
                         <div className="ml-9 space-y-0.5">
                           {/* Boards */}
-                          <div
+                          <Link
+                            to={`/w/${workspace.id}`}
                             className={cn(
-                              "flex items-center px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              "flex items-center px-2.5 py-2 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
                               isLight
                                 ? "text-[#292a2e] hover:bg-[#dcdfe4]"
                                 : "text-[#bfc1c4] hover:bg-[#37373a]"
                             )}
                           >
                             <BoardsIcon
-                              className="mr-2 w-3 h-3"
+                              className="mr-2 w-4 h-4"
                               isActive={false}
                               isLight={isLight}
                             />
-                            <span className="text-xs font-medium">Boards</span>
-                          </div>
+                            <span className="text-sm font-medium">Boards</span>
+                          </Link>
 
                           {/* Members */}
                           <div
                             className={cn(
-                              "flex items-center justify-between px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              "flex items-center justify-between px-2.5 py-2 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
                               isLight
                                 ? "text-[#292a2e] hover:bg-[#dcdfe4]"
                                 : "text-[#bfc1c4] hover:bg-[#37373a]"
@@ -351,19 +352,19 @@ const Sidebar: React.FC = () => {
                                     : Icons.peopleIcon
                                 }
                                 alt="Members"
-                                className="mr-2 h-3 w-3"
+                                className="mr-2 h-4 w-4"
                               />
-                              <span className="text-xs font-medium">
+                              <span className="text-sm font-medium">
                                 Members
                               </span>
                             </div>
-                            <Plus className="h-3 w-3 opacity-60" />
+                            <Plus className="h-4 w-4 opacity-60" />
                           </div>
 
                           {/* Settings */}
                           <div
                             className={cn(
-                              "flex items-center px-2 py-1.5 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
+                              "flex items-center px-2.5 py-2 rounded-md transition-colors cursor-pointer hover:bg-opacity-50",
                               isLight
                                 ? "text-[#292a2e] hover:bg-[#dcdfe4]"
                                 : "text-[#bfc1c4] hover:bg-[#37373a]"
@@ -376,9 +377,9 @@ const Sidebar: React.FC = () => {
                                   : Icons.gearwheelIcon
                               }
                               alt="Settings"
-                              className="mr-2 h-3 w-3"
+                              className="mr-2 h-4 w-4"
                             />
-                            <span className="text-xs font-medium">
+                            <span className="text-sm font-medium">
                               Settings
                             </span>
                           </div>

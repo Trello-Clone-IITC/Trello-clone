@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils";
 import { useInbox } from "../hooks/useInbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Bell,
   Filter,
@@ -227,23 +226,21 @@ export default function Inbox({
 
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
-  const [newCardDescription, setNewCardDescription] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const addCardRef = useRef<HTMLDivElement>(null);
   const inboxRef = useRef<HTMLDivElement>(null);
 
   const handleAddCard = () => {
     if (newCardTitle.trim()) {
-      addCard(newCardTitle.trim(), newCardDescription.trim() || undefined);
+      // Do not include description in inbox add flow
+      addCard(newCardTitle.trim(), undefined);
       setNewCardTitle("");
-      setNewCardDescription("");
       setIsAddingCard(false);
     }
   };
 
   const handleCancelAdd = () => {
     setNewCardTitle("");
-    setNewCardDescription("");
     setIsAddingCard(false);
   };
 
@@ -391,7 +388,7 @@ export default function Inbox({
           <div
             ref={addCardRef}
             className={cn(
-              "space-y-2",
+              "space-y-2 self-center mt-3 mb-1.5 px-2",
               fullWidth ? "w-full max-w-[800px]" : "w-full"
             )}
           >
@@ -402,14 +399,7 @@ export default function Inbox({
               className="bg-[#0f2541] border-[#294265] text-[#e3ebf6] placeholder:text-[#8fa8c7] light:bg-white light:border-[#cbd5e1] light:text-[#172b4d] light:placeholder:text-[#6b7280]"
               placeholder="Add a card"
             />
-            <Textarea
-              value={newCardDescription}
-              onChange={(e) => setNewCardDescription(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="bg-[#0f2541] border-[#294265] text-[#e3ebf6] placeholder:text-[#8fa8c7] resize-none light:bg-white light:border-[#cbd5e1] light:text-[#172b4d] light:placeholder:text-[#6b7280]"
-              placeholder="Add a description (optional)"
-              rows={2}
-            />
+            {/* Description field removed for inbox add */}
             <div className="flex gap-2">
               <Button
                 onClick={handleAddCard}

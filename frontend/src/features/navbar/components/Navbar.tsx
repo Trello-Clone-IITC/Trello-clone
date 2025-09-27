@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Bell, HelpCircle, Megaphone } from "lucide-react";
+import NotificationsPopover from "./NotificationsPopover";
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import CreateButton from "./CreateButton";
@@ -104,23 +105,24 @@ export default function Navbar() {
         </Button>
 
         {/* Notifications */}
-        <Button
-          size="icon"
-          className={`h-8 w-8 relative bg-transparent shadow-none cursor-pointer ${
-            isLight
-              ? "text-[#505258] hover:bg-[#dddedd]"
-              : "text-[#a9abaf] hover:bg-[#37373a]"
-          }`}
-        >
-          <Bell
-            className={`h-4 w-4 ${
+        <NotificationsPopover>
+          <Button
+            size="icon"
+            className={`h-8 w-8 relative bg-transparent shadow-none cursor-pointer ${
               isLight
                 ? "text-[#505258] hover:bg-[#dddedd]"
                 : "text-[#a9abaf] hover:bg-[#37373a]"
             }`}
-          />
-          {/* Notification badge could go here */}
-        </Button>
+          >
+            <Bell
+              className={`h-4 w-4 ${
+                isLight
+                  ? "text-[#505258] hover:bg-[#dddedd]"
+                  : "text-[#a9abaf] hover:bg-[#37373a]"
+              }`}
+            />
+          </Button>
+        </NotificationsPopover>
 
         {/* Help - Hidden on mobile */}
         <Button

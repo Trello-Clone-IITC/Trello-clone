@@ -233,11 +233,17 @@ export function useCardDnd(boardId: string, listId: string) {
           }))
         );
 
-        // Calculate new position using centralized utility
+        // Calculate new position using centralized utility.
+        // When dropping across lists, onDrop can arrive without a targetCardId/edge
+        // from the list container. In that case, fall back to the latest preview
+        // (which tracks the hovered target card and edge in this list).
+        const effectiveTargetId = targetCardId ?? preview?.targetId;
+        const effectiveEdge = edge ?? (preview?.edge as Edge | undefined);
+
         const newPosition = calculatePosition({
           sourceId: sourceCardId,
-          targetId: targetCardId,
-          edge,
+          targetId: effectiveTargetId,
+          edge: (effectiveEdge as Edge) ?? "bottom",
           items: currentSorted,
         });
 
@@ -248,8 +254,14 @@ export function useCardDnd(boardId: string, listId: string) {
           newPosition,
         });
 
-        // Check if this is a cross-list move or inbox move
-        const isCrossListMove = sourceListId && sourceListId !== listId;
+        // Check if this is a cross-list move or inbox move.
+        // Some onDrop events may omit sourceListId; in that case infer by
+        // checking whether the source card already exists in this list.
+        const sourceInTargetList = currentSorted.some(
+          (c) => c.id === sourceCardId
+        );
+        const isCrossListMove =
+          (sourceListId && sourceListId !== listId) || !sourceInTargetList;
         const isInboxMove = sourceListId === "inbox";
 
         if (isCrossListMove || isInboxMove) {
@@ -266,11 +278,30 @@ export function useCardDnd(boardId: string, listId: string) {
             cardToMove = sourceCards.find((c) => c.id === sourceCardId);
           } else {
             // Get card from source list
-            sourceCards =
-              queryClient.getQueryData<CardDto[] | undefined>(
-                boardKeys.cards(boardId, sourceListId)
-              ) || [];
-            cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+            if (sourceListId) {
+              sourceCards =
+                queryClient.getQueryData<CardDto[] | undefined>(
+                  boardKeys.cards(boardId, sourceListId)
+                ) || [];
+              cardToMove = sourceCards.find((c) => c.id === sourceCardId);
+            }
+
+            // Fallback: search all board list caches to locate the card and its list
+            if (!cardToMove) {
+              const matches = queryClient.getQueriesData<CardDto[]>({
+                queryKey: ["board", "cards", boardId],
+              });
+              for (const [key, arr] of matches) {
+                const maybe = (arr || []).find((c) => c.id === sourceCardId);
+                if (maybe && Array.isArray(key) && key.length >= 4) {
+                  const detectedSourceListId = String(key[3]);
+                  sourceCards = arr || [];
+                  cardToMove = maybe;
+                  sourceListId = detectedSourceListId as string;
+                  break;
+                }
+              }
+            }
           }
 
           if (!cardToMove) {
@@ -292,7 +323,43 @@ export function useCardDnd(boardId: string, listId: string) {
               return;
             }
 
-            console.log("Card not found in either list, aborting move");
+            // As a last resort, insert a minimal card into the target list using
+            // the computed position; server/socket will reconcile full data.
+            queryClient.setQueryData<CardDto[] | undefined>(
+              boardKeys.cards(boardId, listId),
+              (prev) => {
+                if (!prev) return prev;
+                const minimal: CardDto = {
+                  id: sourceCardId,
+                  listId,
+                  boardId,
+                  title: "",
+                  description: null,
+                  position: newPosition,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                  startDate: null,
+                  dueDate: null,
+                  isCompleted: false,
+                  creatorId: "",
+                  coverImageUrl: null,
+                  order: 0,
+                  // optional arrays
+                  labels: [],
+                } as unknown as CardDto;
+                const next = [...prev, minimal];
+                return sortByPosition(next);
+              }
+            );
+            emitMoveCard(
+              boardId,
+              sourceCardId,
+              newPosition,
+              sourceListId,
+              listId
+            );
+            console.log("Inserted minimal card into target list (fallback)");
+            // Continue to finally which clears state
             return;
           }
 

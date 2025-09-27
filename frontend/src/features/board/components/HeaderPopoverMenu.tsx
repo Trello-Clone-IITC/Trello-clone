@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,19 +24,39 @@ import {
   Copy,
   Mail,
   X,
-  Wifi,
 } from "lucide-react";
 import ShareBoardModal from "./ShareBoardModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { useBoardMembers, boardKeys } from "../hooks";
+import { fetchBoardMembers } from "../api";
+import type { BoardMemberWithUserDto } from "@ronmordo/contracts";
 
 interface HeaderPopoverMenuProps {
   children: React.ReactNode;
+  boardId?: string;
+  initialMembers?: BoardMemberWithUserDto[];
 }
 
 export default function HeaderPopoverMenu({
   children,
+  boardId,
+  initialMembers,
 }: HeaderPopoverMenuProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: membersData } = useBoardMembers(boardId ?? "");
+  const members =
+    membersData && membersData.length ? membersData : initialMembers ?? [];
+
+  useEffect(() => {
+    if (!isPopoverOpen || !boardId) return;
+    queryClient.prefetchQuery({
+      queryKey: boardKeys.boardMembers(boardId),
+      queryFn: () => fetchBoardMembers(boardId),
+      staleTime: 60_000,
+    });
+  }, [isPopoverOpen, boardId, queryClient]);
 
   return (
     <>
@@ -62,14 +82,30 @@ export default function HeaderPopoverMenu({
 
             {/* User Avatars and Share Button on same row */}
             <div className="flex items-center justify-between mb-4">
-              <div className="flex -space-x-1">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-[#282e33]">
-                  NC
-                </div>
-                <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-[#282e33] relative">
-                  RM
-                  <Wifi className="h-2 w-2 absolute -top-1 -right-1 text-white" />
-                </div>
+              <div className="flex -space-x-2">
+                {members.slice(0, 6).map((m, idx) => (
+                  <div
+                    key={m.userId}
+                    className="relative"
+                    style={{ zIndex: 6 - idx }}
+                  >
+                    <div className="w-8 h-8 rounded-full p-0 bg-transparent flex items-center justify-center">
+                      {m.user.avatarUrl ? (
+                        <img
+                          src={m.user.avatarUrl}
+                          alt={m.user.fullName || ""}
+                          className="w-7 h-7 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-[#3d3f43] flex items-center justify-center text-white text-xs font-semibold">
+                          {(m.user.fullName || m.user.username || "")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
               <Button
                 variant="ghost"

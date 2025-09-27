@@ -18,6 +18,7 @@ import { Inbox } from "@/features/inbox";
 import { useInbox } from "@/features/inbox/hooks/useInbox";
 import { Planner } from "@/features/planner";
 import { useAppContext } from "@/hooks/useAppContext";
+import { SwitchBoardsModal } from "@/features/board/components/SwitchBoardsModal";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
@@ -29,6 +30,8 @@ const BoardPage = () => {
     board: boolean;
   }>({ inbox: false, planner: false, board: true });
   const { cards } = useInbox(activeComponents.inbox);
+
+  const [switchBoardsOpen, setSwitchBoardsOpen] = useState(false);
 
   const handleTabChange = (
     tab: "inbox" | "planner" | "board" | "switch-boards"
@@ -60,6 +63,8 @@ const BoardPage = () => {
         }
         return newState;
       });
+    } else if (tab === "switch-boards") {
+      setSwitchBoardsOpen(true);
     }
   };
 
@@ -234,6 +239,11 @@ const BoardPage = () => {
       <BoardFooter
         activeComponents={activeComponents}
         onTabChange={handleTabChange}
+      />
+      {/* Switch Boards Modal */}
+      <SwitchBoardsModal
+        open={switchBoardsOpen}
+        onClose={() => setSwitchBoardsOpen(false)}
       />
     </div>
   );

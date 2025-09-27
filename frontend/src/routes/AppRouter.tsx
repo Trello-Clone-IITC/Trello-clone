@@ -17,6 +17,7 @@ import { SsoCallback } from "@/features/auth/components/Sso-callback";
 // Dashboard pages
 import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
+import WorkspaceBoardsPage from "@/features/dashboard/pages/WorkspaceBoardsPage";
 
 // Board pages
 import FinalBoardPage from "@/features/board/pages/BoardPage";
@@ -47,6 +48,7 @@ export const AppRouter = () => {
         <Route element={<DashboardLayout />}>
           <Route index element={<HomePage />} />
           <Route path="boards" element={<BoardsPage />} />
+          <Route path="w/:workspaceId" element={<WorkspaceBoardsPage />} />
           {/* <Route path="/b/:boardId" element={<BoardPage />} /> */}
         </Route>
         {/* Caspi board with its own layout */}

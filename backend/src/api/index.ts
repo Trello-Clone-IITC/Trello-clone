@@ -21,7 +21,7 @@ router.use("/boards", boardRouter);
 router.use("/cards", cardRouter);
 router.use("/checklists", checklistRouter);
 router.use("/lists", listRouter);
-router.use("search", searchRouter);
+router.use("/search", searchRouter);
 router.use("/apiDocs", docsRouter);
 
 export default router;
