@@ -172,10 +172,31 @@ export function useInbox() {
       return response.data.data;
     },
     onSuccess: (newCard) => {
-      // Add to inbox
+      // Replace optimistic card with real card or add if not found
       queryClient.setQueryData<CardDto[]>(INBOX_QUERY_KEY, (prev) => {
-        return prev ? [...prev, newCard] : [newCard];
+        if (!prev) return [newCard];
+
+        // Find and replace optimistic card with same ID
+        const hasOptimisticCard = prev.some(
+          (card) => card.id === newCard.id && (card as any).isOptimistic
+        );
+
+        if (hasOptimisticCard) {
+          // Replace optimistic card with real card
+          return prev.map((card) => (card.id === newCard.id ? newCard : card));
+        } else {
+          // Add new card if no optimistic version exists
+          return [...prev, newCard];
+        }
       });
+    },
+    onError: (error, { cardId }) => {
+      // Rollback optimistic update on error
+      queryClient.setQueryData<CardDto[]>(INBOX_QUERY_KEY, (prev) => {
+        if (!prev) return [];
+        return prev.filter((card) => card.id !== cardId);
+      });
+      console.error("Failed to move card to inbox:", error);
     },
   });
 
@@ -255,6 +276,27 @@ export function useInbox() {
     [moveCardToInboxMutation]
   );
 
+  // Optimistic card addition for immediate UI update
+  const addOptimisticCard = useCallback(
+    (card: CardDto, position: number) => {
+      const optimisticCard = {
+        ...card,
+        position,
+        listId: null,
+        inboxUserId: user?.id,
+        // Mark as optimistic for potential rollback
+        isOptimistic: true,
+      };
+
+      queryClient.setQueryData<CardDto[]>(INBOX_QUERY_KEY, (prev) => {
+        return prev ? [...prev, optimisticCard] : [optimisticCard];
+      });
+
+      return optimisticCard;
+    },
+    [queryClient, user?.id]
+  );
+
   return useMemo(
     () => ({
       cards,
@@ -265,6 +307,7 @@ export function useInbox() {
       toggleCardCompletion,
       moveCardToList,
       moveCardToInbox,
+      addOptimisticCard,
       isLoading:
         isLoading ||
         createCardMutation.isPending ||
@@ -285,6 +328,7 @@ export function useInbox() {
       toggleCardCompletion,
       moveCardToList,
       moveCardToInbox,
+      addOptimisticCard,
       isLoading,
       createCardMutation.isPending,
       updateCardMutation.isPending,

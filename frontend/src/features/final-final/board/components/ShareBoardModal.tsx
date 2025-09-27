@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,24 +16,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Link2, ChevronDown, User, Crown, Shield } from "lucide-react";
-
-interface Member {
-  id: string;
-  name: string;
-  username: string;
-  role: string;
-  avatar: string;
-  avatarColor: string;
-  isOnline?: boolean;
-}
+import { useBoardMembers } from "../hooks";
+import type { BoardMemberWithUserDto } from "@ronmordo/contracts";
+import { useMe } from "@/features/auth/hooks/useMe";
 
 interface ShareBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
+  boardId?: string;
 }
-
-// TODO: Replace with real board members data from API
-const mockMembers: Member[] = [];
 
 const roleOptions = [
   { value: "member", label: "Member" },
@@ -44,10 +35,17 @@ const roleOptions = [
 export default function ShareBoardModal({
   isOpen,
   onClose,
+  boardId,
 }: ShareBoardModalProps) {
   const [emailInput, setEmailInput] = useState("");
   const [selectedRole, setSelectedRole] = useState("member");
   const [activeTab, setActiveTab] = useState("members");
+  const { data: me } = useMe();
+  const { data: membersData } = useBoardMembers(boardId ?? "");
+  const members: BoardMemberWithUserDto[] = useMemo(
+    () => membersData ?? [],
+    [membersData]
+  );
 
   const handleShare = () => {
     // Handle sharing logic here
@@ -59,10 +57,11 @@ export default function ShareBoardModal({
   };
 
   const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "Admin":
+    const normalized = role.toLowerCase();
+    switch (normalized) {
+      case "admin":
         return <Crown className="h-3 w-3" />;
-      case "Member":
+      case "member":
         return <User className="h-3 w-3" />;
       default:
         return <Shield className="h-3 w-3" />;
@@ -74,7 +73,7 @@ export default function ShareBoardModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-md bg-[#2b2c2f] border-[#3c434a] text-white p-0 rounded-lg top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
+        className="w-[720px] max-w-[90vw] bg-[#2b2c2f] border-[#3c434a] text-white p-0 rounded-lg top-[210px] left-[50%] translate-x-[-50%] max-h-[calc(100vh-120px)]"
         showCloseButton={false}
       >
         <DialogHeader className="p-6 pb-4">
@@ -93,7 +92,7 @@ export default function ShareBoardModal({
           </div>
         </DialogHeader>
 
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-8">
           {/* Email/Name Input Section */}
           <div className="mb-6">
             <div className="flex gap-2 mb-4">
@@ -104,7 +103,7 @@ export default function ShareBoardModal({
                 className="flex-1 bg-[#37383b] border-[#4c4d51] text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-0"
               />
               <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-24 bg-[#37383b] border-[#4c4d51] text-white focus:ring-0">
+                <SelectTrigger className="w-24 bg-[#37383b] border-[#4c4d51] text-white focus:ring-0 flex items-center justify-center">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#2b2c2f] border-[#3c434a]">
@@ -154,7 +153,7 @@ export default function ShareBoardModal({
               >
                 Board members
                 <span className="ml-2 bg-[#4c4d51] text-white text-xs px-1.5 py-0.5 rounded">
-                  {mockMembers.length}
+                  {members.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -166,57 +165,71 @@ export default function ShareBoardModal({
             </TabsList>
 
             <TabsContent value="members" className="mt-4">
-              <div className="space-y-3 max-h-64 overflow-y-auto header-popover-scrollbar">
-                {mockMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between p-2 hover:bg-[#37383b] rounded transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 ${member.avatarColor} rounded-full flex items-center justify-center text-xs font-semibold text-white`}
-                      >
-                        {member.avatar}
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm text-white">
-                            {member.name}
-                            {member.id === "1" && " (you)"}
-                          </span>
+              <div className="space-y-3 max-h-96 overflow-y-auto header-popover-scrollbar">
+                {members.map((member) => {
+                  const isYou = me?.id === member.user.id;
+                  const initials = member.user.fullName
+                    ?.charAt(0)
+                    ?.toUpperCase();
+                  const username = member.user.username ?? "";
+                  const role = member.role; // 'admin' | 'member' | 'observer'
+                  const roleLabel =
+                    role.charAt(0).toUpperCase() + role.slice(1);
+                  return (
+                    <div
+                      key={member.userId}
+                      className="flex items-center justify-between p-2 hover:bg-[#37383b] rounded transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {member.user.avatarUrl ? (
+                          <img
+                            src={member.user.avatarUrl}
+                            alt={member.user.fullName}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-[#495057] rounded-full flex items-center justify-center text-xs font-semibold text-white">
+                            {initials}
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm text-white">
+                              {member.user.fullName}
+                              {isYou && " (you)"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            {username && <span>@{username}</span>}
+                            <span>•</span>
+                            <span>Board {roleLabel}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-400">
-                          <span>@{member.username}</span>
-                          <span>•</span>
-                          <span>Workspace admin</span>
-                        </div>
                       </div>
+                      <Select defaultValue={role}>
+                        <SelectTrigger className="w-28 h-8 bg-[#37383b] border-[#4c4d51] text-white text-xs focus:ring-0 flex items-center justify-center">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs">{roleLabel}</span>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#2b2c2f] border-[#3c434a]">
+                          {roleOptions.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              value={option.value}
+                              className="text-white hover:bg-[#3c434a] focus:bg-[#3c434a] text-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                {getRoleIcon(option.value)}
+                                {option.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Select defaultValue={member.role}>
-                      <SelectTrigger className="w-20 h-8 bg-[#37383b] border-[#4c4d51] text-white text-xs focus:ring-0">
-                        <div className="flex items-center gap-1">
-                          {getRoleIcon(member.role)}
-                          <span className="text-xs">{member.role}</span>
-                          <ChevronDown className="h-3 w-3" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#2b2c2f] border-[#3c434a]">
-                        {roleOptions.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={option.value}
-                            className="text-white hover:bg-[#3c434a] focus:bg-[#3c434a] text-xs"
-                          >
-                            <div className="flex items-center gap-2">
-                              {getRoleIcon(option.label)}
-                              {option.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </TabsContent>
 

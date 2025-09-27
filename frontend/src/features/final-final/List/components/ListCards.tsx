@@ -107,14 +107,19 @@ const ListCards = ({
         targetIndex !== -1 &&
         draggedIndex !== targetIndex
       ) {
-        // Calculate the final insert position based on edge
+        // Calculate the final insert position based on edge and direction
         let finalInsertIndex: number;
-        if (preview.edge === "top") {
-          // Insert before the target
-          finalInsertIndex = targetIndex;
+
+        if (draggedIndex < targetIndex) {
+          // Moving down: if bottom edge, insert after target (target moves up)
+          // if top edge, insert before target (target stays, previous moves up)
+          finalInsertIndex =
+            preview.edge === "bottom" ? targetIndex + 1 : targetIndex;
         } else {
-          // Insert after the target
-          finalInsertIndex = targetIndex + 1;
+          // Moving up: if top edge, insert before target (target moves down)
+          // if bottom edge, insert after target (target stays, next moves down)
+          finalInsertIndex =
+            preview.edge === "top" ? targetIndex : targetIndex + 1;
         }
 
         console.log("Visual positioning:", {
@@ -148,20 +153,29 @@ const ListCards = ({
             // Other items shift to make space
             let newIndex = currentIndex;
 
-            if (draggedIndex < finalInsertIndex) {
-              // Moving down: items between dragged and insert position shift up
-              if (
+            // Visual feedback: move the target card immediately when hovering
+            if (draggedIndex < targetIndex) {
+              // Moving down: target card moves up to dragged position
+              if (currentIndex === targetIndex) {
+                // Target card moves to dragged position
+                newIndex = draggedIndex;
+              } else if (
                 currentIndex > draggedIndex &&
-                currentIndex <= finalInsertIndex
+                currentIndex < targetIndex
               ) {
+                // Cards between dragged and target shift up
                 newIndex = currentIndex - 1;
               }
-            } else {
-              // Moving up: items between insert position and dragged shift down
-              if (
-                currentIndex >= finalInsertIndex &&
+            } else if (draggedIndex > targetIndex) {
+              // Moving up: target card moves down to dragged position
+              if (currentIndex === targetIndex) {
+                // Target card moves to dragged position
+                newIndex = draggedIndex;
+              } else if (
+                currentIndex > targetIndex &&
                 currentIndex < draggedIndex
               ) {
+                // Cards between target and dragged shift down
                 newIndex = currentIndex + 1;
               }
             }
@@ -225,12 +239,8 @@ const ListCards = ({
             (it) => it.id === preview.targetId
           );
           if (targetIndex !== -1) {
-            let baseIndex =
+            const baseIndex =
               preview.edge === "top" ? targetIndex : targetIndex + 1;
-            // Adjust for same-list downward moves (dragged removed before insert)
-            if (draggedIndex !== -1 && draggedIndex < baseIndex) {
-              baseIndex -= 1;
-            }
             placeholderIndex = Math.max(0, Math.min(items.length, baseIndex));
           }
         }

@@ -1,7 +1,9 @@
 import {
   getLabelColorClass,
   getLabelHoverColorClass,
+  toBoldLabelColorName,
 } from "@/shared/constants";
+import { useTheme } from "@/hooks/useTheme";
 import type { CardDto } from "@ronmordo/contracts";
 import { CardStats } from "./CardStats";
 import { useState, useRef, useEffect } from "react";
@@ -43,6 +45,8 @@ const Card = ({
   onDrop,
 }: Props) => {
   const { labelsExpanded, toggleLabelsExpanded } = useAppContext();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [openModal, setOpenModal] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -70,8 +74,9 @@ const Card = ({
     value.startsWith("#") ? value : `#${value}`;
   //  CASPI CHANGED LINES 38-40
   const getLabelClassName = (color: string) => {
-    const bgClass = getLabelColorClass(color);
-    const hoverClass = getLabelHoverColorClass(color);
+    const effectiveColor = isLight ? toBoldLabelColorName(color) : color;
+    const bgClass = getLabelColorClass(effectiveColor);
+    const hoverClass = getLabelHoverColorClass(effectiveColor);
     return `${bgClass} ${hoverClass} ${
       labelsExpanded ? "text-[#b2ebd3]" : "text-[#1d2125]"
     }`;
@@ -130,14 +135,9 @@ const Card = ({
         const sourceListId = source.data?.listId as string;
         if (sourceCardId && sourceCardId !== card.id) {
           // Determine edge based on mouse position relative to card center
-          // Make it more forgiving by using a larger zone for "top"
           const rect = element.getBoundingClientRect();
           const mouseY = location.current.input.clientY;
-          const cardCenterY = rect.top + rect.height / 2;
-
-          // Use 60% of the card height for the top zone to make it easier to hit
-          const topZoneHeight = rect.height * 0.6;
-          const edge = mouseY < rect.top + topZoneHeight ? "top" : "bottom";
+          const edge = mouseY - rect.top > rect.height / 2 ? "bottom" : "top";
 
           onPreview?.({
             sourceCardId,
@@ -157,14 +157,9 @@ const Card = ({
         });
         if (sourceCardId && sourceCardId !== card.id) {
           // Determine edge based on final mouse position
-          // Use the same forgiving logic as onDrag
           const rect = element.getBoundingClientRect();
           const mouseY = location.current.input.clientY;
-          const cardCenterY = rect.top + rect.height / 2;
-
-          // Use 60% of the card height for the top zone to make it easier to hit
-          const topZoneHeight = rect.height * 0.6;
-          const edge = mouseY < rect.top + topZoneHeight ? "top" : "bottom";
+          const edge = mouseY - rect.top > rect.height / 2 ? "bottom" : "top";
 
           console.log("Card onDrop calling onDrop with:", {
             sourceCardId,
@@ -173,8 +168,8 @@ const Card = ({
             sourceListId,
             mouseY,
             cardTop: rect.top,
-            cardCenter: cardCenterY,
-            topZoneEnd: rect.top + topZoneHeight,
+            cardCenter: rect.top + rect.height / 2,
+            topZoneEnd: rect.top + rect.height / 2,
           });
 
           onDrop?.({
@@ -195,7 +190,11 @@ const Card = ({
     <>
       <div
         ref={cardRef}
-        className="group relative bg-[#22272b] min-h-[36px] rounded-[8px] cursor-pointer shadow-sm hover:bg-[#2c2e33] transition-colors"
+        className={`group relative min-h-[36px] rounded-[8px] cursor-pointer shadow-sm transition-colors ${
+          isLight
+            ? "bg-white hover:bg-[#f7f8f9]"
+            : "bg-[#22272b] hover:bg-[#2c2e33]"
+        }`}
         onClick={handleCardClick}
         style={{
           // Add some padding to make drop target area larger
@@ -278,7 +277,9 @@ const Card = ({
             </span>
 
             <h3
-              className={`font-medium text-white mb-1 text-sm leading-tight transition-all duration-500 ease-out ${
+              className={`font-medium ${
+                isLight ? "text-black" : "text-white"
+              } mb-1 text-sm leading-tight transition-all duration-500 ease-out ${
                 isCompleted
                   ? "ml-6"
                   : "group-hover:ml-6 group-focus-within:ml-8"

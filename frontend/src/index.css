@@ -468,3 +468,12 @@ input[type="radio"]:active {
 .auto-scrolling * {
   transition: none !important;
 }
+
+/* Card hover effects - only trigger when hovering directly over the card */
+.card-hover-group:hover .card-completion-button {
+  opacity: 1;
+}
+
+.card-hover-group:hover .card-title {
+  margin-left: 1.5rem;
+}

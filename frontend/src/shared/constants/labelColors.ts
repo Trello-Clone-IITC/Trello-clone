@@ -125,6 +125,30 @@ export const getLabelColorClass = (colorName: string): string => {
 };
 
 /**
+ * Convert any label color name to its bold counterpart.
+ * Example: "green" | "subtle_green" -> "bold_green". If already bold, returns as-is.
+ */
+export const toBoldLabelColorName = (colorName: string): string => {
+  if (!colorName) return colorName;
+  if (colorName.startsWith("bold_")) return colorName;
+  const base = colorName.replace(/^subtle_/, "");
+  const mapping: Record<string, string> = {
+    green: "bold_green",
+    yellow: "bold_yellow",
+    orange: "bold_orange",
+    red: "bold_red",
+    purple: "bold_purple",
+    blue: "bold_blue",
+    sky: "bold_sky",
+    lime: "bold_lime",
+    pink: "bold_pink",
+    black: "bold_black",
+    default: "bold_blue",
+  };
+  return mapping[base] ?? colorName;
+};
+
+/**
  * Get the Tailwind CSS hover class name for a given color name
  * @param colorName - The color name from the backend DTO
  * @returns The corresponding Tailwind hover class name

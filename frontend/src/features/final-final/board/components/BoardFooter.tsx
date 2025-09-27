@@ -37,7 +37,7 @@ export default function BoardFooter({
   return (
     <nav className="flex fixed z-1 right-0 left-0 items-end justify-center h-0 gap-2 pointer-events-none bottom-4">
       {/* Main navigation items */}
-      <div className="flex p-1.5 border border-[#313133] shadow-md gap-1.5 pointer-events-auto rounded-lg bg-[#1a1a1a]">
+      <div className="flex p-1.5 border border-[#313133] shadow-md gap-1.5 pointer-events-auto rounded-lg bg-[#1a1a1a] light:bg-white">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           // Determine if this component is active
@@ -69,8 +69,8 @@ export default function BoardFooter({
                   isDisabled
                     ? "bg-[#1c2b42] text-[#5786ce] cursor-not-allowed opacity-75"
                     : isActive
-                    ? "bg-[#1c2b42] text-[#669df1] hover:bg-[#123263] hover:text-[#5786ce] cursor-pointer"
-                    : "text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer"
+                    ? "bg-[#1c2b42] text-[#669df1] hover:bg-[#123263] hover:text-[#5786ce] cursor-pointer light:bg-[#e9f2fe] light:hover:bg-[#cfe1fd] light:text-[#1868db]"
+                    : "text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer light:text-[#292a2e] light:hover:bg-[#dddedd]"
                 )}
                 role="checkbox"
                 aria-checked={isActive}
@@ -83,7 +83,7 @@ export default function BoardFooter({
               </button>
               {/* Blue indicator bar for active tab */}
               {isActive && (
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-0.5 bg-[#669df1] rounded-full"></div>
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-0.5 bg-[#669df1] rounded-full light:bg-[#1868db]"></div>
               )}
             </div>
           );
@@ -102,7 +102,7 @@ export default function BoardFooter({
               onClick={() => onTabChange?.(switchBoardsItem.id)}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200",
-                "text-gray-300 hover:text-white hover:bg-white/10"
+                "text-gray-300 hover:text-white hover:bg-white/10 light:text-[#292a2e] light:hover:bg-[#dddedd]"
               )}
               role="checkbox"
               aria-checked={false}

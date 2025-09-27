@@ -8,6 +8,7 @@ import Spinner from "@/features/final-final/board/components/Spinner";
 import { useRef, useEffect, useState } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useCardDnd } from "../hooks/useCardDnd";
+import { useTheme } from "@/hooks/useTheme";
 
 const List = ({
   list,
@@ -20,6 +21,8 @@ const List = ({
     list.id,
     list.boardId
   );
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const { data: cards, isLoading, error } = useCards(list.boardId, list.id);
   const listFooterRef = useRef<ListFooterRef>(null);
   const listRef = useRef<HTMLLIElement>(null);
@@ -77,7 +80,9 @@ const List = ({
   return (
     <li
       ref={listRef}
-      className={`flex-shrink-0 self-start py-0 px-1.5 h-fit whitespace-nowrap bg-[#101204] rounded-[12px] transition-all duration-200 ${
+      className={`flex-shrink-0 self-start py-0 px-1.5 h-fit whitespace-nowrap rounded-[12px] transition-all duration-200 ${
+        isLight ? "bg-white" : "bg-[#101204]"
+      } ${
         isCardDragOver ? "ring-inset ring-2 ring-blue-400" : ""
       }`}
       data-testid="list-wrapper"
