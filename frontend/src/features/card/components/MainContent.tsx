@@ -42,7 +42,11 @@ import {
 import { ChecklistSection } from "./ChecklistSection";
 import UserModal from "./UserModal";
 import { MembersPopover } from "./MembersPopover";
-import { useBoardMembers, useBoardLabels } from "@/features/board/hooks";
+import {
+  useBoardMembers,
+  useBoardLabels,
+  useCreateBoardLabel,
+} from "@/features/board/hooks";
 import { AttachmentPopover } from "./AttachmentPopover";
 import { DateSection } from "./DateSection";
 import { useCardAttachments, useCardLabels } from "../hooks/useCardQueries";
@@ -112,6 +116,7 @@ export const MainContent = ({
   // Build a light map of userId -> user for optimistic rendering in children
   const userById = new Map((boardMembers ?? []).map((m) => [m.userId, m.user]));
   const { data: boardLabels } = useBoardLabels(boardId);
+  const createBoardLabelMut = useCreateBoardLabel(boardId);
   const { data: card } = useCard(boardId, listId, cardId);
   const { theme } = useTheme();
   const isLight = theme === "light";
@@ -123,9 +128,7 @@ export const MainContent = ({
     toggleLabelMut.mutate({ labelId, add: !isSelected });
   };
 
-  const handleCreateLabel = () => {
-    // TODO: Implement create label logic
-  };
+  const handleCreateLabel = () => {};
 
   const handleEditLabel = (color: ColorType) => {
     // TODO: Implement edit label logic
@@ -197,6 +200,9 @@ export const MainContent = ({
               onToggle={handleLabelToggle}
               onCreateLabel={handleCreateLabel}
               onEditLabel={() => {}}
+              onSubmitCreate={({ name, color }) => {
+                createBoardLabelMut.mutate({ name, color });
+              }}
             >
               <button
                 type="button"

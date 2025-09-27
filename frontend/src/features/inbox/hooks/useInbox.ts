@@ -42,7 +42,7 @@ export function useInbox(enabled: boolean = true) {
         throw error;
       }
     },
-    staleTime: 60_000, // 1 minute
+    staleTime: 500, // 1 minute
     retry: false, // Don't retry on error to avoid infinite loading
   });
 

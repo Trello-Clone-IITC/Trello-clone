@@ -5,7 +5,7 @@ import type {
   LabelDto,
   BoardMemberWithUserDto,
 } from "@ronmordo/contracts";
-import type { CreateBoardInput } from "@ronmordo/contracts";
+import type { CreateBoardInput, CreateLabelInput } from "@ronmordo/contracts";
 
 export const fetchBoard = async (boardId: string): Promise<BoardDto> => {
   const { data } = await api.get<ApiResponse<BoardDto>>(`/boards/${boardId}`);
@@ -34,5 +34,16 @@ export const createBoard = async (
   input: CreateBoardInput
 ): Promise<BoardDto> => {
   const { data } = await api.post<ApiResponse<BoardDto>>(`/boards`, input);
+  return data.data;
+};
+
+export const createBoardLabel = async (
+  boardId: string,
+  input: CreateLabelInput
+): Promise<LabelDto> => {
+  const { data } = await api.post<ApiResponse<LabelDto>>(
+    `/boards/${boardId}/labels`,
+    input
+  );
   return data.data;
 };

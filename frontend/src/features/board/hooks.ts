@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   BoardDto,
   ListDto,
@@ -6,8 +6,14 @@ import type {
   LabelDto,
   BoardMemberDto,
   BoardMemberWithUserDto,
+  ColorType,
 } from "@ronmordo/contracts";
-import { fetchBoard, fetchBoardLabels, fetchBoardMembers } from "./api";
+import {
+  fetchBoard,
+  fetchBoardLabels,
+  fetchBoardMembers,
+  createBoardLabel,
+} from "./api";
 import { useBoardSocket } from "./socket";
 
 export const boardKeys = {
@@ -64,6 +70,19 @@ export const useBoardLabels = (boardId: string) =>
     enabled: !!boardId,
     staleTime: 60_000,
   });
+
+export const useCreateBoardLabel = (boardId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name: string | null; color: ColorType }) =>
+      createBoardLabel(boardId, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: boardKeys.boardLabels(boardId),
+      });
+    },
+  });
+};
 
 export const useBoardMembers = (boardId: string) =>
   useQuery<BoardMemberWithUserDto[]>({
