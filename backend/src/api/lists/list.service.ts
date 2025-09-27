@@ -14,7 +14,6 @@ import cardService from "../cards/card.service.js";
 import { getCache, setCache } from "../../lib/cache.js";
 import { mapFullListToDto, mapListToDto } from "./list.mapper.js";
 import { mapListWatcherToDto } from "../list-watchers/list-watcher.mapper.js";
-import listController from "./list.controller.js";
 
 const createList = async (
   data: CreateListInput,
@@ -50,11 +49,13 @@ const createList = async (
 
   const cached = await getCache<ListDto[]>(`board:${boardId}:lists`);
 
-  await setCache<ListDto[]>(
-    `board:${boardId}:lists`,
-    cached ? [listDto, ...cached] : [listDto],
-    120
-  );
+  if (cached) {
+    await setCache<ListDto[]>(
+      `board:${boardId}:lists`,
+      [listDto, ...cached],
+      120
+    );
+  }
 
   return listDto;
 };
@@ -120,15 +121,13 @@ const updateList = async (
 
   const cached = await getCache<ListDto[]>(`board:${list.boardId}:lists`);
 
-  let updatedCache: ListDto[];
-
   if (cached) {
-    updatedCache = cached.map((l) => (l.id === id ? listDto : l));
-  } else {
-    updatedCache = [listDto];
+    await setCache<ListDto[]>(
+      `board:${list.boardId}:lists`,
+      cached.map((l) => (l.id === id ? listDto : l)),
+      120
+    );
   }
-
-  await setCache<ListDto[]>(`board:${list.boardId}:lists`, updatedCache, 120);
 
   return listDto;
 };

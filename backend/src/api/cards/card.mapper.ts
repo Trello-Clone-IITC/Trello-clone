@@ -36,6 +36,7 @@ export function mapCardToDto(
   const dto: CardDto = {
     id: card.id,
     listId: card.listId,
+    inboxUserId: card.inboxUserId,
     title: card.title,
     description: card.description,
     dueDate: card.dueDate?.toISOString() ?? null,
@@ -83,6 +84,7 @@ export function mapUpdateDtoToUpdateInput(dto: {
   isWatch?: boolean; // not persisted on card entity directly
   coverImageUrl?: string | null | undefined;
   isArchived?: boolean;
+  isCompleted?: boolean;
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -120,6 +122,7 @@ export function mapUpdateDtoToUpdateInput(dto: {
     position:
       dto.position === undefined ? undefined : new Prisma.Decimal(dto.position),
     isArchived: dto.isArchived,
+    isCompleted: dto.isCompleted,
     // Always bump updatedAt on updates unless explicitly managed elsewhere
     updatedAt: new Date(),
   };

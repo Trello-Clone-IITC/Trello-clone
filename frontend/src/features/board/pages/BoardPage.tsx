@@ -23,12 +23,12 @@ const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const { theme } = useTheme();
   const { setNavbarBorderHidden } = useAppContext();
-  const { cards } = useInbox();
   const [activeComponents, setActiveComponents] = useState<{
     inbox: boolean;
     planner: boolean;
     board: boolean;
   }>({ inbox: false, planner: false, board: true });
+  const { cards } = useInbox(activeComponents.inbox);
 
   const handleTabChange = (
     tab: "inbox" | "planner" | "board" | "switch-boards"

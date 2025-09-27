@@ -14,6 +14,7 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { emitUpdateCard } from "@/features/board/socket";
 
 type Props = {
   card: CardDto;
@@ -48,14 +49,20 @@ const Card = ({
   const { theme } = useTheme();
   const isLight = theme === "light";
   const [openModal, setOpenModal] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(card.isCompleted);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleCardClick = () => setOpenModal(true);
 
   const handleComplete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsCompleted(!isCompleted);
+    const newCompletedStatus = !isCompleted;
+    setIsCompleted(newCompletedStatus);
+
+    // Emit socket event to update the card with isCompleted status
+    emitUpdateCard(boardId, card.id, {
+      isCompleted: newCompletedStatus,
+    });
   };
 
   const handleLabelClick = (e: React.MouseEvent) => {

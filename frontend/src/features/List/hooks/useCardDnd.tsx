@@ -17,7 +17,7 @@ type DndLocation = { current?: { input?: { clientY?: number } } };
 
 export function useCardDnd(boardId: string, listId: string) {
   const queryClient = useQueryClient();
-  const { moveCardToList } = useInbox();
+  const { moveCardToList } = useInbox(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);

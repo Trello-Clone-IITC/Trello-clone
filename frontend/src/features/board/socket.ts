@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-import type { ListDto, CardDto } from "@ronmordo/contracts";
+import type { ListDto, CardDto, UpdateCardInput } from "@ronmordo/contracts";
 
 // INTERFACE: Event handlers that page/hook can provide
 export interface BoardSocketHandlers {
@@ -104,17 +104,7 @@ export const emitCreateCard = (
 export const emitUpdateCard = (
   boardId: string,
   cardId: string,
-  updates: Partial<
-    Pick<
-      CardDto,
-      | "title"
-      | "description"
-      | "dueDate"
-      | "startDate"
-      | "coverImageUrl"
-      | "position"
-    >
-  >
+  updates: UpdateCardInput
 ) => getBoardSocket().emit("card:update", { boardId, cardId, updates });
 
 export const emitDeleteCard = (
