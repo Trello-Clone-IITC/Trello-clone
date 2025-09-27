@@ -208,6 +208,22 @@ const availableFunctions = {
       required: ["query"],
     },
   },
+  getCardsByAssignee: {
+    name: "getCardsByAssignee",
+    description:
+      "Get all cards assigned to a specific user (defaults to current user if no userId provided)",
+    parameters: {
+      type: "object",
+      properties: {
+        userId: {
+          type: "string",
+          description:
+            "The ID of the user to get assigned cards for (optional - defaults to current user)",
+        },
+      },
+      required: [],
+    },
+  },
   // ==========================
   // BOARD OPERATIONS
   // ==========================
@@ -1069,6 +1085,23 @@ const functionImplementations = {
     }
   },
 
+  getCardsByAssignee: async (args: {
+    userId?: string;
+    currentUserId: string;
+  }) => {
+    try {
+      // Use provided userId or default to current user
+      const targetUserId = args.userId || args.currentUserId;
+      const cards = await cardService.getCardsByAssignee(targetUserId);
+      return { success: true, cards };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+
   // ==========================
   // BOARD OPERATIONS
   // ==========================
@@ -1331,7 +1364,7 @@ const functionImplementations = {
 
   getListsByBoard: async (args: { boardId: string; userId: string }) => {
     try {
-      const lists = await listService.getListWithCards(args.boardId);
+      const lists = await boardService.getBoardLists(args.boardId);
       return { success: true, lists };
     } catch (error) {
       return {
@@ -1508,12 +1541,139 @@ const functionImplementations = {
 };
 
 export class AIService {
+  // Helper function to check if query is related to Trello workflow
+  private static isTrelloRelatedQuery(message: string): boolean {
+    const trelloKeywords = [
+      // Core Trello concepts
+      "card",
+      "cards",
+      "board",
+      "boards",
+      "list",
+      "lists",
+      "workspace",
+      "workspaces",
+      "task",
+      "tasks",
+      "todo",
+      "todos",
+      "project",
+      "projects",
+
+      // Actions
+      "create",
+      "add",
+      "make",
+      "new",
+      "update",
+      "edit",
+      "modify",
+      "change",
+      "delete",
+      "remove",
+      "archive",
+      "complete",
+      "finish",
+      "done",
+      "move",
+      "transfer",
+      "assign",
+      "due",
+      "date",
+      "deadline",
+      "search",
+      "find",
+      "look",
+      "get",
+      "show",
+      "display",
+
+      // Workflow terms
+      "kanban",
+      "workflow",
+      "management",
+      "organize",
+      "planning",
+      "team",
+      "collaboration",
+      "member",
+      "members",
+      "permission",
+      "inbox",
+      "backlog",
+      "sprint",
+      "milestone",
+
+      // Status and properties
+      "completed",
+      "pending",
+      "in progress",
+      "blocked",
+      "priority",
+      "description",
+      "title",
+      "label",
+      "tag",
+      "comment",
+      "attachment",
+      "cover",
+      "background",
+      "visibility",
+      "private",
+      "public",
+    ];
+
+    const messageLower = message.toLowerCase();
+
+    // Check if message contains Trello-related keywords
+    const hasTrelloKeywords = trelloKeywords.some((keyword) =>
+      messageLower.includes(keyword)
+    );
+
+    // Check for common non-Trello question patterns
+    const nonTrelloPatterns = [
+      /where is\s+\w+/i, // "where is israel"
+      /what is\s+\w+/i, // "what is gravity"
+      /how to\s+\w+/i, // "how to cook"
+      /tell me about\s+\w+/i, // "tell me about history"
+      /explain\s+\w+/i, // "explain quantum physics"
+      /define\s+\w+/i, // "define democracy"
+      /who is\s+\w+/i, // "who is einstein"
+      /when did\s+\w+/i, // "when did world war start"
+      /why does\s+\w+/i, // "why does the sun shine"
+    ];
+
+    const hasNonTrelloPattern = nonTrelloPatterns.some((pattern) =>
+      pattern.test(message)
+    );
+
+    // If it has non-Trello patterns and no Trello keywords, it's not Trello-related
+    if (hasNonTrelloPattern && !hasTrelloKeywords) {
+      return false;
+    }
+
+    // If it has Trello keywords, it's likely Trello-related
+    if (hasTrelloKeywords) {
+      return true;
+    }
+
+    // For ambiguous cases, be more restrictive
+    return false;
+  }
+
   static async processMessage(
     message: string,
     userId: string,
     boardId?: string
   ): Promise<{ response: string; functionCalls?: any[] }> {
     try {
+      // Check if the query is related to Trello workflow
+      if (!this.isTrelloRelatedQuery(message)) {
+        return {
+          response:
+            "I'm a Trello workflow assistant and can only help with project management tasks like creating cards, boards, lists, and workspaces. Please ask me about managing your Trello boards, organizing tasks, or other project management activities.",
+        };
+      }
       // Get user's workspaces and boards for context
       const userWorkspaces = await prisma.workspace.findMany({
         where: {
@@ -1571,7 +1731,12 @@ export class AIService {
         .join("\n");
 
       const systemPrompt = `You are an AI assistant for a Trello-like project management application. 
-You can help users manage their workspaces, boards, lists, and cards by calling specific functions.
+You can ONLY help users manage their workspaces, boards, lists, and cards by calling specific functions.
+
+CRITICAL RESTRICTION: You must ONLY respond to queries related to Trello workflow and project management. 
+Do NOT answer general knowledge questions, geography questions, or any questions unrelated to project management.
+If a user asks about topics like "where is Israel", "what is gravity", or any non-project management topic, 
+you should politely redirect them to ask about Trello-related tasks instead.
 
 Available workspaces for this user:
 ${workspaceContext}
@@ -1593,6 +1758,7 @@ CARDS:
 - Move cards between lists and inbox by setting listId/inboxUserId
 - Update card position, status (completed/archived), dates, cover image, location
 - Search for cards by title or description
+- Get all cards assigned to a specific user (or current user if no user specified)
 - When moving cards without specifying position, they are automatically appended to the end
 
 BOARDS:
@@ -1722,6 +1888,11 @@ Focus on what was accomplished, not the technical details.`;
 
               // Add userId to all function calls
               functionArgs.userId = userId;
+
+              // Add currentUserId for functions that need it
+              if (functionName === "getCardsByAssignee") {
+                functionArgs.currentUserId = userId;
+              }
 
               console.log(
                 "Final function args after auto-assignment:",
