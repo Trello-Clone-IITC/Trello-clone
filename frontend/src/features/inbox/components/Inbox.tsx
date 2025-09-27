@@ -18,12 +18,12 @@ import InboxCardComponent from "./InboxCard";
 import { useInboxCardDnd } from "../hooks/useInboxCardDnd";
 import SlackIcon from "@/assets/icons/slack-color.svg";
 import TeamsIcon from "@/assets/icons/microsoft-teams-color.svg";
-import { emitMoveCard } from "@/features/final-final/board/socket";
+import { emitMoveCard } from "@/features/board/socket";
 import { useQueryClient } from "@tanstack/react-query";
-import { boardKeys } from "@/features/final-final/board/hooks";
+import { boardKeys } from "@/features/board/hooks";
 import type { CardDto } from "@ronmordo/contracts";
 import { useMemo } from "react";
-import { sortByPosition } from "@/features/final-final/shared/utils/positionUtils";
+import { sortByPosition } from "@/features/shared/utils/positionUtils";
 import { useTheme } from "@/hooks/useTheme";
 
 const InboxCardsList = ({

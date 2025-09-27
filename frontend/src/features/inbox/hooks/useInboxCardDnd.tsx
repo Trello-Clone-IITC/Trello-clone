@@ -5,7 +5,7 @@ import type { CardDto } from "@ronmordo/contracts";
 import {
   calculatePosition,
   sortByPosition,
-} from "@/features/final-final/shared/utils/positionUtils";
+} from "@/features/shared/utils/positionUtils";
 import { api } from "@/lib/axiosInstance";
 
 type Edge = "top" | "bottom";
