@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/hooks/useTheme";
 import { useLocation } from "react-router-dom";
 import { useAppContext } from "@/hooks/useAppContext";
+import { useSearch } from "../hooks/useSearch";
 
 export default function SearchBar() {
   const { theme } = useTheme();
   const location = useLocation();
   const { navbarBorderHidden } = useAppContext();
   const [searchValue, setSearchValue] = useState("");
+  const [debouncedValue, setDebouncedValue] = useState("");
   const isLight = theme === "light";
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(searchValue), 500); // wait 500ms
+    return () => clearTimeout(handler);
+  }, [searchValue]);
+
+  const { data, isLoading, error } = useSearch(debouncedValue);
 
   // Check if we're in board view (handles both /board/ and /b/ routes)
   const isBoardView =

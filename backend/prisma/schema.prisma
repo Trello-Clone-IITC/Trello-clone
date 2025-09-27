@@ -298,6 +298,7 @@ model Card {
   startDate     DateTime?                @map("start_date") @db.Timestamptz(6)
   position      Decimal                  @db.Decimal(16, 6)
   isArchived    Boolean                  @map("is_archived") @default(false)
+  isCompleted   Boolean                  @map("is_completed") @default(false)
   createdBy     String                   @map("created_by") @db.Uuid
   coverImageUrl String?                  @map("cover_image_url")
   createdAt     DateTime                 @map("created_at") @default(now()) @db.Timestamptz(6)

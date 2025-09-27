@@ -43,6 +43,7 @@ export function mapCardToDto(
     position: Number(card.position),
     ...additionalFields,
     isArchived: card.isArchived,
+    isCompleted: card.isCompleted,
     createdBy: card.createdBy,
     coverImageUrl: card.coverImageUrl ?? null,
     createdAt: card.createdAt.toISOString(),

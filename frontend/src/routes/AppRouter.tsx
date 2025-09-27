@@ -19,7 +19,7 @@ import BoardsPage from "@/features/dashboard/pages/BoardsPage";
 import HomePage from "@/features/dashboard/pages/HomePage";
 
 // Board pages
-import FinalBoardPage from "@/features/final-final/board/pages/BoardPage";
+import FinalBoardPage from "@/features/board/pages/BoardPage";
 
 // Api Docs
 import ApiDocs from "@/features/docs/ApiDocs";
