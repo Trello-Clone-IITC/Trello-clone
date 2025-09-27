@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import type { ApiResponse } from "../../utils/globalTypes.js";
 import type { SearchResultsDto } from "@ronmordo/contracts";
 import { searchService } from "./search.service.js";
+import { userService } from "../users/user.service.js";
 
 const search = async (
   req: Request<{}, {}, {}, { q: string }>,
@@ -10,8 +11,9 @@ const search = async (
 ) => {
   try {
     const { q } = req.query;
+    const userId = await userService.getUserIdByRequest(req);
 
-    const searchResultsDto = await searchService.search(q);
+    const searchResultsDto = await searchService.search(q, userId);
 
     return res.status(200).json({ success: true, data: searchResultsDto });
   } catch (err) {
