@@ -28,6 +28,7 @@ export type WorkspaceMemberDto = z.infer<
 >;
 export type CardLocationDto = z.infer<typeof schemas.CardLocationDtoSchema>;
 export type SearchResultsDto = z.infer<typeof schemas.SearchResultsDtoSchema>;
+export type JoinRequestDto = z.infer<typeof schemas.JoinRequestDtoSchema>;
 
 // ==========================
 // CREATE INPUT TYPES FROM SCHEMAS
@@ -63,6 +64,9 @@ export type CreateBoardMemberInput = z.infer<
 >;
 export type CreateWorkspaceMemberInput = z.infer<
   typeof schemas.CreateWorkspaceMemberInputSchema
+>;
+export type CreateJoinRequestInput = z.infer<
+  typeof schemas.CreateJoinRequestInputSchema
 >;
 
 // ==========================

@@ -264,6 +264,11 @@ export const CommentDtoSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 
+export const JoinRequestDtoSchema = z.object({
+  userId: z.uuid(),
+  boardId: z.uuid(),
+});
+
 export const ListWatcherDtoSchema = z.object({
   listId: z.uuid(),
   userId: z.uuid(),
@@ -659,6 +664,10 @@ export const CreateChecklistInputSchema = ChecklistDtoSchema.pick({
 export const CreateChecklistItemInputSchema = ChecklistItemDtoSchema.pick({
   text: true,
   position: true,
+});
+
+export const CreateJoinRequestInputSchema = JoinRequestDtoSchema.pick({
+  boardId: true,
 });
 
 export const CreateOnBoardingInputSchema = z.object({
