@@ -135,8 +135,8 @@ const TemplatesIcon: React.FC<{
                 ? "fill-[#186de5]"
                 : "fill-[#579dff]"
               : isLight
-              ? "fill-[#ffffff] group-hover:fill-[#dcdfe4]"
-              : "fill-[#1f1f21] group-hover:fill-[#333c43]"
+                ? "fill-[#ffffff] group-hover:fill-[#dcdfe4]"
+                : "fill-[#1f1f21] group-hover:fill-[#333c43]"
           )}
           d="M10.351,17.283c0,0.253-0.104,0.497-0.283,0.675  c-0.181,0.179-0.424,0.275-0.678,0.275c0,0-3.999,0-3.999,0c-0.251-0.001-0.492-0.101-0.669-0.28  c-0.177-0.178-0.277-0.419-0.277-0.67v-11.9c0-0.251,0.1-0.492,0.277-0.67c0.177-0.178,0.418-0.278,0.669-0.28h3.999  c0.252,0.001,0.492,0.101,0.67,0.279c0.178,0.178,0.278,0.419,0.279,0.67C10.339,5.383,10.351,17.282,10.351,17.283z M19.578,11.819  c0.001,0.253-0.102,0.498-0.282,0.676c-0.176,0.174-0.432,0.277-0.679,0.274h-3.999c-0.252-0.001-0.493-0.101-0.67-0.279  c-0.178-0.178-0.278-0.419-0.279-0.67V5.383c0.001-0.252,0.101-0.493,0.279-0.67c0.178-0.178,0.419-0.278,0.67-0.279h3.999  c0.251,0.001,0.492,0.102,0.669,0.28c0.177,0.178,0.277,0.419,0.277,0.67C19.563,5.383,19.578,11.819,19.578,11.819z"
         />
@@ -149,7 +149,8 @@ const navigationItems = [
   { name: "Boards", href: "/boards", icon: BoardsIcon },
   {
     name: "Templates",
-    href: "/templates",
+    // TODO: enable templates page when ready
+    // href: "/templates",
     icon: TemplatesIcon,
   },
   { name: "Home", href: "/", icon: HomeIcon },
@@ -189,8 +190,8 @@ const Sidebar: React.FC = () => {
                           ? "text-[#186de5] bg-[#e9f2ff]"
                           : "text-[#579dff] bg-[#1c2b41]"
                         : isLight
-                        ? "text-[#292a2e] hover:bg-[#dcdfe4]"
-                        : "text-[#bfc1c4] hover:bg-[#333c43]"
+                          ? "text-[#292a2e] hover:bg-[#dcdfe4]"
+                          : "text-[#bfc1c4] hover:bg-[#333c43]"
                     )}
                   >
                     <span className="flex items-center">
@@ -286,9 +287,8 @@ const Sidebar: React.FC = () => {
                               )}
                             >
                               <span
-                                className={`${
-                                  isLight ? "text-[#fff]" : "text-[#1f1f21]"
-                                }`}
+                                className={`${isLight ? "text-[#fff]" : "text-[#1f1f21]"
+                                  }`}
                               >
                                 {initial}
                               </span>
