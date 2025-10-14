@@ -45,8 +45,8 @@ const getMe = async (clerkUserId: string) => {
   if (!existing) {
     await seedTrelloExampleWorkspace(prisma, user.id, {
       defaultMemberIds: [
-        "c18023c3-717c-487f-b9b3-c24e4a34e21d",//TODO: replace with your clerk test user ids
-        "73ee53ee-f741-4aeb-ba54-d000a60c8063",
+        "09e8b362-51d0-4413-ae37-6426ec86cb73",//TODO: replace with your clerk test user ids
+        "c1048364-2264-49b9-b480-b9f2162d97c7",
       ],
       workspaceName: "my Trello Example Workspace",
       boardName: "Trello Clone- Project Example",
