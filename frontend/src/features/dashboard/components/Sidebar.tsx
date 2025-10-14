@@ -150,7 +150,7 @@ const navigationItems = [
   {
     name: "Templates",
     // TODO: enable templates page when ready
-    // href: "/templates",
+    href: "/boards",
     icon: TemplatesIcon,
   },
   { name: "Home", href: "/", icon: HomeIcon },
