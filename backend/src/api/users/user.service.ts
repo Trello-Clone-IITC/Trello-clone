@@ -5,11 +5,18 @@ import { AppError } from "../../utils/appError.js";
 import { mapUserDtoToUpdateInput, mapUserToDto } from "./user.mapper.js";
 import { clerkClient, getAuth } from "@clerk/express";
 import { type Request } from "express";
+import { seedTrelloExampleWorkspace } from "./trello-example.seed.js";
+
+
+
 
 const getMe = async (clerkUserId: string) => {
   // First we get the latest user data from clerk provider.
   const { emailAddresses, fullName, imageUrl } =
     await clerkClient.users.getUser(clerkUserId);
+
+  const existing = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+  console.log("Existing user:", existing);
 
   if (!fullName) {
     throw new AppError("Full name isnt resolved yet");
@@ -35,6 +42,16 @@ const getMe = async (clerkUserId: string) => {
       inbox: { create: {} },
     },
   });
+  if (!existing) {
+    await seedTrelloExampleWorkspace(prisma, user.id, {
+      defaultMemberIds: [
+        "c18023c3-717c-487f-b9b3-c24e4a34e21d",//TODO: replace with your clerk test user ids
+        "73ee53ee-f741-4aeb-ba54-d000a60c8063",
+      ],
+      workspaceName: "my Trello Example Workspace",
+      boardName: "Trello Clone- Project Example",
+    });
+  }
 
   // Return the UserDto.
   return mapUserToDto(user);

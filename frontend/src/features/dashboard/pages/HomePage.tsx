@@ -41,7 +41,8 @@ export default function HomePage() {
               View Boards
             </a>
             <a
-              href="/templates"
+              // TODO: enable templates page when ready
+              // href="/templates"
               className={cn(
                 "inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors border",
                 isLight
@@ -142,7 +143,8 @@ export default function HomePage() {
               workflows.
             </p>
             <a
-              href="/templates"
+              // TODO: enable templates page when ready
+              // href="/templates" 
               className={cn(
                 "mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 isLight
